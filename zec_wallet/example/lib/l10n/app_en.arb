@@ -1,0 +1,209 @@
+{
+  "@@locale": "en",
+  "appTitle": "ZEC Wallet",
+  "@appTitle": {
+    "description": "Application title (task switcher / window title)."
+  },
+  "appearanceTitle": "Settings",
+  "@appearanceTitle": {
+    "description": "The example's settings screen title (network, theme, text size, device log, diagnostics)."
+  },
+  "themeSectionTitle": "Theme",
+  "@themeSectionTitle": {
+    "description": "Section header above the theme-mode options."
+  },
+  "themeModeSystemTitle": "System",
+  "@themeModeSystemTitle": {
+    "description": "Theme mode option: follow the OS."
+  },
+  "themeModeSystemSubtitle": "Follow the device setting",
+  "@themeModeSystemSubtitle": {
+    "description": "Subtitle for the System theme option."
+  },
+  "themeModeLightTitle": "Light",
+  "@themeModeLightTitle": {
+    "description": "Theme mode option: light."
+  },
+  "themeModeDarkTitle": "Dark",
+  "@themeModeDarkTitle": {
+    "description": "Theme mode option: dark."
+  },
+  "amoledTitle": "True-black dark",
+  "@amoledTitle": {
+    "description": "AMOLED variant toggle title."
+  },
+  "amoledSubtitle": "Pure black surfaces on OLED screens. Affects the dark theme only.",
+  "@amoledSubtitle": {
+    "description": "AMOLED toggle subtitle; also explains why the toggle is disabled while the light theme is active."
+  },
+  "textSizeSectionTitle": "Text size",
+  "@textSizeSectionTitle": {
+    "description": "Section header above the text-size slider."
+  },
+  "textSizeSemanticValue": "Text size {percent} percent",
+  "@textSizeSemanticValue": {
+    "description": "Screen-reader value announced by the text-size slider (control type + current value in one node).",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "textSizePreview": "The quick brown fox jumps over the lazy dog.",
+  "@textSizePreview": {
+    "description": "Live preview line that scales with the slider."
+  },
+  "routeErrorTitle": "Page not found",
+  "@routeErrorTitle": {
+    "description": "Unknown-route error screen title."
+  },
+  "routeErrorBody": "That screen doesn't exist in this build. Head back home and continue from there.",
+  "@routeErrorBody": {
+    "description": "Unknown-route error body — plain language with a next step, never an error code."
+  },
+  "routeErrorGoHome": "Go to wallet",
+  "@routeErrorGoHome": {
+    "description": "Unknown-route error action button."
+  },
+  "diagIncomingTitle": "Incoming events",
+  "@diagIncomingTitle": {
+    "description": "Diagnostics screen title — the live incoming-funds event stream (ADR-0536)."
+  },
+  "diagIncomingEntryTitle": "Incoming events",
+  "@diagIncomingEntryTitle": {
+    "description": "Developer-section entry row on the Appearance screen."
+  },
+  "diagIncomingEntrySubtitle": "Developer: watch the live arrival stream",
+  "@diagIncomingEntrySubtitle": {
+    "description": "Subtitle for the diagnostics entry row."
+  },
+  "diagIncomingEmpty": "No events yet. The stream's first event is the catch-up replay; new arrivals appear as the wallet syncs.",
+  "@diagIncomingEmpty": {
+    "description": "Empty state for the incoming-events diagnostics list."
+  },
+  "diagIncomingDeveloperSection": "Developer",
+  "@diagIncomingDeveloperSection": {
+    "description": "Appearance-screen section header for developer/diagnostics entries."
+  },
+  "prefillDemoEntryTitle": "Prefilled send (ZIP-321)",
+  "@prefillDemoEntryTitle": {
+    "description": "Developer-section entry title for the FR-25 prefilled-send demo."
+  },
+  "prefillDemoEntrySubtitle": "Developer: open the send flow from a payment URI or a typed request",
+  "@prefillDemoEntrySubtitle": {
+    "description": "Developer-section entry subtitle for the prefilled-send demo."
+  },
+  "prefillDemoTitle": "Prefilled send",
+  "@prefillDemoTitle": {
+    "description": "App-bar title of the prefilled-send demo screen."
+  },
+  "prefillDemoIntro": "Paste a ZIP-321 payment URI (as a scanned QR or deep link would supply) and open the audited send flow prefilled. A malformed or wrong-network URI is rejected here, never a half-filled form.",
+  "@prefillDemoIntro": {
+    "description": "Explanatory intro on the prefilled-send demo screen."
+  },
+  "prefillDemoUriLabel": "ZIP-321 payment URI",
+  "@prefillDemoUriLabel": {
+    "description": "Label for the payment-URI text field."
+  },
+  "prefillDemoUriHint": "zcash:u1…?amount=…",
+  "@prefillDemoUriHint": {
+    "description": "Placeholder for the payment-URI text field."
+  },
+  "prefillDemoLock": "Lock the recipient (open it read-only)",
+  "@prefillDemoLock": {
+    "description": "Toggle: pass lockRecipient:true so the recipient opens read-only."
+  },
+  "prefillDemoOpenFromUri": "Open send from URI",
+  "@prefillDemoOpenFromUri": {
+    "description": "Button that parses the URI and opens the prefilled send flow."
+  },
+  "prefillDemoOpenTyped": "Open send from a typed request",
+  "@prefillDemoOpenTyped": {
+    "description": "Button that opens the send flow from a hardcoded typed WalletSendRequest (no URI)."
+  },
+  "prefillDemoRejected": "Rejected at the seam: {fault}",
+  "@prefillDemoRejected": {
+    "description": "Snackbar shown when fromUri rejects the URI; {fault} is the typed fault name.",
+    "placeholders": {
+      "fault": {
+        "type": "String"
+      }
+    }
+  },
+  "prefillDemoNoWallet": "No active wallet — create or unlock one first.",
+  "@prefillDemoNoWallet": {
+    "description": "Shown when the demo is opened with no live wallet session."
+  },
+  "torPluginSectionTitle": "Network",
+  "@torPluginSectionTitle": {
+    "description": "Appearance-screen section header above the Tor plugin toggle."
+  },
+  "torPluginToggleTitle": "Use the built-in Tor plugin",
+  "@torPluginToggleTitle": {
+    "description": "Toggle: route the wallet through the optional zec_wallet_tor plugin. Off by default."
+  },
+  "torPluginToggleSubtitle": "Takes effect the next time the app starts.",
+  "@torPluginToggleSubtitle": {
+    "description": "Subtitle under the Tor plugin toggle: the transport is chosen before the wallet opens."
+  },
+  "deviceLogSectionTitle": "Device log",
+  "@deviceLogSectionTitle": {
+    "description": "Appearance-screen section header above the device-log level and its Share action."
+  },
+  "deviceLogOffTitle": "Off",
+  "@deviceLogOffTitle": {
+    "description": "Device-log level: nothing is written."
+  },
+  "deviceLogErrorsTitle": "Errors only",
+  "@deviceLogErrorsTitle": {
+    "description": "Device-log level: only what went wrong."
+  },
+  "deviceLogDetailedTitle": "Detailed",
+  "@deviceLogDetailedTitle": {
+    "description": "Device-log level: errors plus the connection narrative."
+  },
+  "deviceLogUnavailable": "This device can't keep a log",
+  "@deviceLogUnavailable": {
+    "description": "One line shown when the level the wallet answers differs from the one picked: nothing on this device can write the log."
+  },
+  "deviceLogShareTitle": "Share device log",
+  "@deviceLogShareTitle": {
+    "description": "Action: open the system share sheet with the device log as text. Disabled while the log is empty."
+  },
+  "deviceLogShareFailed": "Sharing isn't available on this device.",
+  "@deviceLogShareFailed": {
+    "description": "Snackbar when the system share sheet could not be opened."
+  },
+  "torIdentityResetTitle": "Reset the Tor identity too?",
+  "@torIdentityResetTitle": {
+    "description": "Dialog title offered after a wallet delete while the Tor plugin is on."
+  },
+  "torIdentityResetBody": "Tor remembers which relays this device uses. Deleting the wallet keeps that record.",
+  "@torIdentityResetBody": {
+    "description": "Dialog body: the Tor guard state is a per-device record a wallet delete leaves behind."
+  },
+  "torIdentityResetConfirm": "Reset",
+  "@torIdentityResetConfirm": {
+    "description": "Dialog action: delete the Tor plugin's state."
+  },
+  "torIdentityResetCancel": "Keep",
+  "@torIdentityResetCancel": {
+    "description": "Dialog action: keep the Tor plugin's state."
+  },
+  "torIdentityResetFailedTitle": "Tor identity not reset",
+  "@torIdentityResetFailedTitle": {
+    "description": "Dialog title when the Tor identity reset the user asked for failed."
+  },
+  "torIdentityResetFailedBody": "This device's Tor relay record is still stored.",
+  "@torIdentityResetFailedBody": {
+    "description": "Dialog body: the reset did not happen; the guard state is still on disk."
+  },
+  "torIdentityResetFailedRetry": "Try again",
+  "@torIdentityResetFailedRetry": {
+    "description": "Dialog action: retry the Tor identity reset."
+  },
+  "torIdentityResetFailedDismiss": "OK",
+  "@torIdentityResetFailedDismiss": {
+    "description": "Dialog action: dismiss without retrying."
+  }
+}

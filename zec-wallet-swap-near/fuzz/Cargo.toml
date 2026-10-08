@@ -1,0 +1,36 @@
+# cargo-fuzz harness for the 1Click adapter's hostile-response funnel
+# (wallet-sdk spec §8 `fuzz_swap_status_decode`: every byte from the swap
+# provider is hostile, §4.6). A SEPARATE workspace (the empty `[workspace]`
+# table at the bottom) so the stable-pinned PARENT never builds it: fuzz
+# targets need nightly + libFuzzer (+ ASan) and must never enter
+# `cargo build --workspace` / `just ci`. Run:
+#
+#   cargo +nightly fuzz run fuzz_swap_status_decode
+[package]
+name = "zec-wallet-swap-near-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+zec-wallet-swap-near = { path = ".." }
+
+[[bin]]
+name = "fuzz_swap_status_decode"
+path = "fuzz_targets/fuzz_swap_status_decode.rs"
+test = false
+doc = false
+bench = false
+
+# Production parity: the app ships RELEASE with debug-assertions OFF. Match it so a
+# debug-only assert can't mask a genuine production no-panic-on-hostile-input path.
+[profile.release]
+debug-assertions = false
+overflow-checks = false
+
+# Own workspace root so the parent never compiles it.
+[workspace]

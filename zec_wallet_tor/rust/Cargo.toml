@@ -1,0 +1,82 @@
+# `zec_wallet_tor` — the optional Tor plugin for the `zec_wallet` SDK (FR-5,
+# ADR-0548; spec docs/specs/tor-plugin.md, plan docs/plan/fr5-phase-1.md §2 C3).
+#
+# ITS OWN CARGO WORKSPACE, not a member of `sdk/` — the resolver refuses to put
+# arti and the wallet's ZEC stack in one lock (`crypto-common ^0.2.2` against
+# `=0.2.0-rc.1`; the plan's §5 D-7, measured at C0). `sdk/Cargo.toml`
+# `exclude`s this directory, this crate keeps its own `Cargo.lock` (the arti
+# graph the gates audit — `just sdk-audit`), and it consumes `dialer-tor` by
+# PATH (ADR-0550) until the maintainer's crates.io publish flips that to a version.
+#
+# The wallet is NOT a dependency in either direction: the plugin reaches it BY
+# SYMBOL at runtime (D8, `src/abi.rs`), and the bridge cannot dev-depend on the
+# plugin (D-8) — so `cdylib` + `staticlib`, no `rlib`.
+[package]
+name = "zec_wallet_tor"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.96"
+license = "MIT"
+authors = ["The zec-wallet Authors"]
+description = "Optional Tor plugin for the zec_wallet SDK: registers arti with the wallet's host-transport contract."
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+# The SDK workspace's lint tables, copied as `sdk/dialer-tor` copies them (a
+# workspace root has no parent to inherit from). `unsafe_code` is denied in
+# `src/lib.rs`; `src/abi.rs` is the one module allowed it.
+[lints.rust]
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+
+[dependencies]
+# The shared Tor dialer (arti WHOLE), by path until its crates.io publish — with
+# the exact version it has, so the dependency is never a wildcard (the deny
+# `bans` rule) and the day the publish flips it, only the `path` goes.
+dialer-tor = { path = "../../dialer-tor", version = "=0.1.1" }
+# The resolver: an already-loaded image by name + `dladdr` (Relim's choice).
+# Exact pins: these two are what the ONE `unsafe` module stands on, so an
+# upgrade is a reviewed edit, never a `cargo update` (the security angle's
+# LOW).
+libc = "=0.2.189"
+libloading = "=0.8.9"
+# Our copy of a bridge line zeroizes; arti's (memory, tor_dir/cache) do not.
+zeroize = "1"
+# The plugin's OWN runtime (arti is written over tokio), its loops and its
+# stream halves. Already in this lock through arti; no new crate.
+tokio = { version = "1.53", default-features = false, features = [
+  "rt-multi-thread",
+  "sync",
+  "time",
+  "macros",
+  "io-util",
+] }
+tracing = { version = "0.1", default-features = false, features = ["std"] }
+async-trait = "0.1"
+
+# Android's NDK exposes no linkable `libsqlite3`, so arti's directory cache
+# vendors sqlite there (`dialer-tor`'s `static-sqlite`, off by default because
+# arti marks it non-additive: the FINAL consumer chooses, and this plugin is
+# that consumer). Apple and desktop link the platform's sqlite.
+[target.'cfg(target_os = "android")'.dependencies]
+dialer-tor = { path = "../../dialer-tor", version = "=0.1.1", features = [
+  "static-sqlite",
+] }
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1.53", default-features = false, features = [
+  "rt-multi-thread",
+  "sync",
+  "time",
+  "macros",
+  "io-util",
+  "test-util",
+] }

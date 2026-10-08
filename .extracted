@@ -1,0 +1,2 @@
+This tree was extracted from the monorepo the SDK was developed in.
+Policy tests read this file to know they run in the public repository.

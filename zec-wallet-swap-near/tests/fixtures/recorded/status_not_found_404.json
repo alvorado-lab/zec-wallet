@@ -1,0 +1,1 @@
+{"message":"Deposit address zec-fixture-nonexistent-address not found","error":"Not Found","statusCode":404,"timestamp":"2026-06-13T00:37:14.762Z","path":"/v0/status?depositAddress=zec-fixture-nonexistent-address"}

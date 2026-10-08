@@ -1,0 +1,56 @@
+# zec_wallet_ui_platform: the OPTIONAL native companion for the plugin-free
+# `zec_wallet_ui` package (the "Scenario C" hybrid decision, 2026-07-09).
+#
+# `zec_wallet_ui` ships zero native code and hands every platform concern to the
+# host through seams and channel contracts (clean pub.dev + desktop story). This
+# companion plugin provides the DEFAULT native implementations a host would
+# otherwise hand-write, so a host that just wants the wallet's screen-protection
+# to "work" adds this one dependency instead of copying MainActivity /
+# SceneDelegate snippets. A host that wants full control simply omits it.
+#
+# There is no Dart API to call: the native handlers self-register when the host
+# adds this dependency, and `zec_wallet_ui`'s own Dart speaks the channels this
+# plugin answers. See README.md.
+name: zec_wallet_ui_platform
+description: "Keeps the recovery phrase, balance and addresses out of screenshots and the app switcher for zec_wallet_ui on Android and iOS, with no native code in your app."
+version: 0.0.1
+homepage: https://github.com/alvorado-lab/zec-wallet
+repository: https://github.com/alvorado-lab/zec-wallet/tree/main/zec_wallet_ui_platform
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.38.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # For the CONTRACT TEST only: pins this plugin's channel-name constants
+  # equal to zec_wallet_ui's, so a rename on either side fails a test rather
+  # than silently breaking the wiring at runtime. Named by version (lockstep
+  # releases); the in-repo path lives in dependency_overrides.
+  zec_wallet_ui: ^0.0.1
+
+# In-repo resolution: the sibling directories. Ignored by `pub publish`.
+dependency_overrides:
+  zec_wallet_ui:
+    path: ../zec_wallet_ui
+  zec_wallet:
+    path: ../zec_wallet
+
+flutter:
+  plugin:
+    platforms:
+      # Android: a Kotlin plugin (no ffiPlugin) that answers the screen_security
+      # channel with FLAG_SECURE via ActivityAware.
+      android:
+        package: dev.zecwallet.ui_platform
+        pluginClass: ZecWalletUiPlatformPlugin
+      # iOS: a Swift plugin: backup_exclusion handler + the app-wide
+      # app-switcher privacy cover (#342). No screen_security handler on iOS by
+      # design (FLAG_SECURE is Android-only; a success handler would be a lie).
+      ios:
+        pluginClass: ZecWalletUiPlatformPlugin

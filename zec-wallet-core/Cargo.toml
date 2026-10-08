@@ -1,0 +1,229 @@
+[package]
+name = "zec-wallet-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "ZEC (Zcash) wallet SDK core — librustzcash-direct, sync orchestration, ZIP-321 payments, and a NEAR-Intents SwapPort. Keys stay in Rust; zero host-app coupling."
+# `tools/` is the operator-run checkpoint-refresh emitter (Python, clones the
+# upstream ECC repo). It documents how `src/checkpoints/data.rs` was produced;
+# it is not part of the library and has no business in a published tarball.
+# Verified with `cargo package --list` — without this it SHIPS.
+exclude = ["tools/"]
+# ADR-0541 Decision 1, stated where a tool can read it: **this crate is not
+# published to crates.io.** It ships vendored inside the `zec_wallet` Dart
+# package, which is why its `apple-secure-enclave` dependency below is a bare
+# `{ path = … }` with no version — the arrangement crates.io does not allow and
+# this distribution does not need. Until the decision lived only in the
+# ADR, and `cargo deny`'s `[bans] allow-wildcard-paths` therefore did NOT apply
+# here ("does not apply to public crates as crates.io disallows path
+# dependencies"), which is what stood between the sdk supply-chain lane and
+# being blocking. Removing this line makes the lane fail on the path dep again;
+# the fix then is a `version` beside the `path`, i.e. a different ADR.
+publish = false
+
+[lints]
+workspace = true
+
+# EXTRACTION DEP POLICY (spec §1.2): every dependency must be publicly
+# resolvable (crates.io) — no relim-* crates, no path/git deps, no Mostpost
+# consumed crates. Enforced by the named test `core_and_bridge_have_no_relim_deps`.
+[dependencies]
+zeroize     = { workspace = true }
+thiserror   = { workspace = true }
+tracing     = { workspace = true }
+async-trait = { workspace = true }
+# audited hex codec for the FR-1 history keyset cursor (a tiny pure-Rust, no-system-
+# dep brick — used instead of a hand-rolled loop so the host-supplied token decode is
+# panic-free by construction). Already a workspace dep; mobile/desktop cross-safe.
+hex         = { workspace = true }
+# `net`/`time` for the §3.2a built-in DirectTcpDialer (TCP connect + dial timeout);
+# `sync` for the d-3 `SyncController` (the live `watch` status stream, the async
+# pass-serializing `Mutex`, and `Notify` for prompt `CancelToken` wakeups). All
+# declared EXPLICITLY, never inherited via feature-unification (rust-patterns);
+# `sync` is pure-Rust (no system deps), so it is mobile/desktop cross-compile-safe.
+# `macros` (compile-time only — `tokio::select!` for the engine's race-against-cancel,
+# d-3-b-ii) pulls NO extra runtime/system deps, so it stays cross-compile-safe.
+tokio       = { workspace = true, features = ["net", "sync", "time", "macros"] }
+# endpoint URL validation only (workspace-pinned; std is additive on top of
+# the workspace's default-features = false)
+http        = { workspace = true, features = ["std"] }
+# §4.2a seed seal — audited AEAD whole (exact-pinned at the workspace root)
+chacha20poly1305 = { workspace = true }
+# ZEC stack — audited crates whole, exact-pinned at the workspace root
+# (ADR-0005 r5); our code is validation glue only (§4.1). zcash_keys/zip32
+# (USK/UA derivation) unblocked by the gate-0 carve (the own sdk lockfile
+# takes the pre-release digest with no Mostpost collision) — see sdk/Cargo.toml.
+zcash_address  = { workspace = true }
+zcash_keys     = { workspace = true }
+zcash_protocol = { workspace = true }
+# §3.3 tx-enhancement (memo recovery, `enhance.rs`): the full `transaction::Transaction`
+# type — we `Transaction::read` the endpoint's raw bytes to re-derive the txid (the §4.6
+# hostile-input check) before handing the parsed tx to the audited
+# `decrypt_and_store_transaction`. Exact-pinned at the zcash_primitives generation (same pin
+# the funded test harness already used as a dev-dep); default-features off (the core
+# transaction module needs no extra features). Audited crate WHOLE (Rule Zero).
+zcash_primitives = { version = "=0.30.1", default-features = false }
+# Recv-2 transparent address derivation (ADR-0528): the BIP44 external-scope
+# transparent address types behind `transparent-inputs` (set at the workspace root —
+# see the note there). Used to derive the external-scope RECEIVE address
+# (`current_transparent_address`); the ZIP-320 ephemeral REFUND allocator lives in the
+# engine now (`reserve_next_n_ephemeral_addresses`). The shielded UA stays G7 (our
+# `encode_default_address` Omits transparent).
+zcash_transparent = { workspace = true }
+# Reconstruct an output `Script` from a `GetAddressUtxos` reply's raw scriptPubKey
+# bytes for Recv-2b transparent UTXO detection (see workspace dep note + `transparent.rs`).
+zcash_script   = { workspace = true }
+zip32          = { workspace = true }
+bip39          = { workspace = true }
+# §4.3 wallet DB at rest — SQLCipher-keyed connection. We open the keyed
+# connection ourselves (PRAGMA key FIRST → load_module), then wrap it in
+# `WalletDb::from_connection` and run `init_wallet_db` migrations (db.rs,
+# W3-inc-2b-ii-A). The async Wallet handle that drives it over spawn_blocking
+# lands at inc-2b-ii-B.
+rusqlite            = { workspace = true }
+zcash_client_sqlite = { workspace = true }
+# §3.2e block cache (W3-inc-2c-iv-b): the `prost::Message` trait to encode/decode
+# the upstream `CompactBlock` to/from cache bytes (the type is derived upstream).
+prost               = { workspace = true }
+# §3.2a lightwalletd gRPC client (W3-inc-2c-ii): REUSE ECC's upstream-generated
+# CompactTxStreamerClient + prost proto types — we write NO .proto/codegen/framing.
+# `lightwalletd-tonic-transport` = the tonic client + tonic/transport (for
+# `connect_with_connector`, riding OUR NetDialer). TLS is OURS (tokio-rustls +
+# webpki-roots over the dialed stream) so we OMIT lightwalletd-tonic-tls-webpki-roots
+# (one TLS path only). NO arti — upstream's `tor` feature stays off here (auditor-confirmed).
+# `transparent-inputs` (ADR-0528, Recv-2): the engine's transparent receive +
+# ephemeral-refund allocation + UTXO scanning (`reserve_next_n_ephemeral_addresses`,
+# `get_transparent_balances`, `put_received_transparent_utxo`). ZERO new crates
+# (rides the already-locked bip32/secp256k1). All backend feature choices stay here
+# (the consumer dep) per the root note; unification carries it to the dev-dep harness.
+zcash_client_backend = { workspace = true, features = ["lightwalletd-tonic-transport", "transparent-inputs"] }
+# §3.2g subtree-root leaf-hash types (W3-inc-2c-iv-d-1): `sapling::Node` /
+# `orchard::tree::MerkleHashOrchard` — build a `CommitmentTreeRoot<H>` from the
+# wire `SubtreeRoot.root_hash` via the canonical `from_bytes` (CtOption rejects
+# a non-canonical encoding). Promoted from transitive — zero new crates.
+sapling-crypto = { workspace = true }
+orchard        = { workspace = true }
+# §3.2g honest subtree-root write-error attribution — name `ShardTreeError`
+# variants (Storage vs Insert). Promoted from transitive — zero new crates.
+shardtree      = { workspace = true }
+# §3.2h inc-2d-2 create+sign — the bundled Sapling Groth16 prover. PROVER PACKAGING =
+# BUNDLE (maintainer 2026-06-20): `bundled-prover` embeds the ~50 MB immutable trusted-setup
+# params in the binary so send works offline / first-try with no network dependency on the
+# money path (the per-platform size cost is accepted; the deferred-host-asset optimization
+# stays open behind the injected-prover seam). Audited crate WHOLE (Rule Zero) — we hand
+# `LocalTxProver::bundled()` to the engine and write no proving code. Orchard spends need
+# no external params (Halo2). Exact-pinned at the zcash_primitives generation.
+zcash_proofs = { version = "=0.30.0", default-features = false, features = ["bundled-prover"] }
+# §3.2a connector: build the tonic Channel over OUR NetDialer (connect_with_
+# connector_lazy + a tower::Service), wrap the dialed stream for hyper (TokioIo),
+# and do TLS ourselves (rustls + tokio-rustls + webpki-roots, the W-swap-1 stack;
+# ALPN h2 for gRPC). All already in the lock — no new crates.
+tonic        = { workspace = true }
+tower        = { workspace = true }
+hyper-util   = { workspace = true, features = ["tokio"] }
+rustls       = { workspace = true }
+tokio-rustls = { workspace = true }
+webpki-roots = { workspace = true }
+# RNG capability for `WalletDb` (init_wallet_db `R: RngCore + Clone`) — OsRng.
+rand_core           = { workspace = true }
+# §3.2b account import: the `SecretVec<u8>` the audited `import_account_hd` /
+# `init_wallet_db(Some(seed))` API takes. We hold the seed in `Zeroizing`; this
+# is the transient zeroizing wrapper the upstream signature demands at the call.
+secrecy             = { workspace = true }
+# §2.4 ZIP-321 payment-URI codec, REUSED whole (we write NO URI parser);
+# our payment_uri.rs is the size-cap/network-check/re-validation funnel only
+zip321         = { workspace = true }
+# §4.3a wrap-artifact AAD binding H(sealed_blob) — exact-pinned at the root
+# (0.10 generation ON PURPOSE; see the workspace note on the digest buckets)
+sha2           = { workspace = true }
+# §6.3 repair-path constant-time seed equality (mistyped-mnemonic ⇒ SeedMismatch)
+subtle         = { workspace = true }
+
+# §4.3a Apple keychain adapter — the wrap key lives IN the OS vault; no shim
+# needed on Apple. Safe-API crate over Security.framework (the -sys unsafe
+# stays in its own audited crate; this crate keeps #![forbid(unsafe_code)]).
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+security-framework = { workspace = true }
+# FR-14 chunk 2 — the workspace-local leaf crate owns the minimal `unsafe` Secure-
+# Enclave key lifecycle (generate/find/delete_all by application tag) so THIS crate
+# stays #![forbid(unsafe_code)]. ECIES wrap/unwrap + the v2 envelope + tier + fallback
+# live in this crate's SAFE apple.rs adapter. Extraction-unit-INTERNAL (it travels to
+# the new repo with the SDK, exactly like the bridge↔core path edge — SANCTIONED in
+# tests/extraction_policy.rs; published alongside at the ADR-0013 extraction).
+apple-secure-enclave = { path = "../apple-secure-enclave" }
+
+# The iOS keychain write door updates a pinned item in place, and its value goes
+# in as a `CFData` (safe API; already in the lock via security-framework and
+# exact-pinned in the workspace).
+[target.'cfg(target_os = "ios")'.dependencies]
+core-foundation = { workspace = true }
+
+# §4.3a Android Keystore adapter — SAFE jni API only (forbid(unsafe_code)
+# holds); the one JNI *export* lives in the zec_wallet bridge cdylib.
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { workspace = true }
+
+# §6.3 single-writer lock `flock` (Unix). `std::fs::File::try_lock` is Unsupported
+# on Android, so the lock acquisition path uses rustix's `flock` on every Unix
+# (macOS/iOS/Linux/Android — uniform); Windows keeps std `try_lock`. SAFE API only.
+[target.'cfg(unix)'.dependencies]
+rustix = { workspace = true }
+
+[dev-dependencies]
+# `test-util` gives `#[tokio::test(start_paused = true)]` — virtual-clock tests
+# for the §3.2a dial timeout AND the d-3 controller's retry/backoff + stuck-sync
+# watchdog (no real-time waits; testing-patterns: deterministic). `rt-multi-thread`
+# + `macros` for the test harness; `sync` (also a lib feature since d-3) gives the
+# `oneshot`/`watch` rendezvous the scan-loop and controller tests interleave.
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "sync", "test-util"] }
+# capture-layer guard (§5.4 `tracing_spans_carry_no_address_amount_or_memo`): a
+# test-only subscriber records emitted span/event fields to assert the allowlist.
+tracing-subscriber = { workspace = true }
+proptest = { workspace = true }
+static_assertions = { workspace = true }
+tempfile = { workspace = true }
+# A6/A6b + BIND-1-R's `witness_stabilized`: `frontier::Frontier` to hand-build the
+# Ironwood prior-roots pair the pinned `InitialChainState` has no field for (see the
+# workspace declaration for the whole rationale). **DEV-ONLY, and guarded** by
+# `pins_policy::incrementalmerkletree_is_declared_as_a_dev_dependency_only` — which
+# checks the Cargo TABLE this line sits in, not the dependency graph: `cargo tree -e
+# no-dev` names this crate seven times already, via orchard, and always did.
+incrementalmerkletree = { workspace = true }
+# §3.2h inc-2d-1 funded-wallet test harness: the `data_api::testing` builder
+# (`TestBuilder`/`TestState`) + the `WalletTest` trait impl on `WalletDb` that lets
+# us mine fake compact notes and scan them to fund a wallet, then drive `propose`.
+# DEV-DEPENDENCY ONLY — `test-dependencies` activates for `cargo test` and NEVER in
+# a `cargo build`/release graph (supply-chain gate: the harness, proptest-impls, and
+# their transitive test crates are not in the shipped artifact; verified by
+# `cargo tree -e no-dev`). Same exact pins as the runtime deps (workspace base);
+# only the feature is added here.
+zcash_client_backend = { workspace = true, features = ["test-dependencies"] }
+zcash_client_sqlite = { workspace = true, features = ["test-dependencies"] }
+# `block::BlockHash` for the funded-wallet harness's `with_account_from_sapling_activation`
+# prev-hash + valid recipient addresses for the propose tests: now a RUNTIME dep (see
+# [dependencies] — §3.3 tx-enhancement needs `transaction::Transaction`), so the harness uses
+# it through that one declaration; no separate dev-dep line needed.
+
+[features]
+# Swap kill layer 1 (spec §3.5): off ⇒ SwapPort/SwapService/swap types are not
+# compiled — not one byte in the binary. Default ON so the published SDK is
+# feature-complete; a host flavor build and source-vendoring consumers flip it.
+default = ["swap"]
+swap = []
+# NO Tor feature here. The SDK-owned arti runtime (`tor-builtin`,
+# `TorRuntime::BuiltIn`) was REMOVED at FR-5 C1 (ADR-0548 D3): this crate
+# compiles no arti under any feature. A host without a transport of its own
+# adds the optional plugin `zec_wallet_tor`, which registers Tor through the
+# FR-29 dialer contract (`docs/specs/tor-plugin.md`).
+# FR-14 chunk 2 — the SANCTIONED dev/sim downgrade to RAW Apple-keychain custody
+# (the chunk-1 `AppleKeychainVault`, SealKey stored raw). OFF by default: production
+# Apple custody is SE-REQUIRED and fail-closed (`AppleSecureEnclaveVault`), so a
+# capable device is NEVER silently downgraded to flash-recoverable raw custody (AV2 /
+# money loss). Enable ONLY where a real Secure Enclave is unavailable AND the seed is
+# disposable — the iOS Simulator's host-file-emulated SE, a pre-T2 Intel Mac, or an
+# unsigned macOS dev binary. Loudly named so its presence in a release graph is a
+# review red flag; the host app's top-level crate is the only thing that ever sets it
+# (no transitive crate would, so feature-unification can't switch it on by accident).
+apple-insecure-raw-keychain-fallback = []

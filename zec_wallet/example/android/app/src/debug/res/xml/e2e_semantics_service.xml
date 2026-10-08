@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Config for the debug-only E2eSemanticsService. Minimal on purpose.
+
+  DELIBERATELY ABSENT: `canRequestTouchExplorationMode`. Explore-by-touch is what makes TalkBack
+  swallow `adb shell input tap`, which is why TalkBack cannot be used to drive an e2e walk. Without
+  it, taps behave exactly as they do with no service bound.
+
+  `canRetrieveWindowContent` is required for the service to count as a content-retrieving client,
+  which is what flips `AccessibilityManager.isEnabled()` and makes the Flutter engine publish its
+  semantics tree to Android's node provider — the whole reason this exists.
+
+  `notificationTimeout` is set high: this service does nothing with events, so there is no reason
+  to let it add wake-ups on a test device.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowContentChanged|typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/e2e_semantics_service_description"
+    android:notificationTimeout="1000" />

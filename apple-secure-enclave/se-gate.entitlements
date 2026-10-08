@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- FR-14 chunk 2 — the keychain entitlement the HOST APP needs for Secure-Enclave
+     custody, and the reference entitlements for the SE custody gate.
+     Persisting an SE key requires `keychain-access-groups`, honored ONLY when the
+     binary carries a provisioning profile. On iOS the host app's profile grants it
+     for free (the primary gate runs there). On macOS it needs Xcode-managed signing
+     with a registered App ID — a bare `codesign` of a `cargo test` binary is either
+     -34018 (no entitlement) or SIGKILLed by amfid (entitlement without a profile),
+     so the persistent gate does NOT run on a plain dev Mac (verified S115). The
+     TEAM_ID prefix is the host app's Apple team identifier. -->
+<plist version="1.0">
+<dict>
+    <key>keychain-access-groups</key>
+    <array>
+        <string>TEAM_ID.dev.zec-wallet.apple-secure-enclave</string>
+    </array>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.dev.zec-wallet.apple-secure-enclave</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
+</dict>
+</plist>

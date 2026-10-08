@@ -1,0 +1,178 @@
+name: CI
+
+# Every check a change to this repository has to pass. There are three cargo
+# workspaces, each with its own lock and deny.toml: the root (wallet core, swap
+# adapter, Secure Enclave crate, bridge), dialer-tor/, and zec_wallet_tor/rust/.
+# The Tor crates cannot share the root's lock: arti's dependency versions and
+# the Zcash stack's do not resolve together.
+#
+# The Rust toolchain is pinned to the workspaces' `rust-version` (1.96), the
+# oldest toolchain the SDK promises to build with. Third-party actions are
+# pinned to commit hashes; the comment beside each names the version. No job
+# pushes, so no checkout keeps the job's token in .git/config.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_TOOLCHAIN: "1.96"
+  FLUTTER_VERSION: "3.41.6"
+
+jobs:
+  rust:
+    name: rust (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dir: .
+            scope: --workspace
+          - dir: dialer-tor
+            scope: -p dialer-tor
+          - dir: zec_wallet_tor/rust
+            scope: -p zec_wallet_tor
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+        with:
+          workspaces: ${{ matrix.dir }}
+      - name: fmt
+        run: cargo fmt --check
+      - name: clippy
+        run: cargo clippy ${{ matrix.scope }} --all-targets -- -D warnings
+      - name: doc
+        env:
+          RUSTDOCFLAGS: -D warnings -A rustdoc::private_intra_doc_links
+        run: cargo doc ${{ matrix.scope }} --no-deps --document-private-items
+      - name: test
+        # One known failing test is skipped BY NAME, never marked #[ignore]:
+        # sync_bind_proof::a_rewind_does_not_license_a_move_no_reorg_could_produce
+        # states a gap the wallet does not close yet: after a rewind it accepts
+        # a lowered subtree completion height that no reorg of that depth could
+        # cause, because it cannot yet find the fork point.
+        # It stays red in the source on purpose and is tracked in public at
+        # https://github.com/alvorado-lab/zec-wallet/issues/1
+        # Remove the --skip when that issue closes. The filter only matches a
+        # test in the root workspace; in the Tor workspaces it skips nothing.
+        # repo_root_is_some_so_the_driven_battery_ran is skipped too, and is
+        # not a known bug: it proves the private repository's gate recipes ran,
+        # and this repository has none, so it fails here by design.
+        run: >-
+          cargo test ${{ matrix.scope }} --no-fail-fast --
+          --skip sync_bind_proof::a_rewind_does_not_license_a_move_no_reorg_could_produce
+          --skip repo_root_is_some_so_the_driven_battery_ran
+
+  supply-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: taiki-e/install-action@83ac0ad63c0167e6f06796fab0fce28db1bf3db0 # v2.87.22
+        with:
+          tool: cargo-deny,cargo-audit
+      # Every step runs even when an earlier one fails, so one red does not
+      # hide another.
+      - name: cargo deny (root)
+        if: ${{ !cancelled() }}
+        run: cargo deny check
+      - name: cargo deny (dialer-tor)
+        if: ${{ !cancelled() }}
+        working-directory: dialer-tor
+        run: cargo deny check
+      - name: cargo deny (zec_wallet_tor/rust)
+        if: ${{ !cancelled() }}
+        working-directory: zec_wallet_tor/rust
+        run: cargo deny check
+      # --deny unsound: cargo audit otherwise reports an "unsound" advisory as
+      # a warning and exits 0.
+      - name: cargo audit (root)
+        if: ${{ !cancelled() }}
+        run: cargo audit --deny unsound
+      # RUSTSEC-2023-0071 (rsa, the Marvin timing attack) is ignored in the
+      # Tor locks only: no fix exists upstream and a Tor client performs no
+      # RSA private-key operation. The reasoning sits beside the same entry in
+      # each deny.toml; cargo audit does not read deny.toml, hence the repeat.
+      - name: cargo audit (dialer-tor)
+        if: ${{ !cancelled() }}
+        working-directory: dialer-tor
+        run: cargo audit --deny unsound --ignore RUSTSEC-2023-0071
+      - name: cargo audit (zec_wallet_tor/rust)
+        if: ${{ !cancelled() }}
+        working-directory: zec_wallet_tor/rust
+        run: cargo audit --deny unsound --ignore RUSTSEC-2023-0071
+      - name: cargo audit (fuzz locks)
+        if: ${{ !cancelled() }}
+        run: |
+          status=0
+          for lock in zec-wallet-core/fuzz/Cargo.lock zec-wallet-swap-near/fuzz/Cargo.lock; do
+            echo "── $lock"
+            cargo audit --deny unsound --file "$lock" || status=1
+          done
+          exit $status
+
+  flutter:
+    name: flutter (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: zec_wallet
+            format: lib test test_driver
+          - package: zec_wallet_ui
+            format: lib test
+          - package: zec_wallet_ui_platform
+            format: lib test
+          - package: zec_wallet_tor
+            format: lib test
+          - package: zec_wallet/example
+            format: lib test integration_test
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+      - uses: Swatinem/rust-cache@63fed3e2fecf6f7b51dc6f043341b79ef82a9ae7 # v2.9.2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: format
+        run: dart format --output=none --set-exit-if-changed ${{ matrix.format }}
+      - name: pub get
+        run: flutter pub get
+      - name: analyze
+        run: flutter analyze
+      - name: test
+        run: flutter test

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  The example wallet persists the Secure-Enclave-wrapped seal key in the
+	  iOS data-protection keychain (kSecUseDataProtectionKeychain). On a physical
+	  device that requires a keychain-access-group entitlement, or SecItemAdd fails
+	  with errSecMissingEntitlement (-34018). The DEFAULT app-identifier group is
+	  used (apple.rs sets no custom kSecAttrAccessGroup), so the entitlement is just
+	  the app's own group. Xcode automatic signing manages this capability.
+	-->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)dev.zecwallet.example</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,30 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Namespace is declared in build.gradle (AGP 7.3+); no package attribute
+         here.
+
+         ONE permission, and a host merging this plugin INHERITS it (#404):
+         `registerNetworkCallback` requires ACCESS_NETWORK_STATE. It is a
+         NORMAL-protection permission — granted at install, with no runtime
+         prompt. (#407 R10d: an earlier draft here asserted it is ABSENT from the
+         Play listing's user-facing permission set. That is not ours to promise —
+         Play's presentation is Google's and it has historically surfaced this
+         one as "view network connections". State what the OS guarantees, not
+         what a storefront happens to render.) It reads connectivity STATE only:
+         it grants no network access of
+         its own (that is INTERNET, which any wallet host already declares) and
+         no location. The plugin uses it for exactly one thing — learning that
+         the device regained a network, so the sync loop can reset its retry
+         backoff instead of leaving the badge on "Sync paused" for minutes after
+         a FOREGROUND reconnect.
+
+         A host that would rather not inherit it can strip it with
+         `tools:node="remove"` and override `walletNetworkReachabilityProvider`
+         in `zec_wallet_ui` with its own connectivity source instead. The wallet
+         then degrades to the pre-#404 behaviour (the ladder runs its course, the
+         sync sheet's "Try now" still works); nothing breaks.
+
+         Otherwise this plugin still adds no activities and no services: it
+         toggles FLAG_SECURE on the host's own Activity window via ActivityAware,
+         and registers one process-scoped network callback. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+</manifest>

@@ -1,0 +1,71 @@
+PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_zxing (3.1.0):
+    - Flutter
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - integration_test (0.0.1):
+    - Flutter
+  - share_plus (0.0.1):
+    - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - zec_wallet (0.0.1):
+    - Flutter
+  - zec_wallet_tor (0.0.1):
+    - Flutter
+  - zec_wallet_ui_platform (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_zxing (from `.symlinks/plugins/flutter_zxing/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - zec_wallet (from `.symlinks/plugins/zec_wallet/ios`)
+  - zec_wallet_tor (from `.symlinks/plugins/zec_wallet_tor/ios`)
+  - zec_wallet_ui_platform (from `.symlinks/plugins/zec_wallet_ui_platform/ios`)
+
+EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
+  Flutter:
+    :path: Flutter
+  flutter_zxing:
+    :path: ".symlinks/plugins/flutter_zxing/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  zec_wallet:
+    :path: ".symlinks/plugins/zec_wallet/ios"
+  zec_wallet_tor:
+    :path: ".symlinks/plugins/zec_wallet_tor/ios"
+  zec_wallet_ui_platform:
+    :path: ".symlinks/plugins/zec_wallet_ui_platform/ios"
+
+SPEC CHECKSUMS:
+  camera_avfoundation: 968a9a5323c79a99c166ad9d7866bfd2047b5a9b
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_zxing: 14ab8e61c02d6d8c72121cca5225026281edec11
+  image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  zec_wallet: 31028220e190bc9e8e639066f7ca346444796a31
+  zec_wallet_tor: 6f7f0018a0081dd4de36efe330dfe24879184f16
+  zec_wallet_ui_platform: ef4e7ddf9f597341961117cf8bfd24d46a866cfa
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.16.2

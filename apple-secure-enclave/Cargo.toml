@@ -1,0 +1,39 @@
+# FR-14 chunk 2 — the ONE place the wallet SDK uses `unsafe` FFI, isolated here so
+# `zec-wallet-core` stays `#![forbid(unsafe_code)]`. Scope (SRP): the Secure-Enclave
+# key LIFECYCLE by application tag only (generate / find / delete). The ECIES
+# wrap/unwrap, envelope, tier, and fallback policy live in `zec-wallet-core`'s audited
+# (safe) keychain adapter. Apple-only: an empty lib on every other target.
+[package]
+name = "apple-secure-enclave"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+# ADR-0541 Decision 1: not published to crates.io — it ships vendored inside the
+# `zec_wallet` Dart package, like every other member of this workspace.
+#
+# THIS LINE IS A cargo-deny GATE INPUT, and it is the ONLY one of the four whose
+# absence costs nothing TODAY (P0-7 A4). `sdk/deny.toml`'s `[bans]
+# allow-wildcard-paths = true` is applied only to a crate cargo-deny considers
+# private, and the exemption is judged on the crate that DECLARES the path
+# dependency. This crate declares none — it is a leaf — so removing this line
+# does not turn the bans check red the way removing it from `zec-wallet-core`,
+# `zec-wallet-swap-near` or `zec_wallet` does (all three measured each one
+# alone produces `error[wildcard] … allow-wildcard-paths is enabled, but does not
+# apply to public crates`, and `bans FAILED`).
+#
+# It is here anyway so the property is uniform over the workspace — "every member
+# of sdk/ declares publish = false" — rather than "the three that happen to have a
+# path dep today". The failure worth catching is a FIFTH member, or a first path
+# dep in this one, added later by someone who never read this comment.
+publish = false
+
+[target.'cfg(any(target_os = "ios", target_os = "macos"))'.dependencies]
+security-framework = { workspace = true }
+security-framework-sys = { workspace = true }
+core-foundation = { workspace = true }
+core-foundation-sys = { workspace = true }
+
+[lints]
+workspace = true

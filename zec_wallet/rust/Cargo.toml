@@ -1,0 +1,184 @@
+# FRB bridge crate for the zec_wallet Flutter package (wallet-sdk spec §1.2).
+# Depends ONLY on zec-wallet-core (the extraction unit's core) + flutter_rust_bridge
+# — the §8 `core_and_bridge_have_no_relim_deps` policy test enforces it. The
+# path dep is extraction-unit-INTERNAL: core + bridge + Dart package move to a
+# new repo together at extraction, so the path survives (with one hop fewer).
+[package]
+# The package name IS the artifact name: Cargokit derives library filenames
+# from `package.name` and never reads `[lib] name` (its CrateInfo parses only
+# the [package] table — proven by the first real pod build, macOS, S6: cargo
+# produced libzec_wallet.{a,dylib}, Cargokit searched for
+# libzec_wallet_bridge.* and failed on every platform that LINKS the lib).
+# So the package carries the name the plugin glue (podspec/gradle/CMake) and
+# the generated Dart loader expect. Renamed from `zec-wallet-bridge` (S6).
+name = "zec_wallet"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+# Ships INSIDE the Dart package (pub.dev consumers compile it via Cargokit);
+# never published to crates.io.
+publish = false
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[features]
+# Default-on: the published Dart package ships full swap capability (ADR-0525;
+# Cargokit builds with default features). A host that doesn't want NEAR swap
+# builds `--no-default-features` ⇒ the adapter and its HTTP/TLS deps vanish
+# from the artifact (§3.5 layer 1).
+default = ["swap-near"]
+# Links the NEAR Intents 1Click network adapter. The swap SURFACE is always
+# compiled (zec-wallet-core's `swap`, default-on) — this feature only adds the
+# network PROVIDER + its dep subtree.
+swap-near = ["dep:zec-wallet-swap-near"]
+
+[dependencies]
+flutter_rust_bridge = { workspace = true }
+# FR-18 (#396): the seed-port registration auth token is minted with the SAME
+# workspace-pinned OS CSPRNG the core uses (=0.6.4 — adds no new rand_core minor),
+# and its gate compare rides the workspace-pinned `subtle` barrier'd constant-time
+# equality (crypto audit fold — no new crates either way).
+rand_core = { workspace = true }
+subtle = { workspace = true }
+# FR-29 (`net_dialer_cabi.rs`, the host transport crossing): the `HostStream`
+# the crossing hands the core is `tokio::io::AsyncRead + AsyncWrite` (the io
+# traits need no tokio feature), the `NetDialer` impl is an `async_trait` one
+# like every dialer in core, and the §5 registry events ride `tracing`. All
+# three are workspace-pinned and already in this artifact through
+# `zec-wallet-core` — declared here because the bridge names what it uses
+# (rust-patterns § Cross-compile), not leaning on feature unification. No new
+# crate enters the graph (`just sdk-audit` unchanged).
+tokio = { workspace = true }
+async-trait = { workspace = true }
+tracing = { workspace = true }
+# The host-switched device-log layer (`src/device_log.rs`) is a
+# `tracing_subscriber::Layer` behind a per-layer filter, on EVERY target: the
+# layer, its scope and its §5.4 enforcement are platform-neutral and host-tested;
+# only the sink differs. Workspace-pinned (`registry`, which implies `std`; no
+# `fmt`, no `env-filter`, no `tracing-log`) and already in the Android artifact
+# through the stanza below, so no new crate enters the graph there. The core
+# keeps it a DEV-dependency — a library does not install subscribers.
+tracing-subscriber = { workspace = true }
+# The swap SURFACE (SwapService/SwapPort/DTOs — zec-wallet-core's `swap` feature,
+# default-on) stays COMPILED into the Dart package by design (spec §3.5): for
+# pub.dev consumers the runtime construction gate (kill layer 2) is the
+# operative switch; surface compile-out (layer 1 on the core) serves the Rust
+# host path, which never goes through this bridge — so there is NO `swap`
+# passthrough here. What IS feature-gated at this artifact is the NEAR network
+# ADAPTER (next dep), a separate axis from the surface. `default-features =
+# false` + explicit `features` (rust-patterns rule): pins the surface to `swap`
+# so a future zec-wallet-core default feature can't silently enter the bridge
+# artifact via feature unification (the June example, `tor-builtin`, is gone —
+# FR-5 C1: Tor is the optional plugin `zec_wallet_tor`, never a core feature).
+zec-wallet-core = { path = "../../zec-wallet-core", default-features = false, features = ["swap"] }
+# NEAR Intents 1Click network adapter (ADR-0525; spec §3.5 layer 1 AT THE
+# ARTIFACT LEVEL). OPTIONAL + gated by the `swap-near` feature: off ⇒ this
+# crate AND its entire HTTP/TLS subtree (hyper/rustls/ring/webpki-roots/
+# tokio-rustls) are NOT linked — not one byte (test
+# `swap_near_feature_off_ships_no_adapter_symbols`). Default-on so the
+# published SDK is feature-complete; a host that doesn't want NEAR swap builds
+# `--no-default-features`. The provider CONSTRUCTION over the injected
+# `NetDialer` lands with the dialer/wallet-handle chunk (W-swap-3); this dep +
+# feature + the `swap_provider` seam are the attach point. Extraction-unit-
+# internal path dep (moves to the new repo with the core, §1.2).
+zec-wallet-swap-near = { path = "../../zec-wallet-swap-near", optional = true }
+
+# DEV-ONLY (never linked into the shipped artifact, so the "runtime deps = core
+# + FRB only" property the policy test enforces is unchanged): a tokio runtime
+# for the `#[tokio::test]`s that exercise the opaque `WalletHandle`'s
+# bridge-owned closed-handle contract. crates.io-resolvable, so the
+# `core_and_bridge_have_no_relim_deps` gate (which also scans dev-deps) stays
+# green.
+[dev-dependencies]
+# `rt-multi-thread` + `net` + `io-util` + `sync` + `time`: the FR-29 in-process
+# fake host (`tests/host_dialer_fake/mod.rs`) runs loopback TCP on its OWN
+# multi-thread runtime so the crossing's completions arrive on threads the
+# SDK's test runtime does not own (spec §8).
+tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread", "net", "io-util", "sync", "time"] }
+# on-disk fixtures for the lock-free `wallet_exists` probe test (tests only;
+# crates.io-resolvable, so the `core_and_bridge_have_no_relim_deps` gate that
+# also scans dev-deps stays green).
+tempfile = { workspace = true }
+# Valid-by-construction address vectors for the `validate_address` bridge test
+# (tests only) — the SAME audited encoder the core parser uses, so the vectors'
+# checksums are real. Workspace-pinned (`=0.12.0`/`=0.9.0`), crates.io-resolvable,
+# so the `core_and_bridge_have_no_relim_deps` gate (which scans dev-deps) stays
+# green and the shipped artifact is unchanged (dev-only, never linked).
+zcash_address = { workspace = true }
+zcash_protocol = { workspace = true }
+# Property/never-panic coverage for the `validate_address` hostile-input boundary
+# (invariant 7) — tests only, crates.io-resolvable, so the
+# `core_and_bridge_have_no_relim_deps` gate stays green; never in the artifact.
+proptest = { workspace = true }
+
+# §4.3a context-handoff shim: the one `Java_*` export must live in THIS
+# cdylib (System.loadLibrary loads it). Safe jni API only.
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { workspace = true }
+# TWO uses since an earlier revision. (1) Its WRITER (`AndroidLogMakeWriter`) is the Android
+# sink of the host-switched device-log layer, in EVERY build — the safe wrapper over
+# `__android_log_write`, so no `unsafe` enters this crate for logging. (2) Its
+# fmt LAYER is the loud debug/measurement layer, as before:
+# DEBUG observability (D-2b-2): route the core's `tracing` events to Android
+# logcat so an on-device failure is visible. That fmt layer is installed ONLY in
+# debug builds (`init_app`, `cfg!(debug_assertions)`) — and, since SCAN-1 (§4o
+# S5), in the MEASUREMENT build behind `cfg(zec_wallet_device_timing)`, which
+# `build.rs` emits only when `ZEC_WALLET_DEVICE_TIMING=1` is in the build
+# environment (never a cargo feature, so no `default` list can open it). A
+# release build never instantiates it, which is what keeps `time.busy` /
+# `time.idle` out of a distributable (the negative witness); what a release
+# build DOES carry is the host-switched layer, whose §5.4 guarantee is enforced at
+# runtime per field rather than by the build profile. Both are TARGET-SCOPED, so
+# neither ever routes dependency-crate (zcash/h2/tonic) logs — which DO
+# log §5.4 values — to logcat. crates.io-resolvable (the
+# `core_and_bridge_have_no_relim_deps` gate only forbids path/git deps). MANAGER-
+# CARRIED follow-ups (security/arch review): (1) a `debug-log` cargo feature could
+# exclude these from the RELEASE artifact entirely (the path is provably dead via
+# `cfg(debug_assertions)`, so dormant, not a runtime risk); (2) extend
+# `tracing_guard` driven-path coverage now that a live debug subscriber exists.
+# `paranoid-android` is pinned `=` (rust-patterns § Cross-compile: pin tiny
+# unsafe-FFI crates — it pulls the `ndk-sys` FFI shim) so a patch bump returns to
+# review rather than inheriting silently. SINCE THE PIN IS ALSO
+# PANIC-SAFETY-LOAD-BEARING (security review): `AndroidLogWriter`'s `Drop` calls
+# `flush().unwrap()`, which cannot panic ONLY because 0.2.2's `flush` returns
+# `Ok(())` on every path. The device log writes through that writer in every
+# build, inside a `tracing` dispatch on the sync task — a version whose `flush`
+# can return `Err` would panic there. Re-read `writer.rs` before moving the pin.
+# Leave the crate's `api-30` feature OFF: it is what writes the callsite's FILE
+# path (an absolute build-machine path for this path dep) into the log record.
+paranoid-android = "=0.2.2"
+# `fmt` is where `with_span_events` / `FmtSpan` live (the SCAN-1 span-close line).
+# `paranoid-android` enables it too, but the bridge names what it uses rather
+# than leaning on feature unification (rust-patterns § Cross-compile).
+tracing-subscriber = { workspace = true, features = ["fmt"] }
+
+# The APPLE sink of the host-switched device log (`src/device_log.rs`):
+# `os_log` is a C MACRO family, so reaching it needs a C shim — this crate's is
+# thirty lines (`wrapper.c`: one call per level, each `"%{public}s"`), behind a
+# hundred-line safe wrapper, both read in full before the pin. `%{public}` is
+# required, not incidental: without it the unified log renders every dynamic
+# string as `<private>` and the log would say nothing. It is SAFE here for one
+# reason — the line it carries has already had every field put to the §5.4
+# allowlist by the layer; nothing reaches this sink unchecked.
+# `default-features = false` drops its `log`-facade logger (`log` + `dashmap`):
+# the bridge installs no `log` logger, and a second one would fight a host's.
+# Pinned `=` (rust-patterns § Cross-compile: a tiny unsafe-FFI shim's patch bump
+# returns to review). Its `OsLog::new` ASSERTS a non-null handle — a panic the
+# install site fences (`catch_unwind`), because a diagnostic must never cost the
+# wallet its init. `cc` (its build dep) is already in the graph.
+[target.'cfg(target_vendor = "apple")'.dependencies]
+oslog = { version = "=0.2.0", default-features = false }
+
+# `workspace = true` lint inheritance can't coexist with the explicit table the
+# FRB macros need (cfg(frb_expand)). The workspace's `unreachable_pub`/
+# `unused_qualifications` are deliberately NOT carried over: the generated
+# `frb_generated.rs` (which dominates this crate) trips both, and its allow
+# header doesn't cover them — they'd turn `-D warnings` CI red on code we
+# don't own. The handwritten modules are small and reviewed.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }

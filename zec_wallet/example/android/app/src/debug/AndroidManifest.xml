@@ -1,0 +1,36 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application>
+        <!-- E2E TEST INFRA, DEBUG BUILDS ONLY (#400 follow-up). Flutter publishes its semantics
+             tree to Android only while a real accessibility service is bound, so without this
+             `uiautomator dump` returns the bare FrameLayout shell and every device walk falls back
+             to screenshot-and-measure — which has mis-tapped twice on money surfaces. Neither
+             `ensureSemantics()` nor `accessibility_enabled=1` is sufficient; both were measured.
+
+             Living in `src/debug` is the guard: it cannot merge into a release build at all, which
+             is stronger than a runtime flag. It is inert until explicitly enabled over adb (see
+             E2eSemanticsService's doc), and it does not request touch exploration, so `input tap`
+             keeps working — unlike TalkBack.
+
+             `exported="true"` is required because the SYSTEM binds accessibility services from
+             outside the app; the BIND_ACCESSIBILITY_SERVICE permission is what actually restricts
+             the binder to the system. -->
+        <service
+            android:name=".E2eSemanticsService"
+            android:exported="true"
+            android:label="ZEC wallet e2e semantics (debug)"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/e2e_semantics_service"/>
+        </service>
+    </application>
+</manifest>

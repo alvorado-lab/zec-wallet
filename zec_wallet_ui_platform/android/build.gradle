@@ -1,0 +1,59 @@
+group 'dev.zecwallet.ui_platform'
+version '0.0.1'
+
+buildscript {
+    ext.kotlin_version = '1.9.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'dev.zecwallet.ui_platform'
+    }
+
+    // Track the Flutter-stable compile floor (matches the sibling zec_wallet
+    // plugin); AGP 8.x rejects <34.
+    compileSdkVersion 35
+
+    // Java 11 target (#356-NIT): javac warns that the 8 target is obsolete on
+    // the JDK 17 AGP 8 bundles, and every supported minSdk desugars 11
+    // bytecode fine. Kept in lockstep with jvmTarget below (a mismatch is a
+    // Kotlin compile error).
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        // Pure-Kotlin plugin (no JNI, no Keystore). FLAG_SECURE is available on
+        // every supported API; a low floor keeps this companion from raising a
+        // host's own minSdk. The host app's real floor is set by its other deps
+        // (the FFI plugin pins 23).
+        minSdkVersion 21
+    }
+}

@@ -1,0 +1,308 @@
+# Wallet-SDK workspace — carved out of the main workspace (root Cargo.toml gate-0
+# resolution, option b; maintainer-authorized 2026-06-13). The extraction unit
+# (zec-wallet-core core + zec-wallet-swap-near adapter + the zec_wallet FRB bridge)
+# is extraction-ready (ADR-0013, spec §1.2) and resolves PURELY from crates.io with
+# NO Mostpost/relim-* deps — so its OWN lockfile can take the ZEC key-derivation
+# stack's pre-release `digest` (zcash_transparent → bip32 =0.6.0-pre.1) WITHOUT
+# colliding with the main workspace's Mostpost stable `digest` (the gate-0 conflict).
+# By design: NO [patch], NO Mostpost path deps. Pins are COPIED VERBATIM from the
+# root [workspace.dependencies] (single source of truth — keep in sync on bumps).
+[workspace]
+resolver = "2"
+members = ["zec-wallet-core", "zec-wallet-swap-near", "zec_wallet/rust", "apple-secure-enclave"]
+# `dialer-tor` (the shared Tor dialer, ADR-0550) lives under `sdk/` but is ITS
+# OWN workspace, never a member here — measured at the resolver: arti's
+# `tor-netdoc` → `cipher ^0.5.2` → `crypto-common ^0.2.2`, while the ZEC stack
+# above pins `crypto-common =0.2.0-rc.1` (via `zcash_primitives =0.30.1`), and
+# cargo cannot lock both on one semver line. The Tor plugin's crate
+# (`zec_wallet_tor/rust`, FR-5 C3) is excluded for the same reason and consumes
+# `dialer-tor` by path. Each carries its own lock; `just sdk-audit` audits all
+# three; the carrier gate names their test targets by directory.
+exclude = ["dialer-tor", "zec_wallet_tor/rust"]
+
+[workspace.package]
+# The published version: `sdkVersion()` reports it, so it equals the
+# `zec_wallet` pubspec's (`api::meta` tests hold the two together).
+version = "0.0.2"
+edition = "2024"
+rust-version = "1.96"
+# MIT only: the packages ship one LICENSE (MIT), and the crates travel inside
+# `zec_wallet` on pub.dev (scripts/release/stage-pub.py), so the two must agree.
+license = "MIT"
+authors = ["The zec-wallet Authors"]
+# Shared, pinned external deps (single source of truth for versions — DRY; the
+# supply-chain-auditor verifies pins). Use default-features = false everywhere
+# explicit features are set (mobile feature-unification gotcha).
+
+[workspace.dependencies]
+async-trait = "0.1"        # object-safe async port traits (rust-patterns)
+bip39          = { version = "=2.2.2", default-features = false, features = ["std", "zeroize"] }
+bytes          = { version = "1", default-features = false }
+# The seed seal's AEAD (seal.rs). EXACT-pinned like ring/rustls: a resolver bump
+# is a funds-at-rest change. Checked 2026-09-30: no RustSec advisory against
+# 0.10.1; upstream is at 0.11.0 (MSRV 1.85) — moving is its own reviewed change
+# (crypto audit + security review), owed past 0.0.1.
+chacha20poly1305 ={ version = "=0.10.1", default-features = false, features = ["alloc", "getrandom"] }
+flutter_rust_bridge = { version = "=2.12.0", default-features = false, features = [
+  "anyhow",
+  "dart-opaque",
+  "portable-atomic",
+  "rust-async",
+  "thread-pool",
+] }
+hex       = "0.4"          # KAT golden-vector encode/decode (tests only)
+http           = { version = "1", default-features = false }
+http-body-util = { version = "0.1", default-features = false }
+hyper          = { version = "1", default-features = false }
+hyper-util     = { version = "0.1", default-features = false }
+# A6/A6b's spendability + anchor drive, and BIND-1-R's `witness_stabilized`
+# clause: both need an Ironwood note inside a COMPLETED subtree, and the pinned
+# harness cannot build one — `zcash_client_backend-0.24.0`'s `InitialChainState`
+# (`data_api/testing.rs:1711-1719`) carries `prior_sapling_roots` and
+# `prior_orchard_roots` and no `prior_ironwood_roots`, so the frontier/roots pair
+# is hand-built from `incrementalmerkletree::frontier::Frontier`. **DEV-DEP ONLY**
+# — declared in `zec-wallet-core`'s `[dev-dependencies]` and nowhere else, guarded by
+# `pins_policy::incrementalmerkletree_is_declared_as_a_dev_dependency_only`, which
+# asserts the TABLE the declaration sits in across every SDK crate manifest. (It does
+# NOT assert the crate is absent from the production graph — it is not absent, and the
+# measurement is at that test. An earlier draft of this comment named a file
+# `tests/no_dev_dep_reaches_production.rs` that was never written; that was the same
+# claim-a-guard-that-does-not-exist shape `evals/check.py` refuses in a registry row.)
+# ALREADY in `sdk/Cargo.lock` transitively (via shardtree / zcash_client_backend),
+# named in no manifest until now — declaring it names what the build already resolves
+# rather than adding a crate. Exact `=` pin matching the lock, like the rest of the ZEC
+# stack (maintainer decision, 2026-09-12 /; `…-phase-1.md` §4b "A6/A6b are OWED").
+incrementalmerkletree = { version = "=0.8.2", default-features = false, features = ["test-dependencies"] }
+jni = { version = "=0.22.4", default-features = false }
+percent-encoding = { version = "2", default-features = false, features = ["alloc"] }
+# property tests for parsers/transforms (tests only). Capped <1.7 to match the
+# `zcash_client_backend`/`zcash_client_sqlite` `test-dependencies` bound (the §3.2h
+# funded-wallet propose harness pulls them as dev-deps; their feature constrains
+# proptest to >=1,<1.7). Dev-only — never in the shipped graph.
+proptest  = ">=1, <1.7"
+ring           = { version = "=0.17.14", default-features = false }
+# §4.3 wallet DB at rest: SQLCipher (bundled-sqlcipher-vendored-openssl is the
+# mobile-correct choice — NDK/iOS have no system OpenSSL; known gotcha). The
+# `array` feature gives the rarray vtab `zcash_client_sqlite` requires via
+# `load_module`. zcash_client_sqlite pins rusqlite ^0.37 and libsqlite3-sys's
+# `bundled` unifies UP to SQLCipher (spec §4.3) — the whole sdk graph gets
+# SQLCipher. Carve note: the rusqlite version is the SDK's own (own lock), so the
+# former "workspace convergence" gate-0 (§4.3) is moot post-carve. EXACT-pinned
+# (`=`): it embeds vendored SQLCipher (the at-rest KDF + on-disk format) — a silent
+# resolver bump is a funds-at-rest correctness change, so it comes to review like
+# ring/rustls (arch review W3-inc-2a). NOT in pins_policy's POLICED set: it
+# legitimately DIFFERS from root's rusqlite (0.32, relim-store) post-carve.
+rusqlite       = { version = "=0.37.0", default-features = false, features = ["bundled-sqlcipher-vendored-openssl", "array"] }
+rustls         = { version = "=0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
+# §4.3/§6.3 wallet DB schema + migrations — audited whole (ADR-0005 r5; our code
+# is glue only). `WalletDb::from_connection` wraps OUR SQLCipher-keyed rusqlite
+# connection (db.rs) and `init_wallet_db` runs the schemerz migrations. `orchard`
+# matches our shielded-only derivation; `multicore` is the mobile-proven choice
+# (S12 cross-compile). `transparent-inputs` ON (ADR-0528, Recv-2): the engine now
+# owns ALL transparent-address allocation — external-scope RECEIVE addresses + the
+# ZIP-320 ephemeral REFUND allocator (`reserve_next_n_ephemeral_addresses`), both
+# engine-tracked + scanned. The schema gains the additive `transparent_addresses` /
+# `transparent_received_utxos` tables (no WALLET_SCHEMA_VERSION bump). The shielded
+# UA stays G7 (our `encode_default_address` request still Omits transparent). Adds
+# the already-locked bip32/secp256k1 via the engine's transparent paths — ZERO new
+# crates (de-risk 2026-06-22). EXACT-pinned like the rest of the ZEC stack: it owns
+# the on-disk schema (a funds-at-rest structural contract) — a silent resolver bump
+# comes to review (arch review W3-inc-2). Re-enters here WITH its consumer.
+zcash_client_sqlite = { version = "=0.22.0", default-features = false, features = ["orchard", "multicore", "transparent-inputs"] }
+# §3.2a lightwalletd gRPC client (W3-inc-2c-ii) — promoted from transitive (via
+# zcash_client_sqlite) to a DIRECT dep so we can flip ONE feature on it. EXACT-pinned
+# like the rest of the ZEC stack (ADR-0005 r5; owns the light-client protocol + the
+# consensus-critical scan primitives). The feature itself is set on the zec-wallet-core
+# dep (lightwalletd-tonic-transport) — supply-chain pass 2026-06-14: pulls tonic/tower/h2
+# (advisory-clean, MIT/Apache), NO arti — and arti CANNOT enter this lock at all
+# (the `exclude` note at the top: `sdk/dialer-tor` is its own workspace);
+# the `tor-builtin` feature was removed at FR-5 C1 (ADR-0548 D3).
+zcash_client_backend = { version = "=0.24.0", default-features = false }
+# §3.2g subtree-root ingestion (W3-inc-2c-iv-d-1): the leaf-hash types
+# `put_{sapling,orchard}_subtree_roots` demand — `sapling::Node` /
+# `orchard::tree::MerkleHashOrchard`, built from the wire root_hash via their
+# canonical `from_bytes([u8;32]) -> CtOption` (the same decode the reference
+# `sync::update_subtree_roots` does via `HashSer::read`; `CtOption` rejects a
+# non-canonical field element — hostile-input-safe). ALREADY in the lock
+# (transitive via zcash_keys/_client_backend) — exact-pinned + promoted to
+# DIRECT, ZERO new crates. `default-features = false`: the `from_bytes`/`Node`/
+# `MerkleHashOrchard` API is feature-independent, and feature unification keeps
+# whatever the rest of the ZEC stack already enables. EXACT-pinned like the rest
+# of the ZEC stack (ADR-0005 r5 — audited crypto crates WHOLE; our code is glue).
+sapling-crypto = { version = "=0.7.0", default-features = false }
+orchard        = { version = "=0.15.5", default-features = false }
+# §3.2g subtree-root write error attribution (W3-inc-2c-iv-d-1): name
+# `shardtree::error::ShardTreeError` to split an OUR-DB `Storage` fault
+# (StoreCorrupt) from a server-supplied-root `Insert` conflict (a bad-endpoint
+# signal, not local corruption — honest degradation). ALREADY in the lock
+# (transitive via zcash_client_backend) — exact-pinned + promoted, ZERO new crates.
+# BUMPED to the 0.7 line with the NU6.3 wave (survey C2): `zcash_client_sqlite`
+# 0.22.0 requires `shardtree ^0.7` with `legacy-api`, non-optional — the wave does
+# not resolve at all against `=0.6.2`. `=0.7.1` is the NEWEST live release in the
+# line by `created_at` (0.7.0 2026-07-09, 0.7.1 2026-07-17; there is no 0.7.2+).
+shardtree      = { version = "=0.7.1", default-features = false }
+# RNG capability `WalletDb` exposes (init_wallet_db bound `R: RngCore + Clone`).
+# We pass `OsRng` (the OS CSPRNG); rand_core 0.6.4 is the version the ZEC stack
+# binds — pinned to it so this dep adds NO new rand_core minor (the lock also
+# carries rand_core 0.9.x for the newer `rand`; BOTH pre-date this chunk — the
+# RustCrypto-vs-rand epoch split — so we introduce neither). getrandom = the
+# OsRng impl. NO key material is generated here — provisioning's DB key is minted
+# in seal.rs; this rng is the upstream API's, used for nothing secret of ours.
+rand_core      = { version = "=0.6.4", default-features = false, features = ["getrandom"] }
+security-framework = { version = "=3.7.0", default-features = false, features = ["OSX_10_12"] }
+# FR-14 chunk 2 (Apple SE custody): the `apple-secure-enclave` leaf crate builds the
+# Secure-Enclave key CFDictionary by hand (the safe `security-framework` high-level
+# `SecKey::generate` drops `kSecPrivateKeyAttrs` on iOS — verified in 3.7.0 source — so
+# the SE key would be non-permanent/access-control-less/unsearchable there). Both are
+# ALREADY in the lock (transitive via security-framework) — exact-pinned + promoted to
+# direct, ZERO new crates. `=`-pinned per the tiny-unsafe-FFI rule (a silent bump brings
+# new unsafe FFI to review). Apple-only (gated in each crate's `[target.'cfg(...)']`).
+security-framework-sys = { version = "=2.17.0", default-features = false }
+core-foundation = { version = "=0.10.1", default-features = false }
+# CFStringRef for the one Security.framework static the sys crate omits
+# (`kSecAttrApplicationTag` — Apple's documented SE-key locator). In the lock
+# (transitive) — exact-pinned + promoted, ZERO new crates.
+core-foundation-sys = { version = "=0.8.7", default-features = false }
+# §3.2e block cache (W3-inc-2c-iv-b): the `Message` trait to encode/decode the
+# upstream `CompactBlock` protobuf to/from cache bytes. ALREADY in the lock (the
+# zcash proto types derive it) — exact-pinned + promoted to direct, ZERO new
+# crates. `std` only (no `derive`/`prost-derive` — the type is derived upstream;
+# we use only the trait's encode_to_vec/decode).
+prost    = { version = "=0.14.4", default-features = false, features = ["std"] }
+# §3.2b account import — the `SecretVec<u8>` the audited `import_account_hd` /
+# `init_wallet_db(Some(seed))` API demands. ALREADY in the lock (a transitive dep
+# of the zcash stack) — exact-pinned + promoted to direct (no new transitive
+# crates). `alloc` gates `SecretVec` (pulls zeroize/alloc, already present).
+# §6.3 single-writer wallet lock — the Android-portable `flock`. `std::fs::File::
+# try_lock` (Rust 1.89) returns `ErrorKind::Unsupported` on ANDROID, so the wallet
+# could not be provisioned on-device at all (every create/restore/open failed at
+# lock acquisition); rustix's `flock` is the raw-syscall path that works on every
+# Unix incl. Android/iOS. ALREADY in the lock (transitive) — exact-pinned + promoted
+# to direct (no new transitive crates). `fs` gates `flock`; SAFE public API
+# (zec-wallet-core stays `#![forbid(unsafe_code)]`).
+rustix   = { version = "=1.1.4", default-features = false, features = ["std", "fs"] }
+secrecy  = { version = "=0.8.0", default-features = false, features = ["alloc"] }
+serde    = { version = "1", default-features = false, features = ["std", "derive"] }
+serde_json     = { version = "1", default-features = false, features = ["std"] }
+sha2 = { version = "=0.10.9", default-features = false }
+static_assertions = "1"    # compile-time "secret types are not Debug/Display" (tests only)
+tempfile  = "3"            # on-disk DB fixtures (tests only)
+thiserror = "2"
+tokio     = { version = "1", default-features = false, features = ["rt"] }
+tokio-rustls   = { version = "=0.26.4", default-features = false, features = ["ring", "tls12"] }
+# §3.2a gRPC channel over the host NetDialer (W3-inc-2c-ii). Already in the lock
+# via zcash_client_backend/lightwalletd-tonic-transport; declared here so the
+# core crate can build the channel directly. `transport` = Endpoint/Channel +
+# connect_with_connector_lazy; NO `tls`/`router` (we own TLS, no server).
+# FLOOR `>=0.14.6` (W3-inc-2c-iv-a money fold): block-stream truncation→error
+# mapping is load-bearing for fund detection (a truncated stream MUST surface a
+# typed Err, never a clean Ok(None) end that hides the range tail — §3.2d). tonic
+# INVERTED this between 0.14.5 (truncation → silent clean end) and 0.14.6
+# (truncation → Err Unknown); `^0.14` admitted the broken 0.14.5, and CI does not
+# run --locked. Stay within 0.14.x — a 0.15 bump is its own supply-chain event.
+tonic     = { version = ">=0.14.6, <0.15", default-features = false, features = ["transport"] }
+tower     = { version = "0.5", default-features = false }
+tracing   = "0.1"
+# dev-only (the §5.4 capture-layer guard): a test subscriber that records emitted
+# span/event fields. `registry` gives the layered subscriber the custom capture
+# layer composes onto; never pulled by the shipped lib/bridge.
+tracing-subscriber = { version = "0.3", default-features = false, features = ["registry"] }
+webpki-roots   = "=1.0.7"
+zcash_address  = { version = "=0.13.0", default-features = false, features = ["std"] }
+# USK/UFVK/UA derivation — audited whole (ADR-0005 r5). transparent-inputs OFF
+# means we derive NO transparent spend key and the default UA carries no
+# transparent receiver (review G7). NOTE (security review W3-inc-2): zcash_keys
+# pulls zcash_transparent (→ bip32 =0.6.0-pre.1, secp256k1) UNCONDITIONALLY for
+# UA parsing, so those crates ARE linked into the binary — the feature gates the
+# transparent CODE PATH, not the dep graph. All are =-pinned + checksummed in
+# sdk/Cargo.lock; the pre-release `digest` they bring is the gate-0 reason this
+# stack lives in the carved sdk lock (accepted, time-boxed: exit when upstream
+# zcash_transparent unpins bip32 onto stable digest — re-check at every bump).
+# GATE-0 RE-CHECKED at the NU6.3/Ironwood bump, 2026-09-07, ANSWERED FROM THE
+# POST-BUMP LOCK rather than from the manifests: `bip32` is still `=0.6.0-pre.1`,
+# `secp256k1` still `0.29.1`, and `digest` still resolves to BOTH `0.10.7` and
+# `0.11.0-pre.9`. The split the carved workspace exists to hold is STILL NEEDED
+# and STILL SUFFICIENT — the carve does not exit with this wave.
+# `transparent-inputs` ON (ADR-0528, Recv-2): `UnifiedSpendingKey::from_seed` now also
+# derives the BIP44 transparent account key, so the USK's UFVK carries a transparent
+# `AccountPubKey` (the source of the external-scope RECEIVE address — `current_transparent_address`).
+# The user-facing shielded UA is UNCHANGED: our `encode_default_address` request is still
+# Require/Require/**Omit**, so the displayed default address omits the transparent receiver (G7).
+# CONSEQUENCE (ADR-0528): `from_seed` now also runs BIP32 `ExtendedPrivateKey::new`, which
+# accepts only 16/32/64-byte master seeds, so the account derivation seed-length contract
+# narrows from 32..=252 to the real {32, 64} (raw / BIP39) — an exotic in-range length is a
+# typed `KeyDerivation`, never a panic (the <32 panic floor is still guarded by our 32-byte door).
+zcash_keys     = { version = "=0.16.1", default-features = false, features = ["orchard", "sapling", "transparent-inputs"] }
+zcash_protocol = { version = "=0.10.5", default-features = false, features = ["std"] }
+# §2.6 / Recv-2 transparent address derivation — a DIRECT dep with transparent-inputs.
+# That feature gates the BIP44 transparent KEY-DERIVATION TYPES (`AccountPubKey`/
+# `ExternalIvk`/`derive_address`) used to derive the external-scope RECEIVE address
+# (`current_transparent_address`, ADR-0528) — it pulls just `bip32/secp256k1-ffi` + the
+# already-locked `secp256k1` (=0.29.1; ZERO new crates). As of ADR-0528 (Recv-2) the
+# ENGINE crates (zcash_client_backend/_sqlite) ALSO enable their own per-crate
+# `transparent-inputs` (each flag is separate; this dep's flag does not propagate to
+# theirs), so the engine now owns transparent receive + ephemeral-refund allocation +
+# scanning. The shielded UA stays G7 (our `encode_default_address` Omits transparent);
+# the only transparent SPEND path is privacy-positive shielding (Recv-3), no pool-crossing
+# on the user send path. EXACT-pinned like the rest of the ZEC stack (ADR-0005 r5).
+zcash_transparent = { version = "=0.10.0", default-features = false, features = ["transparent-inputs"] }
+# The audited script type (`script::Code`), used to reconstruct an output `Script`
+# from the RAW scriptPubKey bytes a lightwalletd `GetAddressUtxos` reply carries
+# (Recv-2b transparent UTXO detection, §3.3a): so the recipient is re-derived from
+# the endpoint's actual script and matched to our address (M2 lying-endpoint
+# defense), never trusting the reply's address field. Already in the tree
+# transitively via `zcash_transparent`; pinned `=0.4.5` to keep ONE copy (the same
+# version that crate requires). `default-features = false` — we only name the type
+# (feature unification keeps `zcash_transparent`'s set). Audited crate WHOLE; our
+# code is glue (no custom script parsing — Rule Zero).
+# DOES NOT MOVE with the NU6.3/Ironwood wave (survey C1, re-verified 2026-09-07).
+# `0.5.2` is semver-latest but was published 2026-02-23, three months BEFORE
+# `0.4.5` (2026-05-29) — the 0.4.x and 0.5.x lines are parallel republishes.
+# `0.5.2` does not satisfy the `^0.4.3` four crates in this wave still require,
+# and it reverts the 0.4.5 `sig_op_count` consensus fix. Semver-latest is NOT
+# newest: check `created_at`, never the version order.
+zcash_script = { version = "=0.4.5", default-features = false }
+zeroize   = { version = "1", features = ["derive"] }
+# constant-time seed equality on the §6.3 repair path (mistyped-mnemonic
+# detection). Exact-pinned to the lock's existing transitive version so the
+# whole graph keeps ONE `subtle` (the mobile-lens single-`subtle` invariant);
+# default-features = false (no_std ConstantTimeEq is all we use).
+subtle    = { version = "=2.6.1", default-features = false }
+zip32          = { version = "=0.2.1", default-features = false }
+zip321         = { version = "=0.9.0", default-features = false }
+
+[workspace.lints.rust]
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+# `cfg(fuzzing)` is set by cargo-fuzz, not by cargo, so rustc does not know it
+# is a real condition. Declared so the FUZZ-ONLY hook gates (`__fuzz_*` in
+# zec-wallet-core) do not each raise an `unexpected_cfgs` warning — and so a
+# TYPO in one of those gates still does, which is the point of declaring it
+# rather than silencing the lint.
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# OPT-IN test profile for the stage harness ("if it's possible to
+# cache work to reduce time of building it would be nice"). The core crate's
+# whole lib spends its time EXECUTING tests, not compiling: 77 tests ran past
+# 60 s, 45 of them `send::tests` building real proofs through
+# unoptimized dependencies. This profile keeps OUR code at dev settings (debug
+# assertions, overflow checks, fast rebuilds) and optimizes the dependencies —
+# the proving crates among them — once, into their own `target/test-fast/`.
+# It applies ONLY when a command passes `--profile test-fast`. It is a NAMED
+# profile and deliberately not a `[profile.dev]` override: a host's Flutter
+# plugin build (cargokit) builds `zec_wallet/rust` with THIS workspace as its
+# root, so a dev override would change what every host's debug app links, and
+# force a full rebuild of it (Relim).
+[profile.test-fast]
+inherits = "dev"
+
+[profile.test-fast.package."*"]
+opt-level = 2

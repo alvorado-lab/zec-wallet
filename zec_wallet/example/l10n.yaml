@@ -1,0 +1,12 @@
+# i18n wired from day one (app-frame spec §8 gate 8) — the Mostpost lesson:
+# late i18n = refactor every visible string. Framework-shipped `gen-l10n`
+# driver (pubspec `generate: true`); en-only until more locales land.
+# Source-of-truth ARB files live in `lib/l10n/`; the default locale's file
+# (`app_en.arb`) carries the `@<key>` metadata entries. Generated code is
+# emitted into `lib/l10n/` alongside the .arb sources and committed.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-dir: lib/l10n
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false

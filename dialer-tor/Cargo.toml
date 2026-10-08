@@ -1,0 +1,142 @@
+# `dialer-tor` — the shared Tor dialer both products use (ADR-0548 D1),
+# developed HERE per ADR-0550 ("make everything locally properly and when we
+# need, we push it"): copied from the first host's Tor transport crate at its `main`
+# `2948a96b`, renamed, and carried with its own lock.
+#
+# ITS OWN CARGO WORKSPACE, not a member of `sdk/` — measured at the resolver
+# (2026-09-17): arti 0.45.0's `tor-netdoc` needs `cipher ^0.5.2` →
+# `crypto-common ^0.2.2`, while the ZEC stack the SDK pins (`zcash_primitives
+# =0.30.1`) needs `crypto-common =0.2.0-rc.1`; cargo treats the two as one
+# semver line and cannot lock both. The same pre-release RustCrypto line is why
+# `sdk/` was carved out of the root workspace (`sdk/Cargo.toml`'s header). So:
+# `[workspace]` below makes this directory a workspace root, `sdk/Cargo.toml`
+# `exclude`s it, this crate keeps `Cargo.lock` committed (the arti graph the
+# gates audit — `just sdk-audit`), and the Tor plugin (`sdk/zec_wallet_tor/rust`,
+# its own workspace for the same reason) consumes it by PATH until the maintainer's
+# crates.io publish flips that to a version.
+#
+# Publishable (S7): the crates.io publish precedes the plugin's pub.dev publish
+# (release-checklist §D), and it is the maintainer's act — no crates.io token lives
+# on the build machine until he logs in. MIT, like every package of the SDK.
+[package]
+name = "dialer-tor"
+version = "0.1.1"
+edition = "2024"
+rust-version = "1.96"
+license = "MIT"
+authors = ["The zec-wallet Authors"]
+description = "Standalone Tor dialer over arti: host:port to a duplex byte stream, with per-key circuit isolation and no clearnet path."
+repository = "https://github.com/alvorado-lab/zec-wallet"
+homepage = "https://github.com/alvorado-lab/zec-wallet/tree/main/dialer-tor"
+readme = "README.md"
+keywords = ["tor", "arti", "dialer", "privacy", "zcash"]
+categories = ["network-programming", "cryptography"]
+
+[workspace]
+
+# The SDK workspace's lint tables, copied (a workspace root has no parent to
+# inherit from) — the two rules that apply here; the third in `sdk/Cargo.toml`,
+# `unexpected_cfgs` for `cfg(fuzzing)`, exists for the core's fuzz-only hook
+# gates and this crate has no `cfg(fuzzing)`. Kept in step by hand;
+# `just sdk-lint` runs clippy here.
+[lints.rust]
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+
+[features]
+# OFF by default. arti's directory cache (`tor-dirmgr`) is a `rusqlite`
+# database; in THIS lock `libsqlite3-sys` resolves WITHOUT `bundled`, so a
+# build links the platform's `libsqlite3` (the supply-chain angle on FR-5 C0,
+# — not confirmed by a device build yet). Relim never sees that: its
+# store crate's `bundled-sqlcipher-vendored-openssl` turns `bundled` on for
+# the whole Relim lock by feature unification. A consumer whose target has no
+# linkable sqlite (Android's NDK exposes none) turns this on to vendor
+# sqlite into the artifact; arti marks the underlying `tor-dirmgr/static`
+# feature NON-ADDITIVE (`__is_nonadditive`), so it is a per-artifact choice
+# made by the FINAL consumer (the wallet SDK's Tor plugin — its build plan's
+# §6 carries the Apple static-linkage consequence: the plugin's sqlite symbols
+# would bind to the wallet's force-loaded SQLCipher under `:linkage =>
+# :static`, a superset that answers plain-sqlite calls).
+static-sqlite = ["arti-client/static-sqlite"]
+
+[dependencies]
+# ── arti: the Tor implementation, taken WHOLE (crypto-rules Rule Zero) ───────
+# Pinned `=` here (this crate is its own workspace root): this `=` plus arti's
+# own 0.x carets ceiling every `tor-*` parser below 0.46, so deny.toml owes no
+# row. `default-features = false` drops arti's `native-tls`, whose openssl-sys
+# pull is this repo's documented Android cross-compile break (rust-patterns §
+# Cross-compile). The feature SET is decided here, one reason each:
+#
+#   tokio       the runtime, and what gives arti's `DataStream` the tokio
+#               AsyncRead/AsyncWrite impls this crate's return type is written
+#               over (tor-proto's impls are `#[cfg(feature="tokio")]`).
+#   rustls      a TLS backend is mandatory — `tor_rtcompat::PreferredRuntime`
+#               is `#[cfg]`-ed out unless one runtime AND one TLS backend are
+#               selected — and rustls is the openssl-free one.
+#   compression arti's own default; without it every bootstrap fetches the
+#               consensus and microdescriptors uncompressed, megabytes at a
+#               time, which is the wrong default on metered mobile.
+#   flowctl-cc  arti's own default: congestion control on our circuits.
+#   bridge-client  bridges (a pasted bridge line reaches a built config).
+#
+# NOT enabled, and this is a LICENCE gate rather than a taste. `equix` and
+# `hashx` are LGPL-3.0-only (crates.io metadata for 0.7.0), which is a shipping
+# problem inside a third-party product — and this crate exists to be consumable
+# from one. **The carve-out is a FEATURE being off, not a crate being absent:**
+# `tor-hscrypto` is in the graph unconditionally, via the `tor-keymgr` that
+# arti-client always takes, and it is its own optional `hs-pow-full` feature
+# that pulls `equix`. The arti features that turn that on are `hs-pow-full`,
+# `onion-service-client` and `onion-service-service`. Consequence, stated
+# rather than hidden: this dialer REFUSES `.onion` targets (`OnionUnsupported`).
+# Held by `tests/carve_out.rs::licence_carve_out_holds` and this crate's own
+# `deny.toml` bans.
+arti-client  = { version = "=0.45.0", default-features = false, features = ["tokio", "rustls", "compression", "flowctl-cc", "bridge-client"] }
+# Only for the name `PreferredRuntime`: arti-client does not re-export it, and
+# `TorClient<R>` is generic over it, so the struct field cannot be named
+# without it. No features of its own — they arrive by unification from arti.
+tor-rtcompat = { version = "=0.45.0", default-features = false }
+# Direct only so this crate can name ONE crypto provider. rustls installs a
+# provider from its own crate features when none is set, but only when exactly
+# one of `ring`/`aws_lc_rs` is enabled — otherwise it PANICS
+# (`CryptoProvider::get_default_or_install_from_crate_features`). deny.toml
+# keeps aws-lc-rs out of THIS graph; a third-party host graph is not bound by
+# that, so the dialer installs `ring` itself WHEN NOTHING IS INSTALLED YET. It
+# does not own the choice: arti reads the process-global provider at use
+# (`tor-rtcompat/src/impls/rustls.rs`), so a host that installed a provider
+# first owns arti's TLS to guards; the wallet's own TLS passes an explicit
+# provider and is unaffected (the crypto angle on FR-5 C0). The
+# version floor is the SDK's (RUSTSEC-2026-0285, fixed 0.23.45).
+rustls      = { version = "=0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
+thiserror   = "2"
+tracing     = "0.1"
+# `tokio::io::{AsyncRead, AsyncWrite}` are the traits the frozen port shape is
+# written over (zec-wallet-core `src/ports.rs`); no tokio feature gates them.
+# The owned client (`owned/`) needs a one-worker multi-thread runtime of its
+# own (`rt-multi-thread`), its shutdown outcome's watch (`sync`) and its timer
+# driver (`time`). arti already pulls tokio with these, so the lock does not
+# change.
+tokio       = { version = "1", default-features = false, features = ["rt", "rt-multi-thread", "sync", "time"] }
+
+[dev-dependencies]
+# The offline refusal tests need a real tokio reactor (arti's
+# `PreferredRuntime::current()` panics outside one) and a real, private
+# state/cache directory. One test touches the Tor network, and only on
+# request: `tests/exit_rotation_live.rs` (FR-54), `#[ignore]` AND gated on
+# `DIALER_TOR_LIVE=1`, outside `just ci`. Every other test is offline.
+tokio    = { version = "1", default-features = false, features = ["rt", "rt-multi-thread", "macros", "time"] }
+tempfile = "3"
+# Compile-time proof that `BridgeLines` is not `Debug`/`Display`/`Clone` — the
+# mechanism that keeps a pasted entry point out of a log, rather than care.
+static_assertions = "1"
+# FR-54 §4.4 #2: the rotation trigger's structural guard walks every END reason
+# through tor-cell's OWN `EndReason -> ErrorKind` mapping, so it pins the
+# mapping arti links rather than a copy of it. Exact-pinned to arti's tor-cell;
+# already in the lock (arti's own dependency), so the lock gains an edge, not a
+# package. Default features are none.
+tor-cell = { version = "=0.45.0", default-features = false }
+# FR-54 §4.4 #4 (the ignored live test): a `tracing` layer that reads ONLY the
+# `tunnel_id` field of arti's "Got a circuit" event. Already in the lock.
+tracing-subscriber = { version = "0.3.23", default-features = false, features = ["registry", "std"] }

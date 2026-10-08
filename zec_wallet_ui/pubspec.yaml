@@ -1,0 +1,106 @@
+# zec_wallet_ui: the reusable wallet UI layer over the zec_wallet SDK.
+#
+# ROADMAP item (4): integrators embed the FULL wallet surface (onboarding,
+# balance, send, receive, history, shield, swap, recovery) with a page of glue;
+# the SDK example app is the reference consumer. The feature code migrates here
+# from `zec_wallet/example` in reviewed phases (see the extraction plan in the
+# repo task log); this package starts as the landing skeleton so each phase
+# moves files without renaming the destination.
+#
+# Host contract highlights (locked against the two surveys):
+# - Theming: the package OWNS the `WalletColors` ThemeExtension + token set; a
+#   host maps its own palette into it (no host-theme imports here).
+# - l10n: package-local gen-l10n with its own delegate class, composed into the
+#   host's `localizationsDelegates` (en ships first; the ARB set is
+#   translation-ready).
+# - State: Riverpod 3.x `Notifier` idiom; every host seam is an overridable
+#   root provider (provisioner, onboarding store, screen security, swap
+#   policy, lifecycle).
+# - Navigation: the package owns its route-path constants and exposes
+#   `walletRoutes()` fragments + bare screens; hosts mount them under their own
+#   shell/router.
+# - Degradation: loadable without the native library (no FFI init at import);
+#   wallet-unavailable renders honestly.
+name: zec_wallet_ui
+description: "A drop-in shielded Zcash wallet for Flutter apps, built on zec_wallet: onboarding, backup, send, receive, history and swaps, themed by your app, in 16 languages."
+version: 0.0.1
+homepage: https://github.com/alvorado-lab/zec-wallet
+repository: https://github.com/alvorado-lab/zec-wallet/tree/main/zec_wallet_ui
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.38.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # @visibleForTesting on the provisioner's config flow-through probe (
+  # seam review); version-solved by the Flutter SDK, declared for direct use.
+  meta: ^1.16.0
+  # Version pins mirror the reference consumer (zec_wallet/example) and the
+  # known host constraints: flutter_rust_bridge is pinned EXACTLY by the SDK
+  # dependency itself, so this package inherits it transitively. The SDK is
+  # named by VERSION (the two packages release in lockstep on one SemVer line,
+  # sdk-publishing-plan.md); the in-repo path lives in dependency_overrides.
+  zec_wallet: ^0.0.1
+  flutter_riverpod: ^3.3.1
+  go_router: ^17.2.0
+  # flutter_localizations pins intl exactly; a caret on that line keeps the
+  # promise pub.dev asks for without fighting the SDK's pin.
+  intl: ^0.20.2
+  qr_flutter: ^4.1.0
+  # Camera QR *reader* for the IntoZec refund-address scan. DELIBERATELY NOT
+  # `mobile_scanner` (Google ML Kit telemetry has no opt-out; supply-chain
+  # pass, ADR-0531); `flutter_zxing` is FFI to the audited `zxing-cpp`
+  # decoder: MIT, fully on-device, zero background network. The QR scan is
+  # ADDITIVE: paste/type always works and is the only path on desktop.
+  # NOTE for HOSTS: since 3.0.0 it builds with NDK 27, 28 and 29 (the old
+  # NDK r28+ failure, upstream #225, is fixed; no NDK pin needed for it),
+  # and it needs Android compileSdk 36 (Flutter's default).
+  # Floor 3.1.0 (S15-F2, measured on an iPhone): 2.3.0 moved iOS to SPM and
+  # decoded NOTHING in a stripped archive (every profile and release iOS
+  # build), while debug builds (unstripped) worked. The fix shipped in 2.3.1
+  # (never published) and 2.4.0, whose podspec breaks `pod install` (reads
+  # back a writer-only attribute); 3.0.1 fixed the podspec. 3.x's two
+  # breaking changes do not reach this scanner: UPC digits (not a wallet
+  # format) and `Format.qrCode` also matching Micro QR / rMQR (the payload is
+  # still parsed by the wallet, which refuses anything it does not read).
+  flutter_zxing: ^3.1.0
+  shared_preferences: ^2.5.5
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Deterministic timer control for the bounded-await tests.
+  fake_async: ^1.3.1
+  flutter_lints: ^6.0.0
+
+# In-repo resolution. The hosted constraint above is what a pub.dev consumer
+# sees; inside the monorepo the SDK is the sibling directory. Overrides are
+# ignored by `pub publish` and never reach a consumer.
+dependency_overrides:
+  zec_wallet:
+    path: ../zec_wallet
+
+flutter:
+  # Package-local gen-l10n (config in l10n.yaml): the wallet strings live in
+  # lib/l10n/wallet_en.arb under their own `WalletLocalizations` delegate so a
+  # host composes it into `localizationsDelegates` next to its own class.
+  generate: true
+
+  # The frozen BIP39 English wordlist (2048 words, abandon…zoo), bundled, no
+  # runtime fetch. Drives the restore screen's live word validation +
+  # autocomplete. Extracted from the audited `bip39` crate the SDK validates
+  # against; the SDK stays the gate, this is UX guidance only. Pinned by a
+  # test (count 2048 + abandon/zoo bounds). Consumers address it as
+  # `packages/zec_wallet_ui/assets/bip39/english.txt`.
+  assets:
+    - assets/bip39/english.txt
+
+  # NO FONTS (FR-49 W-9, ADR-0564). The package used to bundle DM Sans, which
+  # every host shipped whether it rendered it or not (624 KB in Relim's APK,
+  # never drawn). A host brings its own faces through `buildTheme(textTheme:)`
+  # and `WalletTypography`; with none, the platform's default face is used.

@@ -1,0 +1,57 @@
+[package]
+name = "zec-wallet-swap-near"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "NEAR Intents 1Click SwapPort adapter — thin hand-audited typed REST client over the SDK's NetDialer (ADR-0525; specs/wallet-sdk.md §3.2)."
+# ADR-0541 Decision 1: not published to crates.io — it ships vendored inside the
+# `zec_wallet` Dart package. Same reason as `zec-wallet-core`'s: its
+# `zec-wallet-core` dependency below is a bare `{ path = … }`, which
+# `cargo deny`'s `[bans] allow-wildcard-paths` exempts only for a crate that
+# says it is not published. See that manifest for the full note.
+publish = false
+
+[lints]
+workspace = true
+
+# EXTRACTION DEP POLICY (spec §1.2): part of the extraction unit — every dep
+# publicly resolvable EXCEPT the unit-internal path dep on zec-wallet-core (the
+# same sanctioned exception the FRB bridge has). Enforced by tests/policy.rs.
+#
+# TRANSPORT POLICY (spec §3.2 m5): the ONLY network path is the injected
+# `NetDialer`. tokio deliberately has NO `net` feature here and no socket-
+# capable crate (reqwest et al.) may enter — `TorPolicy::Required` fail-closes
+# swap traffic because this crate cannot open a socket on its own.
+[dependencies]
+zec-wallet-core = { path = "../zec-wallet-core", default-features = false, features = ["swap"] }
+
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+zeroize = { workspace = true }
+tokio = { workspace = true, features = ["time"] }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+percent-encoding = { workspace = true }
+
+bytes = { workspace = true }
+http = { workspace = true }
+http-body-util = { workspace = true }
+hyper = { workspace = true, features = ["http1", "client"] }
+hyper-util = { workspace = true, features = ["tokio"] }
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+webpki-roots = { workspace = true }
+# A direct dependency for two reasons: the workspace `=` pin on the TLS
+# stack's ring binds only through a direct edge (rust-patterns
+# §Cross-compile), and since FR-29 stage 0 the adapter USES `ring::hmac` +
+# `ring::rand` to mint the per-swap isolation token (`SwapIsolationMinter`
+# in lib.rs) — one audited crate, taken whole, no second hash dependency.
+ring = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "io-util", "test-util"] }
+proptest = { workspace = true }

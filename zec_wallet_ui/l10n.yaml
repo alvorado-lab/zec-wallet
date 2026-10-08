@@ -1,0 +1,14 @@
+# Package-local gen-l10n (extraction phase 2). The wallet strings ship WITH
+# the package under their own delegate class so a host app composes
+# `WalletLocalizations.delegate` into its `localizationsDelegates` without
+# colliding with its own generated AppLocalizations class. en-only until more
+# locales land (the ARB set is translation-ready; a host with its own locale
+# expansion adds wallet_<locale>.arb files here).
+# Generated code is emitted into `lib/l10n/` alongside the .arb source and
+# committed (mirrors the reference consumer's convention).
+arb-dir: lib/l10n
+template-arb-file: wallet_en.arb
+output-dir: lib/l10n
+output-localization-file: wallet_localizations.dart
+output-class: WalletLocalizations
+nullable-getter: false

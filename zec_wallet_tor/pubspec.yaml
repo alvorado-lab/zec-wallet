@@ -1,0 +1,44 @@
+name: zec_wallet_tor
+description: "Routes the zec_wallet Zcash SDK's traffic through Tor. Optional: an arti-based Tor client in its own native library, so the wallet itself carries no Tor code."
+version: 0.0.1
+homepage: https://github.com/alvorado-lab/zec-wallet
+repository: https://github.com/alvorado-lab/zec-wallet/tree/main/zec_wallet_tor
+
+environment:
+  sdk: ^3.11.4
+  # the Dart constraint is authoritative; this names the matching Flutter
+  # release (the same floor as zec_wallet)
+  flutter: '>=3.38.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The (pointer, length) spans and the zeroed bridge copy are allocated with
+  # package:ffi's `calloc`.
+  ffi: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # Generates lib/src/bindings_generated.dart from rust/include/zec_wallet_tor.h
+  # (`dart run ffigen --config ffigen.yaml`; `just wallet-tor-ffigen-verify`
+  # regenerates and diffs).
+  ffigen: ^20.1.1
+
+flutter:
+  # An FFI plugin on every platform: Cargokit builds the Rust crate under
+  # rust/ (its own cargo workspace, library `zec_wallet_tor`) and bundles it.
+  # No platform class: the Dart side opens the library itself.
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true
+      linux:
+        ffiPlugin: true
+      macos:
+        ffiPlugin: true
+      windows:
+        ffiPlugin: true

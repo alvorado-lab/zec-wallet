@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shown in Android's accessibility settings for the debug-only e2e semantics service. Says
+         what it is so nobody mistakes it for a real assistive service on a shared test device. -->
+    <string name="e2e_semantics_service_description">Debug build only. Exposes this app\'s UI tree
+        to adb test tooling (uiautomator). Provides no assistive features and does not change how
+        touch works.</string>
+</resources>

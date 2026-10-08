@@ -1,0 +1,7 @@
+rust_input: crate::api
+rust_root: rust/
+dart_output: lib/src/rust
+# FR-33: the generated entry class is renamed so the package's handwritten
+# `RustLib` (lib/src/rust_lib.dart) can keep the public name hosts call — its
+# `init` checks the bridge's wire-contract version BEFORE the generated init.
+dart_entrypoint_class_name: ZecWalletRustLib

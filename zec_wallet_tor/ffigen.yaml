@@ -1,0 +1,35 @@
+# Generates the Dart bindings for the plugin's C ABI.
+#
+#   dart run ffigen --config ffigen.yaml
+#
+# The header is the contract (docs/specs/tor-plugin.md §2.1; plan
+# docs/plan/fr5-phase-1.md §5 D-13 puts it under rust/include/). The output is
+# committed; `just wallet-tor-ffigen-verify` regenerates it, formats it and
+# fails on any diff, so a header change that was not regenerated cannot land.
+name: ZecWalletTorBindings
+description: 'Bindings for rust/include/zec_wallet_tor.h. Regenerate with `dart run ffigen --config ffigen.yaml`; never edit by hand.'
+output: 'lib/src/bindings_generated.dart'
+headers:
+  entry-points:
+    - 'rust/include/zec_wallet_tor.h'
+  include-directives:
+    - 'rust/include/zec_wallet_tor.h'
+functions:
+  include:
+    - 'zec_wallet_tor_.*'
+structs:
+  include:
+    - 'zwt_.*'
+typedefs:
+  include:
+    - 'zwt_.*'
+macros:
+  include:
+    - 'ZWT_.*'
+preamble: |
+  // ignore_for_file: always_specify_types
+  // ignore_for_file: camel_case_types
+  // ignore_for_file: non_constant_identifier_names
+comments:
+  style: any
+  length: full

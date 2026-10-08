@@ -1,0 +1,61 @@
+{
+ "correlationId": "9d3a1f00-0000-4000-8000-00000000sinc",
+ "quoteResponse": {
+  "quote": {
+   "amountIn": "100000000",
+   "amountInFormatted": "1.0",
+   "amountInUsd": "416.8800",
+   "minAmountIn": "100000000",
+   "amountOut": "416412600",
+   "amountOutFormatted": "416.4126",
+   "amountOutUsd": "416.3551",
+   "minAmountOut": "412248474",
+   "timeEstimate": 105,
+   "refundFee": "47000",
+   "withdrawFee": "2508",
+   "depositAddress": "t1ZXKD285AZdKs56b9ypo9FT4LMHKuJRw5N",
+   "deadline": "2026-06-14T12:00:00.000Z",
+   "timeWhenInactive": "2026-06-20T00:33:52.000Z"
+  },
+  "quoteRequest": {
+   "dry": false,
+   "depositMode": "SIMPLE",
+   "swapType": "EXACT_INPUT",
+   "slippageTolerance": 100,
+   "originAsset": "nep141:zec.omft.near",
+   "depositType": "ORIGIN_CHAIN",
+   "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+   "amount": "100000000",
+   "refundTo": "t1Hsc1LR8yKnbbe3twRp88p6vFfC5t7DLbs",
+   "refundType": "ORIGIN_CHAIN",
+   "recipient": "example.near",
+   "recipientType": "DESTINATION_CHAIN",
+   "deadline": "2026-06-14T12:00:00.000Z",
+   "confidentiality": "public",
+   "quoteWaitingTimeMs": 0,
+   "appFees": [
+    {
+     "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+     "fee": 10
+    }
+   ]
+  },
+  "signature": "ed25519:dTtHKVSbQm3Go1SvxR5YybhqWrSXcA9Aa1cfTnokrnjwkcMW5XLds1qM5UUhxKC4UTgi5euZk6JAMobiMGPJYyJ",
+  "timestamp": "2026-06-13T00:33:52.461Z",
+  "correlationId": "76c29f05-73ce-4ead-b31c-97caf0ec91a4"
+ },
+ "status": "INCOMPLETE_DEPOSIT",
+ "updatedAt": "2026-06-13T01:00:00.000Z",
+ "swapDetails": {
+  "intentHashes": [],
+  "nearTxHashes": [],
+  "originChainTxHashes": [
+   {
+    "hash": "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+    "explorerUrl": "https://example.invalid/tx/f4184f"
+   }
+  ],
+  "destinationChainTxHashes": [],
+  "depositedAmount": "40000000"
+ }
+}

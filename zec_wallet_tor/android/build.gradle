@@ -1,0 +1,56 @@
+// The Android Gradle Plugin builds the native code with the Android NDK.
+
+group 'dev.zecwallet.tor'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        // The Android Gradle Plugin knows how to build native code with the NDK.
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'dev.zecwallet.tor'
+    }
+
+    // must track the Flutter stable's compile floor (AGP 8.x rejects <34);
+    // the same value as zec_wallet's.
+    compileSdkVersion 35
+
+    // Use the NDK version declared in the Flutter project's
+    // android/app/build.gradle.
+    ndkVersion android.ndkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    defaultConfig {
+        // The wallet's floor (23): the plugin is useless without zec_wallet,
+        // so it claims no lower one. Pure dart:ffi — no Java class, no JNI.
+        minSdkVersion 23
+    }
+}
+
+apply from: "../cargokit/gradle/plugin.gradle"
+cargokit {
+    manifestDir = "../rust"
+    libname = "zec_wallet_tor"
+}

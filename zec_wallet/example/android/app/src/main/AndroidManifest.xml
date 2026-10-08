@@ -1,0 +1,76 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- The wallet needs network in EVERY build type (lightwalletd sync + the
+         swap provider). Flutter's template declares INTERNET only in the
+         debug/profile manifests (for the dev tooling), so without this a RELEASE
+         build would ship with no network and sync/swap would silently fail. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Camera ONLY for the IntoZec refund-address QR scan (wallet spec §3.3b
+         D6, IZ-4). required=false: the scan is ADDITIVE (paste/type always
+         works), so a camera-less device must still install and use the wallet.
+         No photo-library permission — the scanner is camera-only (gallery scan
+         disabled). -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <!-- flutter_zxing → camera → camera_android_camerax UNIONS RECORD_AUDIO +
+         WRITE_EXTERNAL_STORAGE into the merged manifest (the camera plugin
+         supports video+audio; we use neither — the scanner runs enableAudio:
+         false, QR frames only). A privacy-first, censorship-resistant wallet
+         must NEVER ship an unused microphone permission (the "why does a wallet
+         want my mic?" signal) — strip both at merge. A test asserts these stay
+         (security review fold, IZ-4). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+    <!-- Backup/transfer OFF (money-lens review fold): the platform default
+         is allowBackup=true, which silently ships app data to Google
+         backup. Today that is only rendering prefs, but the posture is
+         "metadata is as sensitive as content" (app-frame spec §4/§5) and
+         a wallet host must never discover backup was on. If a future
+         milestone wants selective transfer, it adds explicit
+         dataExtractionRules in its own spec. -->
+    <application
+        android:label="ZEC Wallet"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>

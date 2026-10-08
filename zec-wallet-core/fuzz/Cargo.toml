@@ -1,0 +1,82 @@
+# cargo-fuzz harness for the wallet SDK's hostile-input parsers (wallet-sdk
+# spec §4.6 — ZIP-321 URIs arrive from QR codes and links). A SEPARATE
+# workspace (the empty `[workspace]` table at the bottom) so the stable-pinned
+# PARENT never builds it: fuzz targets need nightly + libFuzzer (+ ASan) and
+# must never enter `cargo build --workspace` / `just ci`. Run:
+#
+#   cargo +nightly fuzz run fuzz_payment_uri
+#
+# The funnel is pure (no vault/keychain deps exercised), so this harness has
+# no platform-conditional deps.
+[package]
+name = "zec-wallet-core-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+zec-wallet-core = { path = ".." }
+
+[[bin]]
+name = "fuzz_payment_uri"
+path = "fuzz_targets/fuzz_payment_uri.rs"
+test = false
+doc = false
+bench = false
+
+# §3.2g subtree-root leaf-hash parsers (hostile lightwalletd input, W3-inc-2c-iv-d-1)
+[[bin]]
+name = "fuzz_subtree_root"
+path = "fuzz_targets/fuzz_subtree_root.rs"
+test = false
+doc = false
+bench = false
+
+# §3.2g hostile-block shape guard (the scanner's panicking accessors, W3-inc-2c-iv-d-2b-ii)
+[[bin]]
+name = "fuzz_compact_block"
+path = "fuzz_targets/fuzz_compact_block.rs"
+test = false
+doc = false
+bench = false
+
+# §3.3a Recv-2b transparent UTXO detection — the GetAddressUtxos hostile-input boundary
+[[bin]]
+name = "fuzz_transparent_validate"
+path = "fuzz_targets/fuzz_transparent_validate.rs"
+test = false
+doc = false
+bench = false
+
+# §3.3 tx-enhancement (memo recovery) — the GetTransaction full-tx parse boundary. The deepest
+# hostile-input decoder in the SDK (full consensus tx incl. sapling/orchard bundles), so it is
+# the one most owed coverage-guided fuzzing beyond the in-tree proptest.
+[[bin]]
+name = "fuzz_enhance_parse"
+path = "fuzz_targets/fuzz_enhance_parse.rs"
+test = false
+doc = false
+bench = false
+
+# FR-27 machine-memo READ path (§2.4 amendment): the one inbound crossing that
+# hands raw on-chain bytes to a host — ZIP-302 classifier + scope filter + the
+# new txid hex door, all attacker-chosen input.
+[[bin]]
+name = "fuzz_machine_memo_read"
+path = "fuzz_targets/fuzz_machine_memo_read.rs"
+test = false
+doc = false
+bench = false
+
+# Production parity: the app ships RELEASE with debug-assertions OFF. Match it so a
+# debug-only assert can't mask a genuine production no-panic-on-hostile-input path.
+[profile.release]
+debug-assertions = false
+overflow-checks = false
+
+# Own workspace root so the parent never compiles it.
+[workspace]

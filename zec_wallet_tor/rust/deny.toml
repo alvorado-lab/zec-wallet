@@ -1,0 +1,134 @@
+# cargo-deny policy for the Tor PLUGIN `sdk/zec_wallet_tor/rust` (FR-5 C3) — a
+# copy of `sdk/dialer-tor/deny.toml`, because the plugin's own lock resolves the
+# same arti graph (seeded from the dialer's) plus its few crates, and the same
+# policy must hold over it. Keep the two in step by hand. The notes below were
+# written for the dialer and apply to this graph unchanged. Run:
+#   cargo deny --manifest-path sdk/zec_wallet_tor/rust/Cargo.toml check
+#
+# (The dialer's original header follows.) `sdk/dialer-tor` is ITS OWN
+# workspace and lock (the crate's manifest says why it cannot join `sdk/`'s:
+# arti's RustCrypto line and the ZEC stack's pre-release pins cannot share one
+# lock), so arti's ~150 transitive crates resolve outside `sdk/deny.toml`'s run.
+# Carrier: `just sdk-audit` (the nightly reaches it through `just sdk-gate`).
+# Policy mirrors `sdk/deny.toml` (same product, same store-flavor licence
+# rules); the arti-specific rows are the LGPL carve-out below.
+
+[advisories]
+version = 2
+yanked = "deny"
+# Any ignore needs an inline reason and an expiry condition. The one entry
+# below mirrors Relim's root `deny.toml` (the same arti graph, the same
+# argument — enumerated there over every package of the resolved graph
+# read it against THIS lock: `cargo tree -e features -i tor-proto` resolves no
+# `relay` feature). `cargo audit` does not read this file: the `just sdk-audit`
+# leg passes the SAME id with `--ignore`, so the two tools stay one policy.
+ignore = [
+  # `rsa 0.9.10` enters this graph with arti (arti-client -> tor-keymgr /
+  # tor-llcrypto); it has `patched = []` and no fix is coming — Tor's directory
+  # protocol still uses RSA relay-identity keys — so this is a permanent
+  # entry, not a temporary one. RUSTSEC-2023-0071 (the Marvin attack) names NO
+  # `[affected.functions]`; it scopes the leak to a PRIVATE-key timing
+  # sidechannel observable over the network. Every RSA private-key op in the
+  # arti tree funnels through `tor_llcrypto::pk::rsa::KeyPair::{sign,generate}`
+  # (tor-llcrypto-0.45.0/src/pk/rsa.rs:261, :227). `sign`'s four callers are
+  # tor-cert rsa/encode.rs:44 (sole caller tor-proto relay/channel.rs:643,
+  # behind `cfg(feature = "relay")`, NOT set in this graph), tor-netdoc
+  # authcert.rs:541 + misc.rs:1491 (directory-AUTHORITY document signing,
+  # called only from `cfg(test)`), and tor-key-forge macros.rs:469
+  # (`define_rsa_keypair!`, whose only expansion is its own `cfg(test)`);
+  # `generate` adds only `impl Keygen for rsa::KeyPair` (tor-key-forge
+  # traits.rs:342), which no site instantiates. What a CLIENT reaches is
+  # public-key-only: `PublicKey::verify` (pk/rsa.rs:282) for legacy
+  # relay-identity signature checks, and `RsaIdentity`, a SHA-1 digest of DER
+  # doing no RSA math (:323). THE FUNNEL SENTENCE IS NOT THE WHOLE ARGUMENT
+  # (the crypto angle on FR-5 C0): a SECOND private-key path exists in
+  # this lock — `ssh-key-fork-arti-0.6.7` (`src/private/rsa.rs:104,185`
+  # `RsaPrivateKey::new` / `from_components`; `src/signature.rs:668`
+  # `pkcs1v15::SigningKey`) reached through `tor-key-forge/src/ssh.rs:167` ←
+  # `tor-keymgr/src/keystore/arti/ssh.rs:105`, and `tor-llcrypto`'s
+  # `from_der` / `as_key` (`pk/rsa.rs:249,253`) hand out an `RsaPrivateKey`.
+  # None is called on a client path, and their inputs are LOCAL keystore
+  # files, never network-chosen ciphertexts — no remote timing oracle exists
+  # there. Re-derive BOTH paths on any arti bump. EXPIRES WHEN tor-proto's
+  # `relay` feature becomes set, or a keystore path starts signing over
+  # remote-chosen input — re-derive before enabling any arti relay or
+  # onion-service feature.
+  { id = "RUSTSEC-2023-0071", reason = "advisory names no [affected.functions]; it scopes the leak to PRIVATE-key timing observable over the network, and no RSA private-key op is reachable from a Tor CLIENT: the funnel tor_llcrypto::pk::rsa::KeyPair::{sign,generate} has callers only behind tor-proto's relay feature (not set here), in directory-authority signing called from cfg(test), and in a cfg(test)-only macro expansion; the second path, ssh-key-fork-arti's RsaPrivateKey via tor-key-forge/tor-keymgr keystores, signs over LOCAL keystore files only, never remote-chosen input; the client reaches PublicKey::verify and RsaIdentity (SHA-1 of DER) only. Mirrors Relim's root deny.toml. EXPIRES if tor-proto gains the relay feature or a keystore path signs remote-chosen input" },
+  # Two UNMAINTAINED transitive helpers arti's graph carries. cargo-audit
+  # reports them as allowed warnings; cargo-deny's v2 default (`unmaintained =
+  # "all"`) reports them as errors. Named by id rather than widening the
+  # policy to `unmaintained = "workspace"`, so a THIRD one is still a red here
+  # and each of these two carries its path and its re-check condition.
+  # `paste 1.0.15` (a proc-macro; archived upstream, `pastey` is the fork):
+  # arti-client -> fs-mistrust -> pwd-grp -> paste. Compile-time only;
+  # nothing of it ships in the binary. Re-check on each arti bump.
+  { id = "RUSTSEC-2024-0436", reason = "paste 1.0.15 is an unmaintained proc-macro reached through arti-client -> fs-mistrust -> pwd-grp; compile-time only, nothing of it ships; re-check on each arti bump" },
+  # `bincode 2.0.1` (unmaintained): in the LOCK but in no resolved graph —
+  # `cargo tree -i bincode --target all` is empty. A lock is the union
+  # over every feature and target; the edge is `typed-index-collections`'s
+  # OWN optional feature `bincode = ["dep:bincode"]` (its manifest), which no
+  # dependent in this graph requests (`tor-netdir` takes the crate's defaults).
+  # cargo-deny's own reachability walk agrees (`advisory-not-detected` on this
+  # id); cargo-audit scans the raw lock and still needs the ignore. Nothing of
+  # it is compiled or shipped. Re-check on each arti bump.
+  { id = "RUSTSEC-2025-0141", reason = "bincode 2.0.1 is unmaintained and appears in the lock only: it sits behind typed-index-collections's own optional bincode feature, which no dependent in this graph requests (cargo tree -i bincode --target all resolves nothing); nothing of it is compiled; re-check on each arti bump" },
+]
+
+[licenses]
+version = 2
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-3.0",
+  "Unlicense",
+  # MPL-2.0 is LOAD-BEARING here, not merely mirrored: `priority-queue 2.7.0`
+  # is `LGPL-3.0-or-later OR MPL-2.0`, and it reaches this graph through
+  # `tor-rtmock`, a NORMAL (non-dev) dependency of `tor-proto` (
+  # `cargo tree -i priority-queue -e normal,build --target all`). Taking the
+  # MPL branch — file-level copyleft, MIT-app-compatible — is what lets arti
+  # ship whole. `option-ext` is the other MPL-2.0 crate. `r-efi` is `MIT OR
+  # Apache-2.0 OR LGPL-2.1-or-later`, satisfied through MIT/Apache; the LGPL
+  # carve-out below is about the LGPL-ONLY pair, not about OR-branches.
+  "MPL-2.0",
+  "CDLA-Permissive-2.0",
+  "Zlib",
+  "CC0-1.0",
+]
+confidence-threshold = 0.9
+
+[[licenses.clarify]]
+name = "ring"
+expression = "Apache-2.0 AND ISC AND MIT"
+license-files = [{ path = "LICENSE", hash = 0 }]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+deny = [
+  # TLS provider discipline (mirrors sdk/): ring-only; aws-lc would re-admit
+  # the C BoringSSL fork the cross-compile gate rejected. The dialer installs
+  # `ring` itself (`dialer.rs::ensure_crypto_provider`).
+  { name = "aws-lc-rs" },
+  { name = "aws-lc-sys" },
+  { name = "rustls", version = "<0.23.45" }, # RUSTSEC-2026-0285 (mirrors sdk/)
+  { name = "rustls-webpki", version = "<0.103.13" },
+  # LGPL-3.0-only, and they must never enter a graph that ships inside a
+  # third-party product — which this crate exists to be consumed from.
+  # Reachable from arti only through `tor-hscrypto/hs-pow-full`, i.e. arti's
+  # `hs-pow-full`, `onion-service-client` or `onion-service-service` features.
+  # `tor-hscrypto` ITSELF is unconditionally in the graph (via tor-keymgr), so
+  # crate-absence is not the invariant; the FEATURE being off is. Banned by
+  # NAME so that turning any of those features on is a RED here rather than a
+  # licence surprise later. `tests/carve_out.rs::licence_carve_out_holds`
+  # asserts the same fact against this lock on every `cargo test`.
+  { name = "equix" },
+  { name = "hashx" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

@@ -1,0 +1,68 @@
+// The Android Gradle Plugin builds the native code with the Android NDK.
+
+group 'com.flutter_rust_bridge.zec_wallet'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        // The Android Gradle Plugin knows how to build native code with the NDK.
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.flutter_rust_bridge.zec_wallet'
+    }
+
+    // Bumping the plugin compileSdkVersion requires all clients of this plugin
+    // to bump the version in their app.
+    // must track the Flutter stable's compile floor (AGP 8.x rejects <34)
+    compileSdkVersion 35
+
+    // Use the NDK version
+    // declared in /android/app/build.gradle file of the Flutter project.
+    // Replace it with a version number if this plugin requires a specfic NDK version.
+    // (e.g. ndkVersion "23.1.7779620")
+    ndkVersion android.ndkVersion
+
+    // Java 11 target (#356-NIT, in lockstep with zec_wallet_ui_platform):
+    // javac warns the 8 target is obsolete on the JDK 17 AGP 8 bundles, and
+    // minSdk 23 desugars 11 bytecode fine.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    defaultConfig {
+        // 23 = Android Keystore stabilization — the hard floor for the SDK's
+        // SealedKeychain seed persistence (wallet-sdk spec §4.2/§4.3); a
+        // lower floor would be a false compatibility contract for a wallet.
+        // No consumerProguardFiles on purpose: this plugin is pure dart:ffi
+        // (no JNI), R8/minification cannot break native symbol resolution.
+        // Android 15+ 16KB page-size: revisit alignment when targetSdk hits
+        // 35 (NDK 28 default alignment depends on the min-API triple) —
+        // tracked in wallet-log; developer.android.com/guide/practices/page-sizes
+        minSdkVersion 23
+    }
+}
+
+apply from: "../cargokit/gradle/plugin.gradle"
+cargokit {
+    manifestDir = "../rust"
+    libname = "zec_wallet"
+}
