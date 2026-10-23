@@ -21,7 +21,7 @@ optional drop-in wallet UI),
 [`zec_wallet_ui_platform`](https://pub.dev/packages/zec_wallet_ui_platform)
 (optional native screen protection for that UI), and this package.
 
-## Status: pre-release (0.0.1)
+## Status: pre-release
 
 Unaudited. See [SECURITY.md](SECURITY.md).
 
@@ -29,8 +29,8 @@ Unaudited. See [SECURITY.md](SECURITY.md).
 
 ```yaml
 dependencies:
-  zec_wallet: ^0.0.1
-  zec_wallet_tor: ^0.0.1
+  zec_wallet: ^0.0.4
+  zec_wallet_tor: ^0.0.3
 ```
 
 The order at boot matters:
@@ -179,7 +179,7 @@ happen, use `required_`, which waits and shows the path as unavailable.
 The Rust crate compiles from source; there are no prebuilt binaries. You need
 a Rust toolchain on the build machine, and [Cargokit] wires the build into
 `flutter build` / `flutter run` for Android, iOS, macOS, Linux and Windows.
-Windows is not yet built or run; support is planned after 0.0.1. The plugin
+Windows is not yet built or run; support is planned for a later release. The plugin
 builds on Linux, but `zec_wallet` has no Linux key store adapter yet, so
 creating or opening a wallet there fails with `vaultAbsent`. A wallet runs on
 Android, iOS and macOS.

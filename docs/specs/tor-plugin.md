@@ -996,8 +996,8 @@ in §12 and recorded as ADR-0572 (Proposed).
   reading: on Android the two `.so`s are `RTLD_LOCAL` and separate, but on
   Apple both are static libraries in ONE Mach-O with one process-global
   provider): the wallet's TLS never READS the process default — `GrpcTls::new`
-  and the swap securer pass an EXPLICIT `ring` provider (`grpc.rs:927-940`,
-  `zec-wallet-swap-near/src/http_client.rs:76-88`) — so whichever library
+  and the swap securer pass an EXPLICIT `ring` provider (`grpc.rs:1369-1384`,
+  `zec-wallet-swap-near/src/http_client.rs:79-99`) — so whichever library
   installs the default cannot change what the wallet verifies with; the
   plugin's `dialer-tor` installs `ring` only if none is installed. P28 pins
   the wallet half (the crossing's T13 sibling). The auth token the wallet
@@ -2132,7 +2132,12 @@ to a failure is wrong; F3, the 10 s budget's "not measured on a device" is
 in the README and CHANGELOG; F4, a crate test now counts connection
 attempts after `Stopped` against a local bridge listener. Left for 0.1.2
 (additive): F5, a public marker type for the post-shutdown stream error,
-today a plain `NotConnected`. Then security-review ∥ code-reviewer on that
+then a plain `NotConnected`. **Done in 0.1.2 (2026-10-09; 0.1.2 was never
+published, and the change ships first in 0.1.3):** the error keeps
+the kind `NotConnected` and the text, and carries `ClientShutDown`;
+`is_client_shut_down(&io::Error)` tests for it. Relim adopts it for an open
+stream failing after Off (its dials already map `Closed`). `TorDialError` is
+unchanged. Then security-review ∥ code-reviewer on that
 fold (`3f864a9a4..14177e829`), plus Relim's note on C1: one BLOCKER (B1, a
 second caller could return before the shutdown was counted, then start a
 client beside it; now counted before the gate closes) and folded hardening:

@@ -147,7 +147,7 @@ abstract class WalletLocalizations {
   /// Honest-degradation body for the not-set-up wallet state; states the money-safety reason setup is gated. Only for builds that genuinely ship without the wallet — a failed boot wiring renders walletStartupFailed* instead (#356-F1).
   ///
   /// In en, this message translates to:
-  /// **'Wallet setup arrives in a later build. Setup will walk you through writing down your recovery phrase before any funds can be received — so nothing is ever at risk without a backup.'**
+  /// **'Wallet setup arrives in a later build. Setup will walk you through writing down your recovery phrase before any funds can be received, so nothing is ever at risk without a backup.'**
   String get walletNotSetUpBody;
 
   /// Heading of the boot-wiring failure screen (WalletStartupFailedScreen): the app ships the wallet but its startup work (native library load / data directory) failed.
@@ -159,7 +159,7 @@ abstract class WalletLocalizations {
   /// Body of the boot-wiring failure screen. Must reassure that a boot failure never means fund loss (funds are on-chain), and point at the retry.
   ///
   /// In en, this message translates to:
-  /// **'Something stopped the wallet from loading on this device. If you already have a wallet, its funds are not affected — they live on the Zcash network and can be restored with your recovery phrase. Try again; if this keeps happening, close and reopen the app.'**
+  /// **'Something stopped the wallet from loading on this device. If you already have a wallet, its funds are not affected: they live on the Zcash network and can be restored with your recovery phrase. Try again; if this keeps happening, close and reopen the app.'**
   String get walletStartupFailedBody;
 
   /// Label above the total wallet balance.
@@ -363,13 +363,13 @@ abstract class WalletLocalizations {
   /// Plain-language explanation of the Queued status in the transaction-detail sheet. Never 'waiting for a connection' (a send can be queued while ONLINE via the not-synced-yet path, and a queued row can be viewed during a non-network stall). Names NO drain schedule at all (#401 R1): at host custody the background pass holds no signing credential, so it points at the surface and the two real actions instead — the walletSendQueuedBody wording family. LATENT today: history.rs maps Queued rows out of the chain view, so this arm is unreachable; it is kept true so it cannot go live wrong.
   ///
   /// In en, this message translates to:
-  /// **'Saved on this device, under Saved & pending — you can send it or cancel it there.'**
+  /// **'Saved on this device, under Saved & pending. You can send it or cancel it there.'**
   String get walletTxExplainQueued;
 
   /// Plain-language explanation of the Pending status in the transaction-detail sheet (also the forward-compat Unknown arm, which renders as Pending). Shown for an unmined wallet-created row only once an endpoint ACCEPTED it (TxSummary.delivery accepted/null); a row the wallet is still retrying gets walletTxExplainRetrying instead, because 'sent to the network' is false for it.
   ///
   /// In en, this message translates to:
-  /// **'Sent to the Zcash network — waiting to be confirmed in a block.'**
+  /// **'Sent to the Zcash network. Waiting to be confirmed in a block.'**
   String get walletTxExplainPending;
 
   /// Plain-language explanation for a wallet-created, unmined row the wallet still owes a broadcast (TxSummary.delivery == retryPending, stage S8 obligation). Cause-agnostic (a transport miss, a blackholed private path, a kill between signing and sending). 'On each sync' — never 'as soon as you're online' (the #399 reconnect-promptness rule). The expiry clause is true: a transaction past its expiry height is never rebroadcast and the funds free again.
@@ -447,7 +447,7 @@ abstract class WalletLocalizations {
   /// Description shown when the rescan will scan the full history (no date).
   ///
   /// In en, this message translates to:
-  /// **'Scan your whole history — slowest, but recovers everything.'**
+  /// **'Scan your whole history. Slowest, but recovers everything.'**
   String get walletRescanRangeAll;
 
   /// Description of the DEFAULT rescan range when it is the wallet's own birthday (a wallet younger than a year, where scanning earlier would only cover empty pre-wallet blocks). Does NOT claim completeness of the USER's funds — a too-high restore birthday can leave real deposits below this floor — so it points the recovery user at the earlier-date / scan-all escape hatch (the same nudge the chosen-date arm carries).
@@ -501,13 +501,13 @@ abstract class WalletLocalizations {
   /// Honest expectation-setting note in the rescan sheet — the duration scales with how far back the chosen date reaches (the ~1-year default measured hours on emulator-class hardware, so 'a few minutes' over-promised).
   ///
   /// In en, this message translates to:
-  /// **'This re-scans the blockchain. Recent dates take minutes; scanning far back can take hours. Sync runs in the background — you can keep using your wallet.'**
+  /// **'This re-scans the blockchain. Recent dates take minutes; scanning far back can take hours. Sync runs in the background, so you can keep using your wallet.'**
   String get walletRescanWarning;
 
   /// Rescan sheet advisory shown while in-flight sends exist (#364 M3): the engine's settling-send fence will likely refuse the rescan, and the refusal costs a full quiesce — say so BEFORE Start. Advisory only; the engine stays authoritative, so the copy must hedge ('usually', 'expect') and never promise refusal.
   ///
   /// In en, this message translates to:
-  /// **'A payment from this wallet is still settling. The wallet usually declines to rescan until it completes — you can try, but expect it to be refused.'**
+  /// **'A payment from this wallet is still settling. The wallet usually declines to rescan until it completes. You can try, but expect it to be refused.'**
   String get walletRescanSettlingAdvisory;
 
   /// Confirm button that starts the rescan.
@@ -531,55 +531,55 @@ abstract class WalletLocalizations {
   /// Activity-section cue while a full-history rescan repopulates.
   ///
   /// In en, this message translates to:
-  /// **'Rebuilding your history — scanning your whole chain. Your balance and activity fill in as it catches up.'**
+  /// **'Rebuilding your history by scanning your whole chain. Your balance and activity fill in as it catches up.'**
   String get walletRescanRebuildingAll;
 
   /// Activity-section cue while a dated rescan repopulates.
   ///
   /// In en, this message translates to:
-  /// **'Rebuilding your history from {date} — your balance and activity fill in as it catches up.'**
+  /// **'Rebuilding your history from {date}. Your balance and activity fill in as it catches up.'**
   String walletRescanRebuildingFrom(String date);
 
   /// Activity-section cue while the default rescan (from the wallet's own birthday) repopulates.
   ///
   /// In en, this message translates to:
-  /// **'Rebuilding your history from your wallet\'s start — your balance and activity fill in as it catches up.'**
+  /// **'Rebuilding your history from your wallet\'s start. Your balance and activity fill in as it catches up.'**
   String get walletRescanRebuildingDefault;
 
   /// Top-of-wallet reassurance banner on the durable catch-up arm (#380): the wallet has never completed a sync pass and is below the chain tip — a relaunch mid-rescan catch-up, a dismissed rescan notice over a rebuilt wallet, or a restore/create's first sync. Generic: unlike the walletRescanRebuilding* family it cannot name what the user chose (the choice does not survive a relaunch). HEDGED funds claim (review, the #356-F7 precedent): a fresh create's first sync — possibly offline, so unbounded — shares this cue, and 'your funds are safe' would assert funds that provably don't exist; 'anything you've received' is conditionally true on every arm.
   ///
   /// In en, this message translates to:
-  /// **'Catching up — your balance and activity fill in as the wallet syncs. Anything you\'ve received is safe.'**
+  /// **'Catching up. Your balance and activity fill in as the wallet syncs. Anything you\'ve received is safe.'**
   String get walletCatchUpBanner;
 
   /// Top-of-wallet reassurance banner on the durable rescan arm (#377 s357b-2): the core's rescan-rebuilding breadcrumb says a rescan rebuild is still catching up, but the in-session choice (which range) did not survive the relaunch — so the copy names the RESCAN (the user's own deliberate action, the stronger 'did I lose funds?' reassurance) without naming the range the walletRescanRebuilding* family can. Same HEDGED funds claim as walletCatchUpBanner ('anything you've received' — a zero-balance wallet rescans too).
   ///
   /// In en, this message translates to:
-  /// **'Rebuilding your history after a rescan — your balance and activity fill in as it catches up. Anything you\'ve received is safe.'**
+  /// **'Rebuilding your history after a rescan. Your balance and activity fill in as it catches up. Anything you\'ve received is safe.'**
   String get walletCatchUpRescanBanner;
 
   /// Honest cue shown when a rescan failed but the wallet was recovered by re-opening. Claims funds-safety only, never 'unchanged' (#379): a fault AFTER the rebuild's atomic rename recovers into the REBUILT lower-birthday wallet, whose balance/history repopulate via the auto-restarted sync.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t rescan right now — your funds are safe, though your balance and history may need a little time to catch back up. Try again in a moment.'**
+  /// **'Couldn\'t rescan right now. Your funds are safe, though your balance and history may need a little time to catch back up. Try again in a moment.'**
   String get walletRescanFailedNotice;
 
   /// Cue shown when the SDK refused a rescan because a broadcast send has not settled yet (rebuilding under it could double-pay); resolution takes hours of online sync.
   ///
   /// In en, this message translates to:
-  /// **'A payment is still settling, so rescanning is paused to protect your funds. Your wallet is unchanged — try again in a couple of hours and keep the app open and online.'**
+  /// **'A payment is still settling, so rescanning is paused to protect your funds. Your wallet is unchanged. Try again in a couple of hours and keep the app open and online.'**
   String get walletRescanBlockedSettlingNotice;
 
   /// Rescan refusal notice (#405): the commit-point fence turned the confirm away because no sync pass will run (host policy off OR a failed sync start), so the wipe would strand a zeroed wallet behind a rebuild that cannot execute. Nothing destructive ran, which is why this is the one rescan refusal entitled to say 'your wallet is unchanged' outright (#379 softened walletRescanFailedNotice because a post-rename fault leaves a REBUILT wallet). CAUSE-AGNOSTIC — the badge and the start-failed notice above it carry the cause and the way out.
   ///
   /// In en, this message translates to:
-  /// **'Rescanning rebuilds your history as your wallet syncs, and syncing isn\'t running right now. Your wallet is unchanged — try again once syncing is running.'**
+  /// **'Rescanning rebuilds your history as your wallet syncs, and syncing isn\'t running right now. Your wallet is unchanged. Try again once syncing is running.'**
   String get walletRescanBlockedSyncNotRunningNotice;
 
   /// Cue shown when a rescan failed because the device is out of disk space; retrying without freeing space will fail again, so the copy asks for space instead of a retry. Claims funds-safety only, never 'unchanged' (#379): a DiskFull after the rebuild's atomic rename recovers into the REBUILT lower-birthday wallet.
   ///
   /// In en, this message translates to:
-  /// **'There isn\'t enough free space to rebuild your wallet history — your funds are safe, though your balance and history may need a little time to catch back up. Free up some space and try again.'**
+  /// **'There isn\'t enough free space to rebuild your wallet history. Your funds are safe, though your balance and history may need a little time to catch back up. Free up some space and try again.'**
   String get walletRescanNeedsSpaceNotice;
 
   /// Dismiss the rescan-failed cue.
@@ -597,7 +597,7 @@ abstract class WalletLocalizations {
   /// Short activity-section cue shown in place of the empty card on the durable catch-up arm (#380) — the wallet is provably still filling in but the rescan choice is unknown (post-relaunch / post-dismiss / a restore's first sync). HEDGED (review): a fresh create's first sync shares this cue, so it must not assert a history that doesn't exist — 'anything you've received will show up here' is true on the rebuilt, restored, AND empty-new arms.
   ///
   /// In en, this message translates to:
-  /// **'Still catching up — anything you\'ve received will show up here.'**
+  /// **'Still catching up. Anything you\'ve received will show up here.'**
   String get walletActivityCatchingUp;
 
   /// Activity-section note replacing 'No activity yet' when history exists but cannot repopulate because no sync pass will run (UX HIGH; #405 widened it from the host policy to the SSOT so a FAILED start is covered too). States the pending fill and its condition; CAUSE-AGNOSTIC — the badge above it names why sync isn't running.
@@ -627,7 +627,7 @@ abstract class WalletLocalizations {
   /// Honest note under a nonzero unshielded balance: BOTH the spendability truth (transparent funds count toward the total but not the spendable figure until shielded — the 'why is my total bigger than spendable' question must be answerable from the card itself, maintainer) AND the privacy truth (publicly visible until shielded).
   ///
   /// In en, this message translates to:
-  /// **'Not included in \"Spendable now\" — shield these funds to spend them. Until then they stay publicly visible on-chain.'**
+  /// **'Not included in \"Spendable now\". Shield these funds to spend them. Until then they stay publicly visible on-chain.'**
   String get walletTransparentNote;
 
   /// The transparent-funds note for a WATCH-ONLY wallet (#397 §3.7 D5): it keeps only the privacy truth (public on-chain) and drops the 'shield these to spend' framing, which a watch-only wallet cannot follow (no spending keys).
@@ -687,7 +687,7 @@ abstract class WalletLocalizations {
   /// #308a (S2 §3.5d): shown in place of the in-flight cue (walletInFlightNote) when the in-flight-sends read FAILS, instead of the cue silently vanishing — a vanished cue reads exactly like 'nothing is mid-flight'. The read retries on its own and on every sync/resume edge, so 'Retrying' is true. It must not claim anything IS in flight (we don't know), and must keep the don't-double-pay caution by pointing at the activity list, where the payment's first leg shows as a pending transaction.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t check whether a payment is still completing. Retrying — until then, look for a pending payment in your activity before you send again.'**
+  /// **'Couldn\'t check whether a payment is still completing. Retrying. Until that works, look for a pending payment in your activity before you send again.'**
   String get walletInFlightReadError;
 
   /// As walletRecoverableEphemeralNote, but the amount is not yet reorg-final (still confirming) — shown as pending recovery, never settled/ready. amount is pre-formatted.
@@ -759,7 +759,7 @@ abstract class WalletLocalizations {
   /// Honest explanation that the transparent balance is below the shielding threshold.
   ///
   /// In en, this message translates to:
-  /// **'These funds are below the amount worth shielding right now — the network fee would outweigh the benefit. They\'ll be shieldable once a bit more arrives.'**
+  /// **'These funds are below the amount worth shielding right now: the network fee would outweigh the benefit. They\'ll be shieldable once a bit more arrives.'**
   String get walletShieldNothingBody;
 
   /// Terminal success: the shield tx was broadcast.
@@ -777,7 +777,7 @@ abstract class WalletLocalizations {
   /// The shield tx is persisted but not yet broadcast; it re-sends on a later sync (money-safe). NOT 'when you're online' (#401 R1b): that is the reconnect-promptness shape #399 forbids — the re-send rides a completed sync pass, which can lag a reconnect and never comes at all while sync is paused. Mirrors walletSendSavedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Saved — we\'ll finish shielding'**
+  /// **'Saved, we\'ll finish shielding'**
   String get walletShieldSavedTitle;
 
   /// Honest body for the unbroadcast (saved-for-retry) shield — confirmation is NOT imminent; it re-sends on a later sync. Same #401 R1b posture as walletSendSavedBody (already signed ⇒ custody-independent, pass-dependent ⇒ the render site appends walletSyncPausedMoneyNote), and no 'next time you're online' reconnect promise.
@@ -843,7 +843,7 @@ abstract class WalletLocalizations {
   /// Explains what move-to-transparent is for (exchange deposits that reject shielded sources).
   ///
   /// In en, this message translates to:
-  /// **'Send shielded ZEC to your own public address — useful for an exchange that won\'t accept a shielded deposit.'**
+  /// **'Send shielded ZEC to your own public address. Useful for an exchange that won\'t accept a shielded deposit.'**
   String get walletMoveSheetSubtitle;
 
   /// Label for the read-only destination — the wallet's own transparent address.
@@ -861,7 +861,7 @@ abstract class WalletLocalizations {
   /// Variant of walletMoveAvailable while the wallet is still catching up (#381, the #380 swap-line rule): the spendable figure is the partial repopulating balance, so a low/zero figure must not read as final.
   ///
   /// In en, this message translates to:
-  /// **'Available to move: {amount} ZEC — your balance is still catching up'**
+  /// **'Available to move: {amount} ZEC (your balance is still catching up)'**
   String walletMoveAvailableCatchingUp(String amount);
 
   /// The §5.1 de-shield warning title, move-specific (a self-transfer, not a payment to a third party).
@@ -873,7 +873,7 @@ abstract class WalletLocalizations {
   /// The §5.1 de-shield warning body, move-specific: the funds + the user's own t-address go public on-chain (no third-party 'recipient' framing).
   ///
   /// In en, this message translates to:
-  /// **'Moving to a public address takes these funds out of your shielded balance — the amount and your public address become publicly visible on the Zcash blockchain.'**
+  /// **'Moving to a public address takes these funds out of your shielded balance. The amount and your public address become publicly visible on the Zcash blockchain.'**
   String get walletMoveDeshieldBody;
 
   /// Body for the defensive walletUnavailable terminal — the session dropped mid-sheet (rare).
@@ -951,7 +951,7 @@ abstract class WalletLocalizations {
   /// The de-shield tx is persisted but not yet broadcast; it re-sends on a later sync (money-safe). NOT 'when you're online' — the #399 reconnect-promptness rule, folded in by #401 R1b. Mirrors walletSendSavedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Saved — we\'ll finish the move'**
+  /// **'Saved, we\'ll finish the move'**
   String get walletMoveSavedTitle;
 
   /// Body for a de-shield that was persisted but not yet broadcast. Same #401 R1b posture as walletSendSavedBody: already signed ⇒ the promise holds at every custody tier; pass-dependent ⇒ the render site appends walletSyncPausedMoneyNote when no sync pass will run.
@@ -993,7 +993,7 @@ abstract class WalletLocalizations {
   /// Variant of walletMoveNothingBody while the wallet is still catching up (#381, hardware-proven): the missing shielded balance is UNSCANNED, not unconfirmed, so the default body's 'Once funds confirm' would misattribute the cause. Hedged ('anything you've received') — it must not assert funds exist (#356-F7 precedent).
   ///
   /// In en, this message translates to:
-  /// **'Your wallet is still catching up — anything you\'ve received becomes available to move once syncing completes.'**
+  /// **'Your wallet is still catching up. Anything you\'ve received becomes available to move once syncing completes.'**
   String get walletMoveNothingCatchingUpBody;
 
   /// The own-address fetch failed or timed out; retryable.
@@ -1023,7 +1023,7 @@ abstract class WalletLocalizations {
   /// Honest staleness cue shown when the last-known balance is rendered through a failed refresh.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t refresh — showing your last-known balance.'**
+  /// **'Couldn\'t refresh. Showing your last-known balance.'**
   String get walletBalanceStale;
 
   /// Honest, recoverable notice when the background sync loop's start command itself fails (rare); shown with a retry.
@@ -1137,7 +1137,7 @@ abstract class WalletLocalizations {
   /// Shown under the Scanning status during the opaque early phase (percent still rounds to 0) so the wallet reads as actively working, not stuck — explains WHY the sync is slow. No trailing period: it can precede another detail line in the joined a11y label. Says 'a deep initial sync' (not 'first sync') since a restore also hits this on a fresh device.
   ///
   /// In en, this message translates to:
-  /// **'Catching up with the network — a deep initial sync can take a while. You can keep using the app while it finishes'**
+  /// **'Catching up with the network. A deep initial sync can take a while. You can keep using the app while it finishes'**
   String get walletSyncCatchingUp;
 
   /// Compact blocks-left count shown on the SAME ROW as the Scanning percent once a real percent exists (counts down). count is pre-formatted compactly, e.g. "1.6M".
@@ -1179,7 +1179,7 @@ abstract class WalletLocalizations {
   /// Stall reason: endpoint unreachable — the normal-offline (caution) arm since #399. Hedged on purpose: a refused dial can mean the SERVER is down while the user's internet is fine, so it must not assert the user's connection is the problem. The wallet retries on its own. Since P3-13 the server IS user-switchable (the sync sheet's Server row opens the picker); the copy still does not promise a switch, because a refused dial cannot say whether it is this server or the user's link that is down.
   ///
   /// In en, this message translates to:
-  /// **'Can\'t reach the Zcash network right now. We\'ll keep trying automatically — check your connection, or the server may be temporarily unavailable.'**
+  /// **'Can\'t reach the Zcash network right now. We\'ll keep trying automatically. Check your connection, or the server may be temporarily unavailable.'**
   String get walletStallEndpoint;
 
   /// Stall reason: the private path is GENUINELY DOWN — a dial that failed (refused, unreachable, a dial timeout), nothing registered, a registrant that declared its transport FAILED, or a runtime the SDK cannot drive. TRANSPORT-NEUTRAL by construction (FR-30 (a), C1): this string is rendered from a StallReason, which carries no transport name — every other failing arm names the host's transport, this one cannot, so it names none. It must never say "Tor": a host that registered Shadowsocks reads it too (ADR-0547). TWO CLAIMS IT MAY NOT MAKE (FR-32 (b), stage S1 `copy`): a StallReason carries no POLICY, so a `Preferred` wallet reads this sentence too — it can neither say the private path "is required" (a setting that user may never have chosen) nor promise that "nothing was sent in the clear" (only `Required` fails closed; its dial plan has no fallback arm at all). Both were in this string until stage S1. NARROWED at stage S1 `truth`: a path that ACCEPTED the dial and then carried nothing no longer reaches this reason — it reads TorState.unanswered, whose sentence claims nothing about which side is at fault.
@@ -1209,7 +1209,7 @@ abstract class WalletLocalizations {
   /// Stall reason: the server ANSWERED and the answer was wrong (StallReason.endpointMisbehaving — malformed or impossible data, a required pool it does not know, or a root/height that conflicts with what an EARLIER server told this wallet). The mirror image of walletStallInternal: the problem is on the SERVER, so the next step IS 'switch servers'. MUST NOT say 'check your connection' (that is walletStallEndpoint — the link works) and MUST NOT suggest restoring from the recovery phrase (nothing on the device is at fault; the seed is not involved). MAY name a RESCAN as the last resort, after other servers (T0-1d): one member of the class is a conflict with the wallet's own cached record — written from an earlier server — and the conflict alone cannot say which server lied; a rescan rebuilds that record and is the only exit when every server is refused. Uses the same 'rescan your history' vocabulary as walletRescanMenuItem. The wallet keeps retrying on its own.
   ///
   /// In en, this message translates to:
-  /// **'This server sent data that can\'t be right, so sync stopped. It isn\'t a connection problem — switch to another server. If every server is refused, rescan your history: the wallet may be keeping a bad record from an earlier server.'**
+  /// **'This server sent data that can\'t be right, so sync stopped. It isn\'t a connection problem. Switch to another server. If every server is refused, rescan your history: the wallet may be keeping a bad record from an earlier server.'**
   String get walletStallEndpointMisbehaving;
 
   /// Stall reason: the wallet's configured starting height (birthday) is above the chain tip THIS SERVER reports and above the newest height the app's bundled data vouches for (StallReason.birthdayInFuture, T0-1c-R2). The wallet cannot tell a server that is behind the chain from a starting height set above the real chain tip, so the copy MUST name BOTH next steps: check the starting block this wallet is set to, or try another server. That height has TWO producers (§4n-review row 7, §4r U-5): the birthday typed at restore AND a rescan from a chosen height (rescan_from) — so the copy says 'the starting block this wallet is set to' and MUST NOT say 'you entered when restoring' (the rescan user typed nothing at restore). MUST NOT say 'check your connection' (the server answered — that is walletStallEndpoint) and MUST NOT suggest restoring from the recovery phrase (nothing on the device is at fault — that is walletStallInternal). The wallet keeps retrying on its own; it clears when the server catches up or the starting block is lowered.
@@ -1269,13 +1269,13 @@ abstract class WalletLocalizations {
   /// Sync-detail sheet explanation: genuinely idle (loop not running, no start failure).
   ///
   /// In en, this message translates to:
-  /// **'Syncing hasn\'t started yet — it starts automatically. No action needed.'**
+  /// **'Syncing hasn\'t started yet. It starts automatically. No action needed.'**
   String get walletSyncExplainIdle;
 
   /// Sync-detail sheet explanation when the sync START command itself failed (#356-F8): replaces the idle arm's 'starts automatically — no action needed', which would contradict the retry notice. Shown above the sheet's Try-again button.
   ///
   /// In en, this message translates to:
-  /// **'Syncing couldn\'t start. Your funds are safe — the wallet just isn\'t checking for new activity. Try again below, or reopen the app.'**
+  /// **'Syncing couldn\'t start. Your funds are safe; the wallet just isn\'t checking for new activity. Try again below, or reopen the app.'**
   String get walletSyncExplainStartFailed;
 
   /// Sync-detail sheet explanation: the loop is up but hasn't reported a batch yet (the silent prep phase).
@@ -1293,7 +1293,7 @@ abstract class WalletLocalizations {
   /// Sync-detail sheet explanation: scanning. Reassures the user the app stays usable (maintainer: 'what's going on' behind the badge).
   ///
   /// In en, this message translates to:
-  /// **'The wallet is checking blockchain blocks for your funds. Your balance and activity update as new transactions are found — you can keep using the app while it finishes.'**
+  /// **'The wallet is checking blockchain blocks for your funds. Your balance and activity update as new transactions are found. You can keep using the app while it finishes.'**
   String get walletSyncExplainScanning;
 
   /// Sync-detail sheet explanation: up to date.
@@ -1311,13 +1311,13 @@ abstract class WalletLocalizations {
   /// Sync-detail sheet explanation for the endpointUnreachable stall only (#399): the calm normal-offline story — funds-safe reassurance, queued-sends-are-normal, automatic retry. Carries BOTH hedges itself ('if you're offline' conditional + the server-side possibility) because the sheet suppresses the walletStallEndpoint detail under this explanation (the near-identical-pair rule); the detail still rides the badge a11y label. The queued-sends clause names the SURFACE and no schedule (#401 R1 — host custody cannot drain on a background pass), and the retry sentence says CONNECTION explicitly so it can never be read as a promise about the send. Hard stalls keep walletSyncExplainStalled.
   ///
   /// In en, this message translates to:
-  /// **'Can\'t reach the Zcash network — that\'s normal if you\'re offline, or the server may be temporarily unavailable. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending. The connection retries on its own.'**
+  /// **'Can\'t reach the Zcash network. That\'s normal if you\'re offline, or the server may be temporarily unavailable. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending. The connection retries on its own.'**
   String get walletSyncExplainStalledOffline;
 
   /// Sync-detail sheet explanation: offline; leads with the funds-are-safe reassurance. The queued-sends clause names the SURFACE, never a drain schedule (#401 R1 — host custody cannot drain on a background pass); keep 'Saved & pending' in step with walletParkedTitle.
   ///
   /// In en, this message translates to:
-  /// **'No network connection. Your funds are safe — the balance shows the last synced state, and queued sends stay saved under Saved & pending.'**
+  /// **'No network connection. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending.'**
   String get walletSyncExplainOffline;
 
   /// Sync-detail sheet explanation: the forward-compat arm — neutral syncing framing, never healthy or alarming.
@@ -1365,55 +1365,55 @@ abstract class WalletLocalizations {
   /// Tor state chip: policy preferred and Tor degraded to clearnet (visible, never silent).
   ///
   /// In en, this message translates to:
-  /// **'Tor unavailable — using direct connection'**
+  /// **'Tor unavailable, using direct connection'**
   String get walletTorFellBack;
 
   /// Transport chip: zero traffic — the path is GENUINELY DOWN. NARROWED at stage S1 `truth` to a dial that FAILED (refused, unreachable, a dial timeout, a NotReady/Retired/FAILED descriptor) plus the cases where there is no path at all (nothing registered, a registrant that declared its transport FAILED — ABI v3 health, ADR-0549). A dial the transport ACCEPTED and then carried nothing is NOT this state: it reads TorState.unanswered, because the SDK cannot separate a blackholed path from a wedged server and this chip would blame the path. The NEUTRAL variant, used when the SDK has no name to show; walletTorUnavailableNamed carries the host's own name when there is one. Never says "Tor" (ADR-0547, FR-30 (a)); names no policy (FR-32 (b)).
   ///
   /// In en, this message translates to:
-  /// **'Private path unavailable — not connected'**
+  /// **'Private path unavailable, not connected'**
   String get walletTorUnavailable;
 
   /// Transport chip: as walletTorUnavailable, for a REGISTERED transport whose descriptor names it. transport = the host's own name, verbatim.
   ///
   /// In en, this message translates to:
-  /// **'{transport} unavailable — not connected'**
+  /// **'{transport} unavailable, not connected'**
   String walletTorUnavailableNamed(String transport);
 
   /// Transport CHIP for TorState.unanswered (stage S1 `truth`, FR-36): the path took the connection and no RPC has come back over it for the maintainer's minute while the wallet was trying. It states the two attested facts — the dial was accepted, nothing has answered — and blames neither side: the SDK cannot tell a blackholed path from a wedged server and never guesses (the either/or is spelled out in the sheet, walletTransportExplainUnanswered). The NEUTRAL variant, used when the SDK has no name to show; walletTorUnansweredNamed carries the host's own name when there is one. Never says "Tor" (ADR-0547). Deliberately NOT walletTorUnavailable's wording: that one means the path is genuinely down.
   ///
   /// In en, this message translates to:
-  /// **'Private path connected — nothing coming back'**
+  /// **'Private path connected, nothing coming back'**
   String get walletTorUnanswered;
 
   /// Transport chip for TorState.unanswered on the runtimes that declared NOTHING to branch on — TorRuntimeKind.dialer (an arbitrary byte-stream dialer a Rust host injected, which net/dialer.rs says the SDK "never knows or names") and TorRuntimeKind.unknown. It is walletTorUnanswered plus the refusal that walletTorActiveUnattested already makes for the SAME runtime while traffic is flowing. WHY IT EXISTS (crypto audit HIGH + the product pass, found independently): the unanswered arm sent these two runtimes to the bare walletTorUnanswered, so a path the SDK cannot attest read "Private path in use (privacy not verified)" while it carried and the STRONGER "Private path connected" once it went quiet — a user checking privacy at the moment the path stopped carrying read a bigger claim than while it was working. That is FR-44's defect class, sign-identical, on a different runtime; FR-32 (a) is the rule it breaks. Paired with walletTransportExplainUnansweredUnverified, caution tone. ExternalSocks5 keeps the unqualified walletTorUnanswered (the host named Tor by choosing that variant), as does the attested empty-name hostDialer. STILL OPEN, deliberately: whether the noun "private path" over-claims even with the parenthetical — that question is the same for this string and for walletTorActiveUnattested, and they must change together or not at all.
   ///
   /// In en, this message translates to:
-  /// **'Private path connected — nothing coming back (privacy not verified)'**
+  /// **'Private path connected, nothing coming back (privacy not verified)'**
   String get walletTorUnansweredUnattested;
 
   /// Transport chip: as walletTorUnanswered, for a REGISTERED transport whose descriptor names it — and ONLY for a path the host declared HIDDEN and isolating, since it is the variant that carries no privacy qualifier. transport = the HOST'S OWN name for its transport, verbatim — the wallet never interprets or translates it (ADR-0547).
   ///
   /// In en, this message translates to:
-  /// **'{transport} connected — nothing coming back'**
+  /// **'{transport} connected, nothing coming back'**
   String walletTorUnansweredNamed(String transport);
 
   /// Transport chip for TorState.unanswered on a registered dialer whose descriptor declared its path EXPOSED (ADR-0547 exposure = exposed: the server sees the device's address). FR-44: the unanswered arm inherited Active's payload and not its honesty — it read the plain "connected — nothing coming back" sentence for an exposed path, so a state change silently dropped a privacy loss the Active chip had been disclosing (walletTorHostDirect). The name is discarded here exactly as it is on walletTorHostDirect: what matters is that the path is not private, whatever the host called it and whatever the isolation says. Paired with walletTransportExplainUnansweredDirect, caution tone.
   ///
   /// In en, this message translates to:
-  /// **'Not private (your app\'s direct connection) — nothing coming back'**
+  /// **'Not private (your app\'s direct connection), nothing coming back'**
   String get walletTorUnansweredDirect;
 
   /// Transport chip for TorState.unanswered on a registered dialer that is NOT the plainly-private case: the host declared isolation unsupported (or did not declare it), so the wallet's connections can be linked to each other at the proxy — or the host did not declare whether the path hides the device's address (exposure unknown), where the weaker sentence is the honest one (the §3.3 privacy rule: never inherit a benign framing for something the binding cannot attest). The twin of walletTorHostPathLinkable on the Active family. transport = the host's own name, verbatim, or walletTorHostOtherTransport when the SDK has none to show — the sentence leads with the state, not the name, so the unattributed fragment reads inside it. Caution tone.
   ///
   /// In en, this message translates to:
-  /// **'Connected over {transport} — nothing coming back; connections can be linked by the proxy'**
+  /// **'Connected over {transport}, nothing coming back; connections can be linked by the proxy'**
   String walletTorUnansweredLinkable(String transport);
 
   /// Tor state chip: forward-compatibility arm; privacy rule renders it as not protected.
   ///
   /// In en, this message translates to:
-  /// **'Tor status unknown — treat as not protected'**
+  /// **'Tor status unknown. Treat as not protected'**
   String get walletTorUnknown;
 
   /// Balance card header when the chain height the balance reflects is known — the as-of block rides IN the header (maintainer), never a separate floating row. The height arrives PRE-GROUPED (exactBlockCount — same format as the sheet's figure rows).
@@ -1593,7 +1593,7 @@ abstract class WalletLocalizations {
   /// Picker refusal copy for WalletErrorKind.syncServerUnreachable when the user TYPED this address (the custom-URL field): the probe could not dial, timed out, or was refused — a gated server rejecting the key lands here too. Hedged like walletStallEndpoint: it MUST NOT say 'check your connection' alone — the server may be the down side. Nothing changed: the wallet stays on its current server. WHY IT NO LONGER STOPS AT 'check the address' (stage S1 `copy`, from the `truth` re-adjudication): probe_oracle (wallet.rs) maps everything that is not a FAILED private dial onto this kind, and since stage S1 a private path that ACCEPTS the dial and then carries nothing no longer reports TorUnavailable — deliberately, because blaming the path for what cannot be separated from a wedged server is the over-claim the stage removed. So a censored path and a wedged server arrive here as the same error and the SDK cannot tell them apart; the address stays the first step (this reader typed it) but it is no longer the ONLY one. Its sibling walletSyncServerUnreachableOffered serves the reader who typed nothing.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t reach this server. Check the address — and if it\'s right, either this server isn\'t answering or your app can\'t reach it right now. Try again, or pick another server.'**
+  /// **'Couldn\'t reach this server. Check the address. If it\'s right, either this server isn\'t answering or your app can\'t reach it right now. Try again, or pick another server.'**
   String get walletSyncServerUnreachable;
 
   /// Picker refusal copy for WalletErrorKind.syncServerUnreachable when the address came from the APP'S OWN LIST (a predefined or default choice) rather than from the user — stage S1 `copy`. Same error, different reader: 'check the address' is dead advice for someone who typed nothing, and it is the sentence that would meet a `Required` wallet whose private path is being censored, where the address is the one thing that is certainly fine. The either/or is the point and must survive translation — the SDK cannot separate a wedged server from a path that accepts connections and carries nothing, and it does not guess; it names both causes and the two steps the reader can actually take. Names no transport (ADR-0547) and no policy (FR-32 (b)).
@@ -1641,7 +1641,7 @@ abstract class WalletLocalizations {
   /// Picker notice after a switch failed PAST the point of no return and the wallet was recovered by re-opening (the rescan's recover-by-reopen). Names the server actually in use after the re-open (the new one if the choice landed, the previous one otherwise). Funds and history are untouched either way.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t switch — still using {host}.'**
+  /// **'Couldn\'t switch. Still using {host}.'**
   String walletSyncServerSwitchFailedRecovered(String host);
 
   /// Sync sheet Connection explanation: no privacy transport — a direct (clearnet) connection.
@@ -1689,31 +1689,31 @@ abstract class WalletLocalizations {
   /// Sync sheet Connection explanation for TorState.unanswered (stage S1 `truth`, FR-36). The either/or is the POINT and must survive translation: the SDK reports what its own RPCs saw over a connection whose arm it knows, and it never says WHY a ready path is not carrying — a blackholed transport and a wedged server look identical from here. TWO next steps for the two causes (the walletStallBirthdayInFuture discipline): another server for a wedged server, the app's network settings for the path. MUST NOT promise that nothing left in the clear — a `Preferred` wallet reads this too, and its next dial leaves for clearnet. The NEUTRAL variant (no name to show).
   ///
   /// In en, this message translates to:
-  /// **'The private path took the connection, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
+  /// **'The private path took the connection, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
   String get walletTransportExplainUnanswered;
 
   /// Sync sheet Connection explanation: as walletTransportExplainUnanswered, naming the host's own transport verbatim. Only the FIRST clause takes the name — the either/or still says "the path", because naming the host's transport a second time would read as an accusation of it.
   ///
   /// In en, this message translates to:
-  /// **'{transport} took the connection, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
+  /// **'{transport} took the connection, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
   String walletTransportExplainUnansweredNamed(String transport);
 
   /// Sync sheet Connection explanation for TorState.unanswered on an EXPOSED registered path (FR-44). Two facts, in this order: the privacy verdict the descriptor decides (walletTransportExplainDirect's sentence, verbatim — the server sees the device's address) and then the unanswered either/or with its two next steps, which survive here unchanged because the state means the same thing whatever the exposure. The subject is "the connection", never "the private path": naming this path private is the FR-44 defect.
   ///
   /// In en, this message translates to:
-  /// **'Wallet traffic connects directly to the server. The server can see your IP address. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
+  /// **'Wallet traffic connects directly to the server. The server can see your IP address. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
   String get walletTransportExplainUnansweredDirect;
 
   /// Sync sheet Connection explanation for TorState.unanswered on a registered path whose EXPOSURE the host did not declare, or declared with a value this binding cannot read (FR-44). walletTransportExplainUnverified's verdict, verbatim, then the unanswered either/or with its two next steps. The Active family renders walletTransportExplainUnverified alone on the same payload; this is the same verdict with the state's own sentence after it.
   ///
   /// In en, this message translates to:
-  /// **'The privacy of this connection can\'t be verified — treat it as not private. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
+  /// **'The privacy of this connection can\'t be verified, so treat it as not private. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.'**
   String get walletTransportExplainUnansweredUnverified;
 
   /// Sync sheet Connection explanation: an unverifiable/unknown transport state (privacy rule: never claim protection).
   ///
   /// In en, this message translates to:
-  /// **'The privacy of this connection can\'t be verified — treat it as not private.'**
+  /// **'The privacy of this connection can\'t be verified, so treat it as not private.'**
   String get walletTransportExplainUnverified;
 
   /// Sync sheet Connection explanation: generic copy for a HOST-provided protective transport (e.g. xray/vless/VPN) when the host supplies no detail of its own.
@@ -1731,7 +1731,7 @@ abstract class WalletLocalizations {
   /// Body on the wallet onboarding welcome screen; states the money-safety reason backup comes first.
   ///
   /// In en, this message translates to:
-  /// **'Create a new wallet to receive and hold ZEC. We\'ll generate a recovery phrase and walk you through backing it up before any funds can arrive — so nothing is ever at risk without a backup.'**
+  /// **'Create a new wallet to receive and hold ZEC. We\'ll generate a recovery phrase and walk you through backing it up before any funds can arrive, so nothing is ever at risk without a backup.'**
   String get walletOnboardingWelcomeBody;
 
   /// Primary action on the welcome screen: start creating a brand-new wallet.
@@ -1827,7 +1827,7 @@ abstract class WalletLocalizations {
   /// The chosen watch-only start month/year, carrying the honest warning that older funds won't appear (a watch-only import always scans from a floor — no full-scan arm — so the auditor importing an older wallet must not silently see an understated balance). Mirrors walletRestoreBirthdayChosen without the 'Scan all history' clause.
   ///
   /// In en, this message translates to:
-  /// **'Scanning from {date} on — funds received before then won\'t appear. Older wallet? Pick an earlier date.'**
+  /// **'Scanning from {date} on. Funds received before then won\'t appear. Older wallet? Pick an earlier date.'**
   String walletWatchOnlyBirthdayChosen(String date);
 
   /// Date-picker help text on the watch-only import screen.
@@ -1887,7 +1887,7 @@ abstract class WalletLocalizations {
   /// Body on the restore screen explaining what to enter, with an honest note that passphrase-protected ('25th word') wallets can't be imported (a wrong/absent passphrase silently restores a different, empty wallet).
   ///
   /// In en, this message translates to:
-  /// **'Enter your recovery phrase to restore your wallet — type or paste the words in order, separated by spaces. Standard phrases only: if your wallet used an extra passphrase (a \"25th word\"), this app can\'t restore it yet — you\'d see an empty wallet, not an error.'**
+  /// **'Enter your recovery phrase to restore your wallet. Type or paste the words in order, separated by spaces. Standard phrases only: if your wallet used an extra passphrase (a \"25th word\"), this app can\'t restore it yet. You\'d see an empty wallet, not an error.'**
   String get walletRestoreBody;
 
   /// Placeholder hint inside the recovery-phrase field, showing words are space-separated.
@@ -1911,7 +1911,7 @@ abstract class WalletLocalizations {
   /// Live cue when one or more entered words aren't in the BIP39 list (shown as error-coloured pills).
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 word isn\'t a recovery word — fix the highlighted one} other{{count} words aren\'t recovery words — fix the highlighted ones}}'**
+  /// **'{count, plural, =1{1 word isn\'t a recovery word. Fix the highlighted one} other{{count} words aren\'t recovery words. Fix the highlighted ones}}'**
   String walletRestoreSomeWordsInvalid(int count);
 
   /// Screen-reader label for a recovery-word pill (valid word).
@@ -1953,13 +1953,13 @@ abstract class WalletLocalizations {
   /// Shown when the user chose a full scan (no date): money-safe but slower.
   ///
   /// In en, this message translates to:
-  /// **'We\'ll scan your whole history — slower, but nothing is missed.'**
+  /// **'We\'ll scan your whole history. Slower, but nothing is missed.'**
   String get walletRestoreBirthdayNone;
 
   /// Shown when a creation date is set (the ~6-months-ago default). States the exclusion as a FACT and names both escape hatches (earlier date / full scan).
   ///
   /// In en, this message translates to:
-  /// **'Scanning from {date} on — funds received before then won\'t appear. Older wallet? Pick an earlier date, or Scan all history.'**
+  /// **'Scanning from {date} on. Funds received before then won\'t appear. Older wallet? Pick an earlier date, or Scan all history.'**
   String walletRestoreBirthdayChosen(String date);
 
   /// Action to choose the approximate wallet-creation date.
@@ -2031,7 +2031,7 @@ abstract class WalletLocalizations {
   /// Explanation on the backup screen of what the recovery phrase is and the rules for handling it.
   ///
   /// In en, this message translates to:
-  /// **'These words are the ONLY way to recover your wallet and funds. Write them down in order and keep them somewhere safe and private. Never share them or store them online — anyone with these words can take your funds.'**
+  /// **'These words are the ONLY way to recover your wallet and funds. Write them down in order and keep them somewhere safe and private. Never share them or store them online: anyone with these words can take your funds.'**
   String get walletBackupBody;
 
   /// Security note on Android, where the screen is marked secure (no screenshots).
@@ -2109,7 +2109,7 @@ abstract class WalletLocalizations {
   /// Body of the Start-over confirmation dialog. Must stay honest for EVERY way of reaching forced backup: a fresh create (nothing deposited via this app), the rare restore stranded here by a confirm-persist failure, AND the residual lost-flag edge on a wallet that was briefly active (review) — hence the hedged 'if this wallet ever held funds' phrase-warning instead of an absolute 'never received anything' claim.
   ///
   /// In en, this message translates to:
-  /// **'This deletes this wallet from the device and returns you to the start. Nothing can be deposited through this app before setup is finished.\n\nIf this wallet ever held funds — or was restored from a recovery phrase — only that phrase can bring it back.'**
+  /// **'This deletes this wallet from the device and returns you to the start. Nothing can be deposited through this app before setup is finished.\n\nIf this wallet ever held funds, or was restored from a recovery phrase, only that phrase can bring it back.'**
   String get walletBackupStartOverConfirmBody;
 
   /// Destructive confirm action of the Start-over dialog (rendered in the destructive color).
@@ -2163,7 +2163,7 @@ abstract class WalletLocalizations {
   /// Explanation shown when the wallet has no local recovery phrase (a host-managed / raw seed); tells the user their recovery lives with the installing app's account.
   ///
   /// In en, this message translates to:
-  /// **'This wallet was set up using your account from the app that installed it, so it has no recovery phrase of its own. Your funds are recovered together with that account — use its backup to keep them safe.'**
+  /// **'This wallet was set up using your account from the app that installed it, so it has no recovery phrase of its own. Your funds are recovered together with that account. Use its backup to keep them safe.'**
   String get walletBackupManagedBody;
 
   /// App-bar title of the UFVK export screen (#397): the sanctioned surface that reveals the wallet's unified full viewing key for a watch-only or accounting use.
@@ -2181,19 +2181,19 @@ abstract class WalletLocalizations {
   /// Subtitle of the export-viewing-key settings tile, summarizing that the exported key is view-only.
   ///
   /// In en, this message translates to:
-  /// **'Share a view-only copy of your wallet — it can see your history but cannot spend.'**
+  /// **'Share a view-only copy of your wallet. It can see your history but cannot spend.'**
   String get walletExportViewingKeyTileSubtitle;
 
   /// The #397 D9 warning copy shown on the export-viewing-key screen. Must state all four facts: (1) it reveals all history in and out, past and future; (2) it cannot spend or recover; (3) share only with someone trusted; (4) the only un-share is moving funds to a new wallet. No softening.
   ///
   /// In en, this message translates to:
-  /// **'This key lets whoever holds it see everything this wallet has ever received and sent — and everything it will in the future. It cannot spend your funds and cannot recover your wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. The only way to un-share it later is to move your funds to a new wallet.'**
+  /// **'This key lets whoever holds it see everything this wallet has ever received and sent, and everything it will in the future. It cannot spend your funds and cannot recover your wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. The only way to un-share it later is to move your funds to a new wallet.'**
   String get walletExportViewingKeyWarning;
 
   /// The #397 D9 warning for a WATCH-ONLY wallet exporting its own viewing key (UX-M3): identical to walletExportViewingKeyWarning but its final clause states the honest 'once shared it cannot be un-shared', since a watch-only wallet cannot 'move your funds to a new wallet' (no spending keys). Keep the same four facts, no softening.
   ///
   /// In en, this message translates to:
-  /// **'This key lets whoever holds it see everything this wallet has ever received and sent — and everything it will in the future. It cannot spend any funds and cannot recover the wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. Once shared, it cannot be un-shared.'**
+  /// **'This key lets whoever holds it see everything this wallet has ever received and sent, and everything it will in the future. It cannot spend any funds and cannot recover the wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. Once shared, it cannot be un-shared.'**
   String get walletExportViewingKeyWarningWatchOnly;
 
   /// Button that triggers re-authentication and then reveals the viewing key on the export screen.
@@ -2265,7 +2265,7 @@ abstract class WalletLocalizations {
   /// Security-screen explanation for a watch-only wallet: it has no spending keys and nothing to back up.
   ///
   /// In en, this message translates to:
-  /// **'This is a watch-only wallet. It was set up from a viewing key, so it can see your balance and history but holds no spending keys — there is nothing to back up here, and it cannot send funds.'**
+  /// **'This is a watch-only wallet. It was set up from a viewing key, so it can see your balance and history but holds no spending keys. There is nothing to back up here, and it cannot send funds.'**
   String get walletWatchOnlyAboutBody;
 
   /// Short header badge marking a watch-only wallet (no spending keys).
@@ -2295,13 +2295,13 @@ abstract class WalletLocalizations {
   /// Onboarding failure: the wallet's single-instance lock is held (retryable). Honest for BOTH causes — a real second window AND a transient internal straggler finishing up (the device-proven case, where no other window exists).
   ///
   /// In en, this message translates to:
-  /// **'This wallet is open in another window or app, or is still finishing a previous operation. Close any other window using it — or wait a moment — then try again.'**
+  /// **'This wallet is open in another window or app, or is still finishing a previous operation. Close any other window using it (or wait a moment), then try again.'**
   String get walletOnboardingFailedAlreadyOpen;
 
   /// Onboarding failure: damaged seal / destroyed key / corrupt storage — restore is the path, not retry. Funds are recoverable from the phrase.
   ///
   /// In en, this message translates to:
-  /// **'This wallet\'s secure key is no longer available, so it can\'t be opened on this device. Your funds are safe — restore from your recovery phrase to recover them.'**
+  /// **'This wallet\'s secure key is no longer available, so it can\'t be opened on this device. Your funds are safe. Restore from your recovery phrase to recover them.'**
   String get walletOnboardingFailedNeedsRecovery;
 
   /// Primary action on the needsRecovery failure screen: clears the unreadable wallet and routes to the restore flow (#251 escape hatch).
@@ -2319,7 +2319,7 @@ abstract class WalletLocalizations {
   /// Body of the confirm dialog: WARN the user they must have their recovery phrase in hand, then reassure funds are safe (phrase-controlled), before the irreversible force-clear.
   ///
   /// In en, this message translates to:
-  /// **'Make sure you have your recovery phrase before continuing — you\'ll need it on the next screen to recover your funds. Your funds are safe on the blockchain and controlled by that phrase. This removes the unreadable wallet data from this device so it can be rebuilt.'**
+  /// **'Make sure you have your recovery phrase before continuing. You\'ll need it on the next screen to recover your funds. Your funds are safe on the blockchain and controlled by that phrase. This removes the unreadable wallet data from this device so it can be rebuilt.'**
   String get walletOnboardingRecoverConfirmBody;
 
   /// Cancel action in the restore-confirm dialog.
@@ -2349,7 +2349,7 @@ abstract class WalletLocalizations {
   /// Onboarding failure: an interrupted create (remnant); retrying re-probes and resumes the repair via create (open cannot repair it). Retryable, reassuring (the sealed seed is intact).
   ///
   /// In en, this message translates to:
-  /// **'Wallet setup didn\'t finish. Try again to complete it — nothing was lost.'**
+  /// **'Wallet setup didn\'t finish. Try again to complete it; nothing was lost.'**
   String get walletOnboardingFailedInterruptedSetup;
 
   /// Onboarding failure: anything else / a forward-compat kind (retryable; the stable code rides logs).
@@ -2361,7 +2361,7 @@ abstract class WalletLocalizations {
   /// Onboarding failure: the host app supplied an invalid wallet configuration (e.g. a rejected data directory). A developer error, not a device/user condition — NON-retryable, and deliberately without an action button (a Retry here would loop the same failure; security review N1).
   ///
   /// In en, this message translates to:
-  /// **'This app\'s wallet setup is misconfigured, so the wallet can\'t start. Retrying won\'t help — please report this to the app\'s developer. Your funds are not affected.'**
+  /// **'This app\'s wallet setup is misconfigured, so the wallet can\'t start. Retrying won\'t help. Please report this to the app\'s developer. Your funds are not affected.'**
   String get walletOnboardingFailedConfiguration;
 
   /// Entry button on the active wallet surface that opens the send flow.
@@ -2373,13 +2373,13 @@ abstract class WalletLocalizations {
   /// Honest reason under a disabled Send when no sync pass will run (#405 → the SSOT). Wins over any retained status arm: nothing is syncing, stalling, or catching up. CAUSE-AGNOSTIC — the badge names the cause. No trailing period (it renders as a reason line).
   ///
   /// In en, this message translates to:
-  /// **'Syncing isn\'t running — your spendable balance can\'t update'**
+  /// **'Syncing isn\'t running, so your spendable balance can\'t update'**
   String get walletSendSyncNotRunning;
 
   /// Honest reason shown under a disabled Send button while sync is still catching up and nothing is spendable yet (spend-before-sync). Neutral wording (#356-F7): a zero-fund wallet has no funds for sync to 'reach', so the copy must not imply funds are known to exist.
   ///
   /// In en, this message translates to:
-  /// **'Still syncing — you can send once you have a spendable balance'**
+  /// **'Still syncing. You can send once you have a spendable balance'**
   String get walletSendWaitingForFunds;
 
   /// Honest reason shown under a disabled Send button when the wallet is fully synced but has no spendable funds.
@@ -2409,7 +2409,7 @@ abstract class WalletLocalizations {
   /// Honest full-screen state when the send screen is reached on a watch-only wallet (no spending keys). Permanent fact, not transient.
   ///
   /// In en, this message translates to:
-  /// **'This is a watch-only wallet. It can show balances and receive payments, but it holds no spending keys — so it can\'t send.'**
+  /// **'This is a watch-only wallet. It can show balances and receive payments, but it holds no spending keys, so it can\'t send.'**
   String get walletSendWatchOnly;
 
   /// Full-screen title when a send screen opened by the app's own entry point (WalletSendEntry.push) appears AFTER the entry's mount grace ran out (stage S8 deadline, R05). The app was already told that nothing was sent, and that answer is final for this request: the screen offers no form and no way to pay it. Terminal, not transient — the user starts again from the app.
@@ -2427,7 +2427,7 @@ abstract class WalletLocalizations {
   /// Inline send-form fault when a watch-only wallet somehow reaches propose/send (defense-in-depth; the SDK refuses the spend).
   ///
   /// In en, this message translates to:
-  /// **'This is a watch-only wallet — it holds no spending keys, so it can\'t send.'**
+  /// **'This is a watch-only wallet. It holds no spending keys, so it can\'t send.'**
   String get walletSendFaultWatchOnly;
 
   /// Spendable-balance hint above the send form; amount is integer-formatted (never a float).
@@ -2439,7 +2439,7 @@ abstract class WalletLocalizations {
   /// Variant of walletSendAvailable while the wallet is still catching up (#381, the #380 swap-line rule): the spendable figure is the partial repopulating balance, so a low/zero figure (incl. the post-'Send another' refresh) must not read as final.
   ///
   /// In en, this message translates to:
-  /// **'Available to send: {amount} ZEC — your balance is still catching up'**
+  /// **'Available to send: {amount} ZEC (your balance is still catching up)'**
   String walletSendAvailableCatchingUp(String amount);
 
   /// Label for the recipient address field / confirm line.
@@ -2655,7 +2655,7 @@ abstract class WalletLocalizations {
   /// Large-send dialog body when both the relative and absolute large-amount triggers fired (both, and the forward-compat unknown arm).
   ///
   /// In en, this message translates to:
-  /// **'This is a large payment — almost your entire balance. A sent payment can\'t be reversed.'**
+  /// **'This is a large payment: almost your entire balance. A sent payment can\'t be reversed.'**
   String get walletSendLargeConfirmBoth;
 
   /// The irreversible confirm action in the large-send dialog; carries the exact amount so it is unmistakable at the moment of confirming.
@@ -2685,7 +2685,7 @@ abstract class WalletLocalizations {
   /// Result: nothing was accepted this attempt (transport miss or mempool reject); the payment is persisted and will retry.
   ///
   /// In en, this message translates to:
-  /// **'Saved — we\'ll finish sending'**
+  /// **'Saved, we\'ll finish sending'**
   String get walletSendSavedTitle;
 
   /// Result body when no transaction was accepted this attempt — cause-agnostic: a transport miss OR a mempool reject (which can be the already-known race shape with money actually in motion; the wallet-screen in-flight cue owns that window). Money-safe; auto-retry. The automatic promise is TRUE at every custody tier (#401 R1b): this transaction is already SIGNED, and the §6.1 ReBroadcast arm re-sends the raw bytes with no seed — unlike a QUEUED intent, which needs a credential the background pass may not have. It is PASS-dependent though, so the render site appends walletSyncPausedMoneyNote when no pass will run. 'On a later sync' — never 'as soon as you're online' (the #399 reconnect-promptness rule).
@@ -2733,7 +2733,7 @@ abstract class WalletLocalizations {
   /// Result body for a re-consumed proposal token (no double-spend).
   ///
   /// In en, this message translates to:
-  /// **'This payment was already submitted — it won\'t be sent twice.'**
+  /// **'This payment was already submitted. It won\'t be sent twice.'**
   String get walletSendAlreadyBody;
 
   /// Result: signing/build failed; no money moved.
@@ -2781,7 +2781,7 @@ abstract class WalletLocalizations {
   /// Form fault: insufficient funds. Figures are integer-formatted; never logged (§5.4).
   ///
   /// In en, this message translates to:
-  /// **'Not enough spendable balance — you have {available} ZEC and this needs {required} ZEC.'**
+  /// **'Not enough spendable balance. You have {available} ZEC and this needs {required} ZEC.'**
   String walletSendFaultInsufficient(String available, String required);
 
   /// Send fault body under the shared walletSendFailedTitle, for RW-SYNC-002 (networkUpgradeUnsupported): the network is running consensus rules this app version cannot build a valid transaction for, so signing is refused before any proving time is spent. MUST NOT blame the user, MUST NOT imply funds are at risk (they are untouched), MUST NOT promise a timeline we do not control, and MUST NOT promise that receiving still works (INC-016: a build that predates the upgrade can be blind to incoming payments as well). Never shown for a wallet that is merely behind on sync — that is walletSendFaultInsufficientCatchingUp.
@@ -2811,7 +2811,7 @@ abstract class WalletLocalizations {
   /// Sync-detail sheet explanation paired with walletSyncUpToDateDegraded. The next step MUST be 'switch servers': never 'check your connection' (the link works — the pass reached the tip) and never 'update the app' (that is the UpToDateLimited pair). Names the money consequence honestly (unspendable funds in that pool, balance is a floor) without claiming the user holds any. WHICH pool, and how, is the detail line under it — walletSyncPoolUnsupported / walletSyncPoolWithheld / walletSyncPoolHeightViolation / walletSyncPoolUnknown, one per affected pool (§4r U-3).
   ///
   /// In en, this message translates to:
-  /// **'This server is refusing, withholding or misreporting one of Zcash\'s shielded pools. Funds received in that pool can\'t be spent through it, and the balance shown is a floor. Switch to another server to use them — this isn\'t a connection problem.'**
+  /// **'This server is refusing, withholding or misreporting one of Zcash\'s shielded pools. Funds received in that pool can\'t be spent through it, and the balance shown is a floor. Switch to another server to use them. This isn\'t a connection problem.'**
   String get walletSyncExplainUpToDateDegraded;
 
   /// Sync-detail line (and badge a11y label) for ONE shielded pool whose service on the last pass was PoolService.unsupported — this server does not know the pool at all (an older lightwalletd), so funds received in it cannot be spent through this server (§4r U-3, closing §4j row 8 by rendering). One line per affected pool, under the explanation of walletSyncUpToDateDegraded, walletSyncEndpointBehind or walletSyncUnverified; NO line for a pool served normally. pool is the pool's name (walletPoolSapling / walletPoolOrchard / walletPoolIronwood). 'Refuses', matching walletSyncExplainUpToDateDegraded's 'refusing'. MUST NOT say the pool is empty and MUST NOT say funds are lost; the next step (switch servers) is in the explanation above it.
@@ -2865,25 +2865,25 @@ abstract class WalletLocalizations {
   /// Sync-detail sheet explanation paired with walletSyncEndpointBehind. The next step MUST be 'switch servers': never 'check your connection' (the link works — the pass completed) and never 'update the app' (that is the UpToDateLimited pair). Names both money consequences honestly and without claiming the user holds any: incoming payments after that block are not visible from this server, and a send built against this server's tip carries an expiry the real chain may already be past (it would expire and the funds return, not be lost). MUST NOT say the funds are lost or that anything needs restoring.
   ///
   /// In en, this message translates to:
-  /// **'This server\'s copy of the chain stops at a block the network passed before this version of the app was built, so your balance is only current as of that block. New payments to you may not show yet, and a payment sent from here may not go through. Switch to another server to catch up — this isn\'t a connection problem.'**
+  /// **'This server\'s copy of the chain stops at a block the network passed before this version of the app was built, so your balance is only current as of that block. New payments to you may not show yet, and a payment sent from here may not go through. Switch to another server to catch up. This isn\'t a connection problem.'**
   String get walletSyncExplainEndpointBehind;
 
   /// Parked-send row detail when ParkedSend.signingBlock is SigningBlock.networkUpgrade — and ONLY then (GRACE-1 §4p G-6): the drain will not sign this row until the app is updated. MUST NOT say 'will send when ready' (it will not, on this version) and MUST NOT say 'failed' (the money is untouched and the intent is intact). Cancel stays offered; retry does not, since retrying changes nothing until the app is updated. A server that merely stopped reporting its network is walletParkedBlockedByServerSilent, never this.
   ///
   /// In en, this message translates to:
-  /// **'Waiting for an app update — your funds are safe and nothing has been sent.'**
+  /// **'Waiting for an app update. Your funds are safe and nothing has been sent.'**
   String get walletParkedBlockedByNetworkUpgrade;
 
   /// Parked-send row detail when ParkedSend.signingBlock is SigningBlock.graceExpired (GRACE-1 §4p): this server will not say which network it is on and the wallet's grace for it has run out (or never began), so the drain will not sign this row until a server that reports its network is used. The next step is SWITCH SERVERS. MUST NOT say 'upgraded' or 'update the app' (nothing was upgraded and an update fixes nothing — that is walletParkedBlockedByNetworkUpgrade), MUST NOT say 'will send when ready' and MUST NOT say 'failed'. Cancel stays offered; retry does not.
   ///
   /// In en, this message translates to:
-  /// **'Waiting for a server that reports the network version — switch servers. Your funds are safe and nothing has been sent.'**
+  /// **'Waiting for a server that reports the network version. Switch servers. Your funds are safe and nothing has been sent.'**
   String get walletParkedBlockedByServerSilent;
 
   /// walletParkedBlockedByServerSilent's variant when the grace ran out on the DEVICE CLOCK (GraceExpiry.clock). The next step is the SAME as the sibling's — a server that reports the network version — and the device clock is a PRECONDITION of it, never an alternative to it (§4p-run fold review row 6, §4r U-5): a corrected clock alone re-permits nothing (the latch holds until a branch-reporting server), so the copy MUST read 'if the date and time are wrong, fix them FIRST — then switch' and MUST NOT read 'switch servers, OR check the date and time'. Same prohibitions as the sibling: never 'upgraded', 'update the app', 'will send when ready' or 'failed'.
   ///
   /// In en, this message translates to:
-  /// **'Waiting for a server that reports the network version. If this device\'s date and time are wrong, fix them first — then switch servers. Your funds are safe and nothing has been sent.'**
+  /// **'Waiting for a server that reports the network version. If this device\'s date and time are wrong, fix them first, then switch servers. Your funds are safe and nothing has been sent.'**
   String get walletParkedBlockedByServerSilentClock;
 
   /// Sync-status headline for SyncStatus.upToDateUnverified (GRACE-1 §4p): the wallet scanned to the chain tip, but THIS SERVER will not say which version of the Zcash network it is on, so the app cannot confirm a payment it signs will be accepted; sending works for a short grace and is then refused. MUST NOT read as a plain 'Up to date'. Distinct from walletSyncUpToDateLimited (this app VERSION — says update; MUST NOT be conflated: nothing was upgraded here), walletSyncUpToDateDegraded (this server's POOLS) and walletSyncEndpointBehind (this server's HEIGHT); this one is about the server's NETWORK CLAIM and, like the last two, says switch. MUST NOT contain 'upgraded' or 'update'.
@@ -2895,13 +2895,13 @@ abstract class WalletLocalizations {
   /// Detail line under walletSyncUnverified while the grace RUNS and the device clock can be trusted for it: how long sending keeps working. hours is the whole hours left on whichever of the two grace rules (blocks, device clock) runs out FIRST — the SDK already converted the blocks through the network's block spacing, so this is one figure; 0 renders as 'less than an hour'. The next step ('then switch servers') rides in the sentence. MUST NOT say 'upgraded' or 'update'.
   ///
   /// In en, this message translates to:
-  /// **'{hours, plural, =0{Sending still works for less than an hour — then switch servers.} =1{Sending still works for about 1 more hour — then switch servers.} other{Sending still works for about {hours} more hours — then switch servers.}}'**
+  /// **'{hours, plural, =0{Sending still works for less than an hour. Then switch servers.} =1{Sending still works for about 1 more hour. Then switch servers.} other{Sending still works for about {hours} more hours. Then switch servers.}}'**
   String walletSyncGraceLeftHours(int hours);
 
   /// walletSyncGraceLeftHours's variant when the SDK hands NO time — the device clock cannot be trusted for the grace (it reads before the last confirmation), so the block rule alone decides and only the blocks are shown (GRACE-1 §4p G-4; this is the same string set, not a new case). blocks is pre-formatted compactly (e.g. "1.2K"). MUST NOT say 'upgraded' or 'update'.
   ///
   /// In en, this message translates to:
-  /// **'Sending still works for about {blocks} more blocks — then switch servers.'**
+  /// **'Sending still works for about {blocks} more blocks. Then switch servers.'**
   String walletSyncGraceLeftBlocks(String blocks);
 
   /// The grace ENDED by the block rule (GraceExpiry.blocks; GRACE-1 §4p G-6): the chain advanced a day's worth of blocks since the app last confirmed, with a server that reports its network, that it can send — and this server never said. ONE sentence shared by the sync-status detail line, the send-fault body (RW-SYNC-003) and nothing else, so the three never disagree. blocks is the count since that confirmation, pre-formatted compactly. The next step is SWITCH SERVERS. MUST NOT say 'upgraded' or 'update the app' (that is walletSendFaultNetworkUpgrade — a different fault with a different fix) and MUST NOT imply funds are at risk.
@@ -2913,7 +2913,7 @@ abstract class WalletLocalizations {
   /// The grace ENDED by the DEVICE CLOCK rule (GraceExpiry.clock; GRACE-1 §4p G-6): a day passed on this device's clock since the last confirmation, whatever the server's block height did — the axis a server that freezes its height cannot hold still — or the clock was set back after that day was seen (which does not re-open the grace). Shared by the sync detail line and the send-fault body. ONE next step — a server that reports the network version — with the device clock as its PRECONDITION, never an alternative (§4p-run fold review row 6, §4r U-5): a wrong clock is the one benign cause, but a corrected clock alone re-permits nothing (the latch holds until a branch-reporting server), so the copy MUST read 'if the date and time are wrong, fix them FIRST — then switch' and MUST NOT read 'switch, OR check the date and time'. MUST NOT say 'upgraded' or 'update the app'.
   ///
   /// In en, this message translates to:
-  /// **'This server hasn\'t reported the network version for a day, so this app can\'t confirm it\'s safe to send. If this device\'s date and time are wrong, fix them first — then switch to a server that reports the network version.'**
+  /// **'This server hasn\'t reported the network version for a day, so this app can\'t confirm it\'s safe to send. If this device\'s date and time are wrong, fix them first, then switch to a server that reports the network version.'**
   String get walletSyncGraceEndedClock;
 
   /// The grace never BEGAN (GraceExpiry.neverConfirmed; GRACE-1 §4p): every server this wallet has met withheld the network version, so the app has never confirmed it can send at all. Shared by the sync detail line and the send-fault body; also the forward-compat fallback for a grace shape this UI does not know. NOT the never-synced case (that is walletSendFaultNotSynced — wait for sync). Next step: SWITCH SERVERS. MUST NOT say 'upgraded' or 'update the app'.
@@ -2925,25 +2925,25 @@ abstract class WalletLocalizations {
   /// Sync-detail sheet explanation paired with walletSyncUnverified; the grace's own line (walletSyncGraceLeft*/walletSyncGraceEnded*) renders beside it and OWNS the sending claim (running: a countdown; ended: a refusal) — this body makes NO claim about sending (fold of the security and crypto angles: it used to say 'sending keeps working for a short grace period', false once the grace has ended). The next step MUST be 'switch servers': never 'check your connection' (the link works — the pass reached the tip) and never 'update the app' (that is the UpToDateLimited pair; nothing was upgraded here). States honestly that the balance IS current (this server serves blocks; only its network claim is missing) — unlike the Limited and Degraded pairs, this is not a balance-is-a-floor state. Under a reported rewinding streak the sheet shows walletSyncExplainUnverifiedStreak instead. MUST NOT say 'upgraded' or 'update'.
   ///
   /// In en, this message translates to:
-  /// **'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. Your balance is current. Switch to another server — this isn\'t a connection problem.'**
+  /// **'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. Your balance is current. Switch to another server. This isn\'t a connection problem.'**
   String get walletSyncExplainUnverified;
 
   /// Sync-detail sheet explanation paired with walletSyncUnverified when the SDK reports streakReported: true on the grace claim (P3-12, maintainer): the loop has judged this server misbehaving (repeated rewinds — the endpointMisbehaving stall the grace outranks, P2-6). MUST NOT say the balance is current; names the rewinds and their consequence for the balance; makes NO claim about sending (the grace line beside it owns that — fold). The next step MUST be 'switch servers': never 'check your connection', never 'update the app'. MUST NOT say 'upgraded' or 'update'.
   ///
   /// In en, this message translates to:
-  /// **'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. It has also kept serving blocks this wallet then had to undo, so your balance may not be current. Switch to another server — this isn\'t a connection problem.'**
+  /// **'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. It has also kept serving blocks this wallet then had to undo, so your balance may not be current. Switch to another server. This isn\'t a connection problem.'**
   String get walletSyncExplainUnverifiedStreak;
 
   /// Sync-detail line rendered directly under the grace line when the SDK reports streakReported: true on the grace claim (P3-12 fold, security review MEDIUM 1): the badge's screen-reader label is the headline plus the detail lines, so the streak the grace outranks reaches a user who never opens the sheet. Same next step, 'switch servers'; MUST NOT say 'update' or 'upgraded'.
   ///
   /// In en, this message translates to:
-  /// **'This server also keeps serving blocks this wallet then has to undo — switch servers.'**
+  /// **'This server also keeps serving blocks this wallet then has to undo. Switch servers.'**
   String get walletSyncUnverifiedStreakDetail;
 
   /// Form fault detail under the insufficient-funds message while the wallet is still catching up (#381): the 'you have X' figure is the partial repopulating balance, not a final verdict. Hedged ('may') — it must not promise funds exist.
   ///
   /// In en, this message translates to:
-  /// **'Your balance is still catching up — more may become available as the wallet syncs.'**
+  /// **'Your balance is still catching up. More may become available as the wallet syncs.'**
   String get walletSendFaultInsufficientCatchingUp;
 
   /// Form fault detail: pending-incoming funds shown alongside an insufficient-funds error. 'Once the wallet catches up', NOT 'once it confirms': the amount is most often a note with thousands of confirmations that is held only until more of the chain is scanned (witness unavailable), so 'confirms' was false for the common case (phase-2 P2-4, maintainer decision 3).
@@ -3015,7 +3015,7 @@ abstract class WalletLocalizations {
   /// Form fault: the app supplied BOTH a text memo and machine bytes on one payment. A programming error, not a user mistake — the copy must not tell the user to fix or remove their memo, and must say plainly that no money moved.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t send this payment — the app attached two notes to it. Nothing was sent.'**
+  /// **'Couldn\'t send this payment: the app attached two notes to it. Nothing was sent.'**
   String get walletSendFaultMemoConflict;
 
   /// Form fault: the address belongs to the other Zcash network.
@@ -3117,7 +3117,7 @@ abstract class WalletLocalizations {
   /// Swap screen reached (host deep-link) on a watch-only wallet (#397 §3.7 D3): the condition is PERMANENT for this wallet, so no 'right now' transience — view-only framing, no retry invitation.
   ///
   /// In en, this message translates to:
-  /// **'This wallet is view-only — it can\'t swap.'**
+  /// **'This wallet is view-only, so it can\'t swap.'**
   String get walletSwapUnavailableWatchOnly;
 
   /// Action that leaves the swap screen and returns to the wallet.
@@ -3141,7 +3141,7 @@ abstract class WalletLocalizations {
   /// Variant of walletSwapAvailable while the wallet is still catching up (#380): the spendable figure is the partial repopulating balance, so a low/zero figure must not read as final.
   ///
   /// In en, this message translates to:
-  /// **'Available to swap: {amount} ZEC — your balance is still catching up'**
+  /// **'Available to swap: {amount} ZEC (your balance is still catching up)'**
   String walletSwapAvailableCatchingUp(String amount);
 
   /// Label for the destination-asset dropdown (what the user swaps their ZEC into).
@@ -3183,7 +3183,7 @@ abstract class WalletLocalizations {
   /// OutOfZec form: chain-aware helper for the destination field once a target asset is picked (cross-chain mistakes lose funds).
   ///
   /// In en, this message translates to:
-  /// **'A {chain} address — where your swapped asset is sent. Double-check the chain is right.'**
+  /// **'A {chain} address, where your swapped asset is sent. Double-check the chain is right.'**
   String walletSwapDestinationHelperChain(String chain);
 
   /// OutOfZec form: tooltip on the destination-address QR scan button (mobile only).
@@ -3219,7 +3219,7 @@ abstract class WalletLocalizations {
   /// Snackbar when the user tries to leave (back gesture/button) while the swap execute is still running — the screen blocks leaving for this bounded step (#367 execute pop-guard). Money is being committed; every outcome screen is leavable.
   ///
   /// In en, this message translates to:
-  /// **'Still working — the swap is starting. This can take up to a minute.'**
+  /// **'Still working: the swap is starting. This can take up to a minute.'**
   String get walletSwapExecuteStillWorking;
 
   /// Heading on the swap review/confirm screen.
@@ -3261,19 +3261,19 @@ abstract class WalletLocalizations {
   /// Review screen: the live quote countdown while time remains. Since #367 the SDK's expiresAt is the ACTIONABLE deadline (display and the execute gate share one number), so the sentence may promise confirmability up to it; 'about' hedges only device-clock skew. Do NOT use wording that guarantees the quote past the shown time.
   ///
   /// In en, this message translates to:
-  /// **'Quote valid for about {time} — confirm before it expires.'**
+  /// **'Quote valid for about {time}. Confirm before it expires.'**
   String walletSwapQuoteExpiresIn(String time);
 
   /// Screen-reader label for the review quote countdown once under 60 seconds (review M4): a dedicated sentence — composing 'less than a minute' into the {time} slot of walletSwapQuoteExpiresIn double-hedged ('about less than a minute') in every locale at the most time-critical spoken moment.
   ///
   /// In en, this message translates to:
-  /// **'Quote valid for less than a minute — confirm before it expires.'**
+  /// **'Quote valid for less than a minute. Confirm before it expires.'**
   String get walletSwapQuoteExpiresUnderMinute;
 
   /// Review screen: shown when the quote countdown reaches zero; Start swap is disabled.
   ///
   /// In en, this message translates to:
-  /// **'This quote has expired. Go back and get a new one — its rate is no longer guaranteed, and sending now risks a refund.'**
+  /// **'This quote has expired. Go back and get a new one: its rate is no longer guaranteed, and sending now risks a refund.'**
   String get walletSwapQuoteExpired;
 
   /// Screen-reader-only countdown magnitude used in the {time} slot of the quote/deposit countdown sentences once under 60 seconds (#364 F9): a per-second live-region announcement was a 1 Hz storm, so the accessible label goes coarse while the visual text keeps ticking.
@@ -3309,7 +3309,7 @@ abstract class WalletLocalizations {
   /// §2.6 disclosure body — honest about the de-shield and the public provider legs.
   ///
   /// In en, this message translates to:
-  /// **'Swapping out de-shields your ZEC — the deposit is a public transaction, and the provider\'s side is public on its network.'**
+  /// **'Swapping out de-shields your ZEC: the deposit is a public transaction, and the provider\'s side is public on its network.'**
   String get walletSwapDeshieldBody;
 
   /// Heading above the §2.6 provider-disclosure list.
@@ -3393,7 +3393,7 @@ abstract class WalletLocalizations {
   /// Tracking body for the pending-deposit state when the WALLET sends the deposit (OutOfZec). Honest across every state this screen can cover, tightened by #367 (UX MED-4 + reliability MED-2): 'briefly offline' + 'window is short' replace the old unbounded 'once you're back online' promise (false past ~11 min of the 15-min window), and 'stays yours … up to an hour to show as spendable' replaces 'stay in your wallet' (the locked-notes balance dip after a gate-caught miss). Keep both hedges.
   ///
   /// In en, this message translates to:
-  /// **'Your wallet is sending the ZEC deposit to the provider. If you\'re briefly offline it\'s sent automatically when you\'re back — but the sending window is short, and if it closes first the swap simply ends and nothing is exchanged. Your ZEC stays yours, and it can take up to an hour to show as spendable again.'**
+  /// **'Your wallet is sending the ZEC deposit to the provider. If you\'re briefly offline it\'s sent automatically when you\'re back. But the sending window is short, and if it closes first the swap simply ends and nothing is exchanged. Your ZEC stays yours, and it can take up to an hour to show as spendable again.'**
   String get walletSwapStatusPendingBodyOutOfZec;
 
   /// Tracking body for the pending-deposit state when the USER sends the deposit externally (IntoZec — a foreign coin from their own wallet, never ZEC from this one). Used ONLY within the issuing app run, where the deposit screen showed the instructions; a re-attached swap uses walletSwapStatusPendingBodyIntoZecReattached.
@@ -3405,7 +3405,7 @@ abstract class WalletLocalizations {
   /// Tracking body for a RE-ATTACHED IntoZec pending-deposit swap (#367 — opened from the wallet-screen row after a restart or re-entry). The original body's 'send them before the quote expires' is impossible to follow here: the deposit address/memo are deliberately not stored, and they must NOT be re-shown (a memo-less deposit can lose funds on memo chains). Honest about both arms: already-sent (will be detected) and never-sent (let it expire, start fresh).
   ///
   /// In en, this message translates to:
-  /// **'This swap is still waiting for its deposit. The deposit instructions aren\'t available on this device anymore — if you already sent the funds, they\'ll be detected; if you haven\'t, let this swap expire and start a new one.'**
+  /// **'This swap is still waiting for its deposit. The deposit instructions aren\'t available on this device anymore. If you already sent the funds, they\'ll be detected; if you haven\'t, let this swap expire and start a new one.'**
   String get walletSwapStatusPendingBodyIntoZecReattached;
 
   /// Tracking detail under the pending-deposit body (W-swap-5 #366-e): the quote's deposit window, so a pending swap is never open-ended on screen. {time} is a locale-formatted DATE AND TIME (month, day, and clock time — a swap window can cross a day boundary), so keep the sentence grammatical with a full datetime, NOT a bare clock time (e.g. no preposition that only reads for a time-of-day).
@@ -3423,7 +3423,7 @@ abstract class WalletLocalizations {
   /// Tracking detail when the pending-deposit window already lapsed and the USER was the deposit sender (IntoZec). No refund promise — a deposit that arrived late is the provider's refund flow, handled by other states.
   ///
   /// In en, this message translates to:
-  /// **'The deposit window has passed. If you haven\'t sent your deposit, this swap simply ends — get a fresh quote when you\'re ready.'**
+  /// **'The deposit window has passed. If you haven\'t sent your deposit, this swap simply ends. Get a fresh quote when you\'re ready.'**
   String get walletSwapPendingWindowPassedIntoZec;
 
   /// Wallet-screen section header for the durable in-flight swap list (W-swap-5 #366).
@@ -3453,19 +3453,19 @@ abstract class WalletLocalizations {
   /// In-flight swap row line once the record's deposit window has lapsed (#367, both directions): the present-tense motion lines ('on its way' / 'waiting for your deposit') would be false for the rest of the record's ~48 h life. Neutral — the swap may have settled, refunded, or expired; View swap shows the live truth.
   ///
   /// In en, this message translates to:
-  /// **'The deposit window has passed — check this swap\'s status.'**
+  /// **'The deposit window has passed. Check this swap\'s status.'**
   String get walletSwapInFlightRowPastWindow;
 
   /// In-flight swap row line for an UNRESOLVED record past its settlement window (#382 — such rows now list indefinitely instead of vanishing at 48 h; the wallet keeps watching every sync while unresolved), OUT-OF-ZEC + unknown-direction arm since #385 ('coming back' is refund-shaped, which is exactly the OutOfZec ZEC leg; the IntoZec row has its own delivery-shaped line). MUST stay outcome-neutral ('hasn't reached a confirmed outcome HERE' — review): the swap may in fact have SUCCEEDED unobserved, so 'taking longer than expected' would assert a falsehood over a completed swap. The second sentence is the money promise and covers only ZEC legs — it must not claim anything about a foreign-asset refund, which happens provider-side. ACCEPTED OVERCLAIM (#386, shared with the not-found body): for a pre-#368 upgrade-era record with no recorded watch leg, 'after a sync' is true only of a user-initiated full rescan — upgrade-era-only, shrinking population, documented rather than gated.
   ///
   /// In en, this message translates to:
-  /// **'This swap hasn\'t reached a confirmed outcome here yet — open it to check. Any ZEC coming back to this wallet shows up in your balance after a sync.'**
+  /// **'This swap hasn\'t reached a confirmed outcome here yet. Open it to check. Any ZEC coming back to this wallet shows up in your balance after a sync.'**
   String get walletSwapInFlightRowOverdue;
 
   /// The IntoZec arm of the overdue row line (#385 — 'any ZEC coming back' read refund-shaped for a swap whose ZEC leg is the incoming DELIVERY; delivered ZEC never left this wallet's side). Same outcome-neutrality contract as the OutOfZec arm; the money promise covers the ZEC delivery leg only — the foreign deposit's refund, if any, happens provider-side on the source chain. Shares the #386 accepted overclaim documented on the OutOfZec arm (a watchless pre-#368 record's late ZEC is full-rescan-only).
   ///
   /// In en, this message translates to:
-  /// **'This swap hasn\'t reached a confirmed outcome here yet — open it to check. Any ZEC it delivers to this wallet shows up in your balance after a sync.'**
+  /// **'This swap hasn\'t reached a confirmed outcome here yet. Open it to check. Any ZEC it delivers to this wallet shows up in your balance after a sync.'**
   String get walletSwapInFlightRowOverdueIntoZec;
 
   /// In-flight swap row line once a SUCCESS terminal was observed and pinned (#367) — the row stays until the user removes it or opens tracking and taps Done.
@@ -3501,19 +3501,19 @@ abstract class WalletLocalizations {
   /// Confirm-dialog body when the row being removed has NO observed terminal yet, OUT-OF-ZEC arm ONLY since #385 (#367 origin, hedge extended by #382): the watched leg IS this wallet's refund address, so 'stop watching for its refund' and the rescan-recovery claim are true. Removing drops the only re-attach handle AND stops the unresolved-swap watch (the per-sync re-arm keys off this record); a later refund is still recoverable by rescan — never silently lost (the refund address stays registered with the wallet's own engine). The IntoZec/unknown rows use their own bodies — every claim here is FALSE for IntoZec (UX HIGH-1).
   ///
   /// In en, this message translates to:
-  /// **'This only removes the swap from this list — it doesn\'t cancel the swap, and this wallet will stop watching for its refund. ZEC refunded later still belongs to this wallet; a full rescan can find it.'**
+  /// **'This only removes the swap from this list. It doesn\'t cancel the swap, and this wallet will stop watching for its refund. ZEC refunded later still belongs to this wallet; a full rescan can find it.'**
   String get walletSwapRemoveBodyInFlight;
 
   /// Confirm-dialog body for removing an UNRESOLVED IntoZec row (#385, UX HIGH-1 — the shared body lied to IntoZec users): the watched leg is the DELIVERY destination (this wallet's own engine-minted address), so the watch/rescan claims are about the incoming ZEC delivery; an IntoZec refund is the user's FOREIGN deposit returned on the source chain — this wallet never sees it and rescanning here can never find it, so the copy says where it happens instead.
   ///
   /// In en, this message translates to:
-  /// **'This only removes the swap from this list — it doesn\'t cancel the swap, and this wallet will stop watching for its incoming ZEC. ZEC delivered later still belongs to this wallet; a full rescan can find it. If the swap is refunded instead, the refund goes back in the coin you sent, outside this wallet.'**
+  /// **'This only removes the swap from this list. It doesn\'t cancel the swap, and this wallet will stop watching for its incoming ZEC. ZEC delivered later still belongs to this wallet; a full rescan can find it. If the swap is refunded instead, the refund goes back in the coin you sent, outside this wallet.'**
   String get walletSwapRemoveBodyInFlightIntoZec;
 
   /// Confirm-dialog body for removing an UNRESOLVED row whose direction this build doesn't recognize (forward-compat, #385): makes only the direction-independent claims — a watched leg is always one of this wallet's own engine-registered addresses (so the rescan claim holds), and no refund-location claim is made (it differs per direction).
   ///
   /// In en, this message translates to:
-  /// **'This only removes the swap from this list — it doesn\'t cancel the swap, and this wallet will stop watching for ZEC still arriving from it. ZEC that arrives later still belongs to this wallet; a full rescan can find it.'**
+  /// **'This only removes the swap from this list. It doesn\'t cancel the swap, and this wallet will stop watching for ZEC still arriving from it. ZEC that arrives later still belongs to this wallet; a full rescan can find it.'**
   String get walletSwapRemoveBodyInFlightUnknown;
 
   /// Confirm-dialog body when the row being removed already shows its pinned terminal outcome (#367) — plain list hygiene, nothing is lost.
@@ -3649,7 +3649,7 @@ abstract class WalletLocalizations {
   /// Tracking body for the refunded state when the WALLET sent the deposit (OutOfZec; #368 replaced the #367 'may not appear yet' interim): the refund address is watched (refund-index registration), viewing this screen re-arms the watch, and since #382 EVERY sync pass re-arms it while the swap is unresolved — so 'shows up in your balance after the wallet next syncs' is mechanical for ANY absence length, not only within 48 h of executing. Keep the timing hedge ('can take a little while') — the provider's refund transaction must mine and a sync pass must run before the balance moves; never promise instant.
   ///
   /// In en, this message translates to:
-  /// **'The swap didn\'t complete, so the provider sent your ZEC back to this wallet. It arrives as unshielded funds and shows up in your balance after the wallet next syncs — this can take a little while.'**
+  /// **'The swap didn\'t complete, so the provider sent your ZEC back to this wallet. It arrives as unshielded funds and shows up in your balance after the wallet next syncs. This can take a little while.'**
   String get walletSwapStatusRefundedBodyOutOfZec;
 
   /// Tracking: terminal failure.
@@ -3673,7 +3673,7 @@ abstract class WalletLocalizations {
   /// Tracking body for the not-found terminal (#367; last sentence added by #385, hedge sharpened by #386). Must NOT assert loss: a deposit that landed on an expired order is refunded provider-side to the recorded refund address; 'most likely expired' stays hedged (the provider can no longer tell us anything definitive). Since #385 this card's Done does NOT dismiss the still-unresolved record (MED-1ux — not-found is a heuristic, never pinned, and a silent dismiss voided the watch the overdue row had just promised), so the copy says the swap stays listed + watched and points at the list's Remove (which carries the full disclosure dialog). The watching claim is hedged 'in case it still arrives' (M-1, precision-fixed by #386: 'until it has arrived' PRESUPPOSED an arrival, but this card's own headline case — an expired order whose foreign-coin deposit is refunded provider-side on the source chain — never delivers ZEC here at all); a served leg (money arrived, then shielded/moved) stops the per-pass watch. ACCEPTED OVERCLAIM (#386, documented rather than gated): a pre-#368 upgrade-era record with no recorded watch leg (NULL watch columns, its one-shot backfill window spent) is NOT per-pass watched — its late ZEC is engine-registered and surfaces on a user-initiated full rescan only. That population is upgrade-era-only and shrinking; gating this sentence on watch presence would need a new DTO bit for a corner that retires itself. HEDGED (review M5): 'should refund' — this card's own premise is a GC'd order, the exact case that makes an unconditional refund promise false.
   ///
   /// In en, this message translates to:
-  /// **'The provider no longer has a record of this swap — it most likely expired. If a deposit was made, the provider should refund it to the refund address. The swap stays in your list, and this wallet keeps watching for its ZEC in case it still arrives — you can remove it from the list anytime.'**
+  /// **'The provider no longer has a record of this swap. It most likely expired. If a deposit was made, the provider should refund it to the refund address. The swap stays in your list, and this wallet keeps watching for its ZEC in case it still arrives. You can remove it from the list anytime.'**
   String get walletSwapStatusNotFoundBody;
 
   /// Tracking: a forward-compat status this build can't name (neutral, never alarming).
@@ -3703,7 +3703,7 @@ abstract class WalletLocalizations {
   /// OutOfZec tracking: the honest killed-swap message (#382 — the OutOfZec mirror of the IntoZec L8 body). Pre-#382 this arm said funds 'settle or refund on the provider's side' — a misdirect once #368 made refunds land at THIS wallet's own address (the provider would truthfully answer 'we already sent it back'). Mechanics: the kill clears the detection watch, but the refund address stays engine-registered and the unresolved-swap re-arm restores the watch on the first sync after swap is re-enabled — so the promise is mechanical, conditioned on swap being turned back on.
   ///
   /// In en, this message translates to:
-  /// **'Swap is turned off here, so this swap can\'t be tracked right now. If it was refunded, the ZEC comes back to this wallet — it shows up in your balance after swap is turned back on and the wallet syncs.'**
+  /// **'Swap is turned off here, so this swap can\'t be tracked right now. If it was refunded, the ZEC comes back to this wallet. It shows up in your balance after swap is turned back on and the wallet syncs.'**
   String get walletSwapTrackingUnavailableBodyOutOfZec;
 
   /// Tracking: an establish-time typed failure (the stream can't be opened).
@@ -3715,7 +3715,7 @@ abstract class WalletLocalizations {
   /// Body of the tracking ESTABLISH-failure card (review M1): its own body — the failed-status body ('The swap couldn't be completed') contradicted the title on a money claim; an establish failure says nothing about the swap's outcome and must not read as a failure verdict.
   ///
   /// In en, this message translates to:
-  /// **'We couldn\'t open tracking for this swap. The swap itself may still be going ahead — any deposited funds settle or refund on the provider\'s side.'**
+  /// **'We couldn\'t open tracking for this swap. The swap itself may still be going ahead: any deposited funds settle or refund on the provider\'s side.'**
   String get walletSwapTrackingErrorBody;
 
   /// Form fault: the destination address was empty (OutOfZec requires it).
@@ -3781,25 +3781,25 @@ abstract class WalletLocalizations {
   /// Form fault: the SDK's one-deposit-in-flight guard refused a second swap while one is still queued/signing/sending/settling. Deliberately does NOT invite a re-quote (re-quoting is the double-deposit door). 'Fully settles … can take a while' is honest about the settlement tail: the guard clears at reorg-final burial (~2 h after the deposit mines) or after quote expiry + tx expiry (review NIT — the earlier copy implied an immediate clear).
   ///
   /// In en, this message translates to:
-  /// **'A swap is already in progress. You can start a new one after it fully settles or its quote expires — this can take a while.'**
+  /// **'A swap is already in progress. You can start a new one after it fully settles or its quote expires. This can take a while.'**
   String get walletSwapFaultAlreadyInFlight;
 
   /// Form fault: our side couldn't mint a fresh refund address (#382 rewrite). The DOMINANT real cause since #368 is a pre-first-sync Sell — the refund mints through the engine, which needs the lazily-provisioned account, and the swap surface is activation-gated — so the copy names the wait-for-sync remedy instead of the pre-#382 bare 'try again' (which looped false hope while lightwalletd was down and the swap provider up). 'Usually' keeps the rare structural tail honest.
   ///
   /// In en, this message translates to:
-  /// **'This wallet can\'t set up a refund address yet — that usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.'**
+  /// **'This wallet can\'t set up a refund address yet. That usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.'**
   String get walletSwapFaultRefundUnavailable;
 
   /// Form fault: our side couldn't mint a fresh swap receiving address (IntoZec — the #382 mirror of walletSwapFaultRefundUnavailable; pre-#382 this kind fell through to the generic could-not-quote). Same pre-first-sync dominant cause, same wait-for-sync remedy. 'Receiving address' means the wallet-side ZEC delivery address, NOT the user's typed destination.
   ///
   /// In en, this message translates to:
-  /// **'This wallet can\'t set up a receiving address for this swap yet — that usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.'**
+  /// **'This wallet can\'t set up a receiving address for this swap yet. That usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.'**
   String get walletSwapFaultDestinationUnavailable;
 
   /// IntoZec execute overran the host-side timeout (#367, F5): the cause may be transport OR a local stall (a busy store consuming most of the window), so this HEDGES both — unlike walletSwapFaultConnection, it must not firmly blame the user's connection. Money-safe: an IntoZec execute moves no wallet funds; re-quoting is the remedy.
   ///
   /// In en, this message translates to:
-  /// **'The swap couldn\'t start in time — the connection may be slow, or the wallet was busy. Get a new quote and try again.'**
+  /// **'The swap couldn\'t start in time. The connection may be slow, or the wallet was busy. Get a new quote and try again.'**
   String get walletSwapFaultExecuteTimeout;
 
   /// Retryable fault (#367): the wallet's own store was momentarily busy and NOTHING was consumed — re-running the same action works. On the review screen it renders inline and Start swap is the retry (the quote is still valid); on the form, tapping Get quote again is the retry. Distinct from walletSwapFaultStateUnavailable (whose remedy is a re-quote).
@@ -3829,7 +3829,7 @@ abstract class WalletLocalizations {
   /// The catching-up variant of walletSwapFaultInsufficient (#367): the wallet is mid catch-up/rescan, so the spendable figure may be partial — the closing hedge stops the refusal reading as a final verdict over a partial figure. Keep the hedge conditional ('may'), never a promise.
   ///
   /// In en, this message translates to:
-  /// **'This swap needs about {needed} ZEC including the network fee, but only {spendable} ZEC is spendable right now. Your balance is still catching up — more may become spendable soon.'**
+  /// **'This swap needs about {needed} ZEC including the network fee, but only {spendable} ZEC is spendable right now. Your balance is still catching up, so more may become spendable soon.'**
   String walletSwapFaultInsufficientCatchingUp(String needed, String spendable);
 
   /// Form fault: our side couldn't persist durable swap state (fail-closed).
@@ -3883,7 +3883,7 @@ abstract class WalletLocalizations {
   /// IntoZec form: helper text clarifying the refund address is a foreign-chain address.
   ///
   /// In en, this message translates to:
-  /// **'On the chain you\'re sending from — not a Zcash address.'**
+  /// **'On the chain you\'re sending from. Not a Zcash address.'**
   String get walletSwapRefundHelper;
 
   /// IntoZec form: the refund field label once a source asset is picked, naming its chain.
@@ -3895,7 +3895,7 @@ abstract class WalletLocalizations {
   /// IntoZec form: chain-aware helper for the refund field once a source asset is picked.
   ///
   /// In en, this message translates to:
-  /// **'A {chain} address — where your coins return if the swap fails. Not a Zcash address.'**
+  /// **'A {chain} address, where your coins return if the swap fails. Not a Zcash address.'**
   String walletSwapRefundHelperChain(String chain);
 
   /// IntoZec form: title of the refund-address explainer dialog.
@@ -3907,7 +3907,7 @@ abstract class WalletLocalizations {
   /// IntoZec form: body of the refund-address explainer dialog (§3.3b D6).
   ///
   /// In en, this message translates to:
-  /// **'If the swap can\'t complete, the provider sends your coins back to this address on the chain you paid from. Enter an address you control — the wallet can\'t check a foreign address for you, so verify it carefully.'**
+  /// **'If the swap can\'t complete, the provider sends your coins back to this address on the chain you paid from. Enter an address you control. The wallet can\'t check a foreign address for you, so verify it carefully.'**
   String get walletSwapRefundInfoBody;
 
   /// IntoZec form: tooltip on the refund-address QR scan button (IZ-4; mobile only).
@@ -3997,7 +3997,7 @@ abstract class WalletLocalizations {
   /// Token picker: the L6 serve-stale banner (the live fetch failed; cached data shown).
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t refresh the asset list — showing the last known list.'**
+  /// **'Couldn\'t refresh the asset list. Showing the last known list.'**
   String get walletSwapPickerStale;
 
   /// Token picker: the honest empty state (no assets after filtering).
@@ -4057,7 +4057,7 @@ abstract class WalletLocalizations {
   /// Swap form: advisory for a too-tight slippage tolerance.
   ///
   /// In en, this message translates to:
-  /// **'Very low — the swap may fail if the price moves.'**
+  /// **'Very low. The swap may fail if the price moves.'**
   String get walletSwapSlippageMayFail;
 
   /// Swap form: advisory for a normal slippage tolerance.
@@ -4069,19 +4069,19 @@ abstract class WalletLocalizations {
   /// Swap form: advisory for a wide slippage tolerance.
   ///
   /// In en, this message translates to:
-  /// **'High — you could receive noticeably less than quoted.'**
+  /// **'High. You could receive noticeably less than quoted.'**
   String get walletSwapSlippageRisky;
 
   /// Swap form: advisory for a slippage beyond the SDK hard ceiling.
   ///
   /// In en, this message translates to:
-  /// **'Too high — the swap will be rejected. Lower it to 10% or less.'**
+  /// **'Too high. The swap will be rejected. Lower it to 10% or less.'**
   String get walletSwapSlippageTooHigh;
 
   /// IntoZec review: the honest guaranteed-minimum / max-cost line (§3.3b L8).
   ///
   /// In en, this message translates to:
-  /// **'You\'ll receive at least {zec} ZEC — your {slippage}% slippage floor. The final amount won\'t drop below this.'**
+  /// **'You\'ll receive at least {zec} ZEC, your {slippage}% slippage floor. The final amount won\'t drop below this.'**
   String walletSwapIntoZecFloorNote(String zec, String slippage);
 
   /// IntoZec review: the positive end-state card title.
@@ -4093,7 +4093,7 @@ abstract class WalletLocalizations {
   /// IntoZec review: the pinned ends-shielded honesty copy (§3.3b D1).
   ///
   /// In en, this message translates to:
-  /// **'Until you shield it — one tap, nudged on arrival — the received amount is briefly public and visible on-chain. A small delivery may stay public until it accumulates.'**
+  /// **'Until you shield it (one tap, nudged on arrival), the received amount is briefly public and visible on-chain. A small delivery may stay public until it accumulates.'**
   String get walletSwapIntoZecEndsShielded;
 
   /// IntoZec review: the refund-address verification step title (§3.3b D6).
@@ -4105,7 +4105,7 @@ abstract class WalletLocalizations {
   /// IntoZec review: the refund-address verification instruction.
   ///
   /// In en, this message translates to:
-  /// **'Check it character by character — this is where your coins return if the swap fails. The wallet can\'t verify a foreign address for you.'**
+  /// **'Check it character by character: this is where your coins return if the swap fails. The wallet can\'t verify a foreign address for you.'**
   String get walletSwapRefundVerifyBody;
 
   /// IntoZec review: the distinct refund-verification acknowledgment (separate from the privacy ack).
@@ -4123,7 +4123,7 @@ abstract class WalletLocalizations {
   /// OutOfZec review: the payout-address verification instruction. {asset} is the asset label, e.g. "USDC on Ethereum".
   ///
   /// In en, this message translates to:
-  /// **'Check it character by character — this is where you\'ll receive {asset}. The wallet can\'t verify a foreign address for you.'**
+  /// **'Check it character by character: this is where you\'ll receive {asset}. The wallet can\'t verify a foreign address for you.'**
   String walletSwapPayoutVerifyBody(String asset);
 
   /// OutOfZec review: the distinct payout-verification acknowledgment (separate from the privacy ack).
@@ -4181,7 +4181,7 @@ abstract class WalletLocalizations {
   /// IntoZec deposit screen: the expired-window message. HEDGED (review MED): 'should refund', never 'will' — a below-minimum/dust late deposit or a GC'd order can make an unconditional promise false on a money screen.
   ///
   /// In en, this message translates to:
-  /// **'This deposit window has closed. Don\'t send funds now — start a new swap. If you already sent, the provider should refund to your refund address.'**
+  /// **'This deposit window has closed. Don\'t send funds now. Start a new swap. If you already sent, the provider should refund to your refund address.'**
   String get walletSwapDepositExpired;
 
   /// IntoZec deposit screen: accessibility label for the deposit-address QR.
@@ -4217,7 +4217,7 @@ abstract class WalletLocalizations {
   /// IntoZec deposit screen: the funds-loss warning above the required deposit memo.
   ///
   /// In en, this message translates to:
-  /// **'You MUST include this exact memo with your deposit. Sending without it — or with the wrong memo — can permanently lose your funds.'**
+  /// **'You MUST include this exact memo with your deposit. Sending without it, or with the wrong memo, can permanently lose your funds.'**
   String get walletSwapDepositMemoWarning;
 
   /// IntoZec deposit screen: label for the required deposit memo value.
@@ -4253,13 +4253,13 @@ abstract class WalletLocalizations {
   /// IntoZec deposit screen: back-press guard dialog body (the in-flight reassurance).
   ///
   /// In en, this message translates to:
-  /// **'This won\'t cancel your swap — it continues in the background. But you\'ll need the deposit address to pay, so copy it first if you haven\'t.'**
+  /// **'This won\'t cancel your swap; it continues in the background. But you\'ll need the deposit address to pay, so copy it first if you haven\'t.'**
   String get walletSwapDepositBackBody;
 
   /// Leave-screen dialog body ONCE THE DEPOSIT WINDOW HAS EXPIRED (#364 F11): the live-window body invites copying the address 'to pay', which post-expiry is exactly what the user must not do — this variant warns off sending instead. HEDGED (review MED): 'should refund', never 'will' — same rule as walletSwapDepositExpired.
   ///
   /// In en, this message translates to:
-  /// **'This won\'t cancel your swap — it continues in the background. The deposit window has closed, so don\'t send funds to the deposit address now. If you already sent, the provider should refund to your refund address.'**
+  /// **'This won\'t cancel your swap; it continues in the background. The deposit window has closed, so don\'t send funds to the deposit address now. If you already sent, the provider should refund to your refund address.'**
   String get walletSwapDepositBackBodyExpired;
 
   /// IntoZec deposit screen: back-press guard — stay on the screen.
@@ -4319,7 +4319,7 @@ abstract class WalletLocalizations {
   /// Receive screen: reassuring sub-line under the loading headline. CAUSE-HONEST since #385 (E2E-1): the derivation is LOCAL — the old 'catches up with the network' blamed the network on a fully-synced wallet; the honest cause is the derive queueing behind other wallet work (a heavy sync being one example, not the only one). Avoids 'first sync' since a restore also hits this on a fresh device.
   ///
   /// In en, this message translates to:
-  /// **'Your wallet prepares this address on your device — it can take a moment if the wallet is busy with other work.'**
+  /// **'Your wallet prepares this address on your device. It can take a moment if the wallet is busy with other work.'**
   String get walletReceivePreparingHint;
 
   /// Receive screen: button that re-attempts the address load after a failure.
@@ -4373,7 +4373,7 @@ abstract class WalletLocalizations {
   /// Receive screen: note shown with a freshly minted diversified address. Must convey all four facts: unlinkable; funds arrive in this wallet; earlier addresses stay valid; the display is one-time (copy before leaving).
   ///
   /// In en, this message translates to:
-  /// **'Fresh address — can\'t be linked to your other addresses. Payments to it arrive in this wallet, and your earlier addresses keep working. It won\'t be shown here again — copy it now.'**
+  /// **'Fresh address: can\'t be linked to your other addresses. Payments to it arrive in this wallet, and your earlier addresses keep working. It won\'t be shown here again, so copy it now.'**
   String get walletReceiveFreshCaption;
 
   /// Receive screen: snackbar shown when minting a fresh diversified address fails; the previous address stays on screen.
@@ -4409,7 +4409,7 @@ abstract class WalletLocalizations {
   /// Receive screen: the fresh-address note's on-screen state, the last sentence of walletReceiveFreshCaption verbatim; the whole caption moved behind the note's (i) (S13 §1.7: the 'copy it now' state stays on screen).
   ///
   /// In en, this message translates to:
-  /// **'It won\'t be shown here again — copy it now.'**
+  /// **'It won\'t be shown here again, so copy it now.'**
   String get walletReceiveFreshCopyNow;
 
   /// Wallet overflow menu: opens the Security screen (key custody + delete wallet).
@@ -4511,7 +4511,7 @@ abstract class WalletLocalizations {
   /// Security screen delete subtitle for a WATCH-ONLY wallet (#397 §3.7 D5): it has no recovery phrase, so the copy must not claim 'restorable from your recovery phrase' — it re-imports from its viewing key instead.
   ///
   /// In en, this message translates to:
-  /// **'Delete this wallet and its key from this device. It holds no spending keys, so there is nothing to back up — re-add it anytime with its viewing key.'**
+  /// **'Delete this wallet and its key from this device. It holds no spending keys, so there is nothing to back up. Re-add it anytime with its viewing key.'**
   String get securityDeleteWalletSubtitleWatchOnly;
 
   /// Delete-wallet confirmation dialog: title.
@@ -4523,13 +4523,13 @@ abstract class WalletLocalizations {
   /// Delete-wallet confirmation dialog: body warning.
   ///
   /// In en, this message translates to:
-  /// **'This removes the wallet and its key from this device. Make sure you\'ve backed up your recovery phrase — it is the ONLY way to restore your funds.'**
+  /// **'This removes the wallet and its key from this device. Make sure you\'ve backed up your recovery phrase: it is the ONLY way to restore your funds.'**
   String get securityDeleteDialogBody;
 
   /// Delete-wallet confirmation dialog body for a WATCH-ONLY wallet (#397 §3.7 D5): no recovery phrase, so the copy must not warn about backing one up — it re-imports from its viewing key.
   ///
   /// In en, this message translates to:
-  /// **'This removes the wallet and its key from this device. It holds no spending keys, so nothing needs backing up — you can re-add it later with its viewing key.'**
+  /// **'This removes the wallet and its key from this device. It holds no spending keys, so nothing needs backing up. You can re-add it later with its viewing key.'**
   String get securityDeleteDialogBodyWatchOnly;
 
   /// Delete-wallet confirmation dialog: the destructive confirm action.
@@ -4547,13 +4547,13 @@ abstract class WalletLocalizations {
   /// Security screen: snackbar shown when a delete fault recovered the wallet (no data lost).
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t delete the wallet — your wallet is unchanged. Try again.'**
+  /// **'Couldn\'t delete the wallet. Your wallet is unchanged. Try again.'**
   String get securityDeleteFailedSnack;
 
   /// Security screen: snackbar shown when a delete is REFUSED because a sync-server switch is still in flight (S2 M01 — a delete never races a switch). Names the wait: {seconds} is the switch timeout, after which a delete is accepted again.
   ///
   /// In en, this message translates to:
-  /// **'Finish the server switch first — it completes or stops within {seconds} seconds. Then try deleting the wallet again.'**
+  /// **'Finish the server switch first. It completes or stops within {seconds} seconds. Then try deleting the wallet again.'**
   String securityDeleteRefusedBusySnack(int seconds);
 
   /// Heading above the parked-sends section: EVERY queued send that has no on-chain transaction yet and so doesn't appear in the activity list — one-time-address (TEX) sends awaiting their window AND plainly-queued offline sends (#331). The copy is deliberately shape-agnostic; keep it honest for both.
@@ -4571,7 +4571,7 @@ abstract class WalletLocalizations {
   /// The parked-sends sub-heading when AT LEAST ONE row is mid-signature (#401 R2a). The plain sibling asserts the earmark unconditionally — 'their amounts are still part of your balance' — and that is FALSE for a claimed row: past the engine's create the notes are already locally spent, so the amount has left the spendable set. THE OPENER MUST STAY NEUTRAL (#407 R6 reverted #401 R8a's change to it): this heading renders over the WHOLE section whenever ANY row is sending, and that list may also hold PAUSED rows that never send on their own — 'haven't finished sending' told those users progress was underway and invited them to WAIT instead of tapping Send now, the abandoned-funds harm the paused copy exists to prevent. The progress claim belongs in the except-clause, scoped to the rows it is true of.
   ///
   /// In en, this message translates to:
-  /// **'These payments haven\'t been sent yet. Their amounts are still part of your balance — except any your wallet is currently sending, which may already be set aside.'**
+  /// **'These payments haven\'t been sent yet. Their amounts are still part of your balance, except any your wallet is currently sending, which may already be set aside.'**
   String get walletParkedSubtitlePreparing;
 
   /// Per-row button to cancel (discard) a parked send. The safe counter-affordance — never a re-send.
@@ -4583,7 +4583,7 @@ abstract class WalletLocalizations {
   /// Hint line under a PAUSED parked-send row (#315): the wallet stopped auto-retrying (each retry of a one-time-address send permanently uses up one of a small number of address slots). Must state (a) it will NOT send by itself, (b) funds are safe, (c) the two actions THAT ARE ON SCREEN. #400 R3: the old text said 'Retry it or cancel it' and rendered directly above a button labelled 'Send now' — since FR-23-b that one button both re-arms the row AND signs it, and the separate Retry button no longer exists. Name the visible buttons verbatim (walletParkedSendNow, walletParkedCancel). Never 'will send when ready'.
   ///
   /// In en, this message translates to:
-  /// **'Paused — this payment won\'t send on its own. Your funds are safe. Send it now, or cancel it.'**
+  /// **'Paused. This payment won\'t send on its own. Your funds are safe. Send it now, or cancel it.'**
   String get walletParkedPausedHint;
 
   /// Snackbar when retry returned false (the row is gone / began sending / changed). Mirrors the cancel-false contract: never invite a re-send; point at the surfaces.
@@ -4595,13 +4595,13 @@ abstract class WalletLocalizations {
   /// The notFound outcome of the FR-23-b authorize verb (#401 R2b), split off from walletParkedRetryStale. `notFound` means the row is no longer QUEUED — which is EITHER gone (cancelled, completed) OR claimed by the background drain that won the race. In the claimed case the previous copy ('isn't waiting anymore') contradicted the screen itself: the same payment re-renders as PREPARING two lines above, so the user was told a visible row does not exist. The expired outcome keeps walletParkedRetryStale, where 'isn't waiting anymore' is exactly true (the row was deleted). Hedged with 'may' because the surface cannot tell the two apart; points at the two surfaces that can. NEVER invites a re-send — the funds are committed either way and a second send would pay twice.
   ///
   /// In en, this message translates to:
-  /// **'This payment is no longer waiting — your wallet may already be sending it. Check Saved & pending and your activity.'**
+  /// **'This payment is no longer waiting; your wallet may already be sending it. Check Saved & pending and your activity.'**
   String get walletParkedAlreadyInProgress;
 
   /// #315 slice 2: the line above the 'Reopen sending' button, shown under the parked list when a send is paused. Explains that reopening moves a small amount (your own, returned) — never a fee-only framing that hides the round-trip.
   ///
   /// In en, this message translates to:
-  /// **'One-time-address sends are stuck. You can reopen them — it moves a small amount between your own addresses and returns it.'**
+  /// **'One-time-address sends are stuck. You can reopen them: it moves a small amount between your own addresses and returns it.'**
   String get walletReclaimExplainer;
 
   /// The account-level button that runs the #315 reclaim (reopen a bricked one-time-address send window). Shown only when a send is paused.
@@ -4655,7 +4655,7 @@ abstract class WalletLocalizations {
   /// Snackbar when the reclaim mint's broadcast was not acknowledged (ReclaimOutcome.NotBroadcast). Money-safe, but do NOT claim 'nothing was moved': a lost acknowledgement can mean the mint actually landed. Honest about that ambiguity and paces the retry so a rapid re-tap can't double-mint (an extra fee). The principal always returns via the sweep.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t confirm it reached the network. It may still go through — wait a moment before trying again.'**
+  /// **'Couldn\'t confirm it reached the network. It may still go through, so wait a moment before trying again.'**
   String get walletReclaimNotBroadcast;
 
   /// Snackbar when the reclaim failed because the shielded balance can't fund the small self-mint (InsufficientFunds).
@@ -4703,7 +4703,7 @@ abstract class WalletLocalizations {
   /// Body of the cancel-parked confirm dialog. Reassures that a queued (not-yet-sent) send moves no funds, while flagging the action is irreversible.
   ///
   /// In en, this message translates to:
-  /// **'This discards the saved payment. It hasn\'t been sent, so nothing leaves your wallet — but this can\'t be undone.'**
+  /// **'This discards the saved payment. It hasn\'t been sent, so nothing leaves your wallet, but this can\'t be undone.'**
   String get walletParkedCancelConfirmBody;
 
   /// Cancel-parked confirm dialog: keep the pending payment (dismiss the dialog).
@@ -4727,7 +4727,7 @@ abstract class WalletLocalizations {
   /// Snackbar when cancel returned false. The SDK can't yet distinguish 'already gone' from 'began sending', so the copy is hedged ('may') — honest in BOTH cases. NEVER present as cancelled; never invite a re-send — direct the user to the activity list (double-pay safety).
   ///
   /// In en, this message translates to:
-  /// **'This payment may already be on its way — check your activity.'**
+  /// **'This payment may already be on its way. Check your activity.'**
   String get walletParkedCancelAlreadySending;
 
   /// Snackbar when the cancel call threw (e.g. wallet busy / closed). The queued send is untouched.
@@ -4781,19 +4781,19 @@ abstract class WalletLocalizations {
   /// Snackbar after recovery accepted SOME funds but had per-address faults or hit the per-run cap (swept > 0 AND (failed > 0 OR truncated > 0)). Reports the provisional recovered amount AND honestly flags that work remains — never hides the remainder. amount is pre-formatted.
   ///
   /// In en, this message translates to:
-  /// **'Recovering {amount} — some funds still need another try.'**
+  /// **'Recovering {amount}. Some funds still need another try.'**
   String walletRecoverDonePartial(String amount);
 
   /// Snackbar when recovery had per-address faults or hit the per-run cap. The funds stay on-chain and re-runnable — never a loss.
   ///
   /// In en, this message translates to:
-  /// **'Some funds need another try — run recovery again.'**
+  /// **'Some funds need another try. Run recovery again.'**
   String get walletRecoverRetry;
 
   /// Sweep outcome when the per-invocation cap left addresses UNCHECKED and nothing was swept or failed — honest 'incomplete check', never a claim that funds exist (distinct from walletRecoverRetry, which is for per-address faults).
   ///
   /// In en, this message translates to:
-  /// **'Not every one-time address was checked yet — run it again to check the rest.'**
+  /// **'Not every one-time address was checked yet. Run it again to check the rest.'**
   String get walletRecoverTruncated;
 
   /// Snackbar when recovery found nothing sweepable (e.g. already recovered on a prior run).
@@ -4835,13 +4835,13 @@ abstract class WalletLocalizations {
   /// Hint line under a MID-SIGNATURE parked row (#400 R2) when a sync pass WILL run (`walletSyncPassesRunProvider` — #407 R10d corrected this line, which still said 'the host's sync policy is ON' after #401 R5 / #403 R4 re-keyed the site onto the drive-aware SSOT; a FAILED sync start reads policy-ON and runs no passes). Must state (a) work is in progress, (b) the amount may ALREADY be out of the spendable balance — unlike every other row in this section, whose amount is an earmark over the balance, this row can be past the point where the wallet committed the transaction locally and marked its notes spent, so the section's 'their amounts are still part of your balance' is not true of it — (c) funds are safe, (d) it self-recovers: the wallet re-queues an unfinished claim on its next completed sync pass, so the user has nothing to do and must NOT re-enter the payment. Deliberately unspecific about WHEN. Normally NO action is offered on this row (every verb that could act on it requires a still-queued row), so the copy must not name one — with ONE exception (#403 R9e, correcting a claim this file stated absolutely): while the user's OWN authorization bracket is what claimed the row, the section keeps rendering its spinnered Send now, because deleting the cue mid-proof is the dead-app shape the cue exists to prevent. When no pass will run — host policy off OR a failed start — use walletParkedPreparingHintSyncPaused.
   ///
   /// In en, this message translates to:
-  /// **'Your wallet is getting this payment ready — its amount may already be set aside. Your funds are safe. If it doesn\'t finish, it returns to the list on its own.'**
+  /// **'Your wallet is getting this payment ready, and its amount may already be set aside. Your funds are safe. If it doesn\'t finish, it returns to the list on its own.'**
   String get walletParkedPreparingHint;
 
   /// The MID-SIGNATURE row's hint when NO background sync pass will run (#400 R2, re-keyed by #401 R5). Its sibling promises the row 'returns to the list on its own' — true only where sync passes happen, because that self-recovery IS a sync pass. Without passes the row sits there indefinitely and a user told to wait for a self-heal that cannot come re-enters the payment: the double pay this whole section exists to prevent. Renamed from ...SyncOff because it is keyed on the sync DRIVE, not the host policy: a FAILED sync start has the same consequence and 'turn syncing back on' would be the wrong instruction there — so the promise is replaced by a cause-agnostic condition and the screen's own notice carries the remedy. Keep the same first two clauses as the sibling (work in progress; the amount may already be set aside; funds safe). Never phrase it as a failure — nothing failed.
   ///
   /// In en, this message translates to:
-  /// **'Your wallet is getting this payment ready — its amount may already be set aside. Your funds are safe, but it can only finish once your wallet is syncing again.'**
+  /// **'Your wallet is getting this payment ready, and its amount may already be set aside. Your funds are safe, but it can only finish once your wallet is syncing again.'**
   String get walletParkedPreparingHintSyncPaused;
 
   /// Per-row button on a parked send (FR-23-b, #361): sign and send the already-saved payment now, instead of waiting for the wallet's next background pass. A host that authorizes each spend individually prompts here. ONE LABEL FOR BOTH ROW STATES — healthy AND paused (#361 M4): on a paused row it re-arms the retry budget and signs, so it does strictly MORE than on a healthy row and 'Retry' understated it. (The description previously said 'HEALTHY (not paused)' and 'a paused row shows walletParkedRetry instead'; that Retry key is retired — #400 R9 corrects the drift.) Not shown on a row that is already mid-signature (ParkedSend.sending).
@@ -4889,7 +4889,7 @@ abstract class WalletLocalizations {
   /// The same not-ready outcome as walletParkedAuthorizeStillWaiting, but for a row that was PAUSED when the user tapped (#400 R5). The authorization re-arms a paused row's retry budget before signing, so even when nothing is signed the row DID change: it is no longer paused, its icon and label change, the paused hint disappears and the reopen-sending prompt may vanish with it. Telling that user their payment is 'unchanged' while the row visibly re-shapes reads as a bug and is simply untrue — so state the re-arm, which is what actually happened. THE SIXTH QUEUE-DRAIN STRING (#403 R3): the previous ending, 'it will be tried again', is the same automatic-drain promise #401 R1(a) swept from five siblings and missed here. A re-armed row is a QUEUED intent, so a background retry needs a sync pass AND a signing credential, and at host custody the unattended pass holds neither. It is the ONLY member of that family a user reaches BY TAPPING THE MONEY BUTTON, and it lands on top of a section whose own note may say these do not send on their own — a promise and its negation four lines apart about one payment. Same rule as walletSendQueuedBody / walletSendQueueHint: promise NO schedule, name the two real actions. Both are on screen by construction here (the re-arm leaves the row Queued, so it renders Send now and Cancel). 'Send now' must match walletParkedSendNow verbatim.
   ///
   /// In en, this message translates to:
-  /// **'Not ready to send yet. Your payment is saved and no longer paused — try Send now again later, or cancel it.'**
+  /// **'Not ready to send yet. Your payment is saved and no longer paused. Try Send now again later, or cancel it.'**
   String get walletParkedAuthorizeRearmed;
 
   /// Snackbar when the authorize call itself threw (busy / closed wallet / the host's signing credential was unavailable). The saved payment is untouched — same reassurance shape as the other 'unchanged, try again' faults.
@@ -4913,7 +4913,7 @@ abstract class WalletLocalizations {
   /// Plain-factual intro of the transparent-funds sheet: the visibility facts ONLY. The auto-shield claim is the separate CONDITIONAL sentence (walletTransparentFundsAutoOn/Off) so the sheet never states automation that is switched off.
   ///
   /// In en, this message translates to:
-  /// **'Public funds are publicly visible on the blockchain — the amount, the addresses, and the history of the coins.'**
+  /// **'Public funds are publicly visible on the blockchain: the amount, the addresses, and the history of the coins.'**
   String get walletTransparentFundsIntro;
 
   /// The expert-gate switch label (default OFF). Turning it on reveals the auto-shield switch and the move-to-transparent entry in the sheet.
@@ -4955,19 +4955,19 @@ abstract class WalletLocalizations {
   /// Balance-card cue under the transparent line when the auto-shield loop failed or was denied; the manual Shield button sits right below it.
   ///
   /// In en, this message translates to:
-  /// **'Automatic shielding didn’t complete — these funds are still publicly visible. You can shield them now.'**
+  /// **'Automatic shielding didn’t complete, so these funds are still publicly visible. You can shield them now.'**
   String get walletAutoShieldIncomplete;
 
   /// Send-review visibility statement for a fully shielded payment.
   ///
   /// In en, this message translates to:
-  /// **'Shielded payment — the amount and recipient stay private on-chain.'**
+  /// **'Shielded payment. The amount and recipient stay private on-chain.'**
   String get walletSendPrivacyShielded;
 
   /// Send-review visibility statement when any output is transparent; compact restatement of the de-shield warning.
   ///
   /// In en, this message translates to:
-  /// **'Public payment — the amount and addresses are visible on the blockchain.'**
+  /// **'Public payment. The amount and addresses are visible on the blockchain.'**
   String get walletSendPrivacyTransparent;
 
   /// Screen-reader words for the activity row’s transparency badge (the visual is a small globe icon), and the value of the tx-detail Visibility row. Direction-neutral: covers sent AND received transparent legs.
@@ -4991,7 +4991,7 @@ abstract class WalletLocalizations {
   /// The sheet’s conditional automation sentence while auto-shield is OFF (shown even when the expert gate hides the switch, so a persisted OFF is never invisible).
   ///
   /// In en, this message translates to:
-  /// **'Automatic shielding is off — public funds stay publicly visible until you shield them.'**
+  /// **'Automatic shielding is off. Public funds stay publicly visible until you shield them.'**
   String get walletTransparentFundsAutoOff;
 
   /// Orange note on the move-to-transparent confirm when auto-shield is ON — without it the loop silently reverts the deliberate unshield and burns a second fee.
@@ -5003,7 +5003,7 @@ abstract class WalletLocalizations {
   /// Orange note on the move-to-transparent review when the move leaves the PUBLIC balance (what is already public at the shield source plus this move) under the core's shield floor (stage S14, maintainer copy): no Shield, manual or automatic, can take it until more arrives. Replaces the auto-shield note in that case.
   ///
   /// In en, this message translates to:
-  /// **'After this move your public balance will be {amount} ZEC — under the {floor} ZEC needed to shield it back. It stays public until more arrives.'**
+  /// **'After this move your public balance will be {amount} ZEC, under the {floor} ZEC needed to shield it back. It stays public until more arrives.'**
   String walletMoveBelowFloorNote(String amount, String floor);
 
   /// Variant of walletMoveOwnAddressNote shown when the move leaves the public balance under the shield floor (stage S14): it drops 'You can shield these funds again later', which would be false there.
@@ -5021,7 +5021,7 @@ abstract class WalletLocalizations {
   /// The sheet’s automation sentence while the host authorizer has declined automatic shielding for this session (the switch is ON but the loop is paused). Plain-factual; the manual Shield button on the balance card remains the recovery.
   ///
   /// In en, this message translates to:
-  /// **'Automatic shielding is paused for this session — it wasn’t approved. You can still shield manually.'**
+  /// **'Automatic shielding is paused for this session because it wasn’t approved. You can still shield manually.'**
   String get walletTransparentFundsAutoDenied;
 
   /// #390 overflow-menu entry (adjacent to Rescan) opening the deep-scan sheet. CHECK verb, never ‘recover’ — the scan can’t know funds exist. ‘addresses’ not ‘refunds’ — it recovers swap deliveries too.
@@ -5045,7 +5045,7 @@ abstract class WalletLocalizations {
   /// #390 deep-scan sheet explanation. Honest: it CHECKS (does not itself find); results appear via the normal balance as sync proceeds.
   ///
   /// In en, this message translates to:
-  /// **'If you restored this wallet and it once used swaps a lot, money from its oldest swaps can take an extra step to find. This checks for it — anything found appears in your balance as your wallet syncs.'**
+  /// **'If you restored this wallet and it once used swaps a lot, money from its oldest swaps can take an extra step to find. This checks for it. Anything found appears in your balance as your wallet syncs.'**
   String get walletDeepScanBody;
 
   /// #390 sheet coverage line when a range is fully checked (covered > 0, pending == 0). NO count — the address index is not a swap tally, so any number would be false (B2). Offers going deeper.
@@ -5057,7 +5057,7 @@ abstract class WalletLocalizations {
   /// #390 sheet coverage line while the current range is still registering + polling (pending > 0). Sync-NEUTRAL — no ‘while your wallet syncs’ claim, which is false when offline/stalled (B3).
   ///
   /// In en, this message translates to:
-  /// **'Still checking the current range — anything found appears in your balance. This can take a little while.'**
+  /// **'Still checking the current range. Anything found appears in your balance. This can take a little while.'**
   String get walletDeepScanCoveragePending;
 
   /// #390 sheet coverage line fallback while the read is loading or unavailable (never a scary error over a recovery sheet).
@@ -5105,19 +5105,19 @@ abstract class WalletLocalizations {
   /// #390 inline confirmation after an accepted scan. Honest: it does NOT claim ‘found X’ — money surfaces via the normal balance. Sync-NEUTRAL (no ‘as your wallet syncs’, false when offline; B3).
   ///
   /// In en, this message translates to:
-  /// **'Checking older swap addresses — anything found will appear in your balance.'**
+  /// **'Checking older swap addresses. Anything found will appear in your balance.'**
   String get walletDeepScanRan;
 
   /// #390 snackbar when the scan could not start (a transient fault). Reassures nothing changed.
   ///
   /// In en, this message translates to:
-  /// **'Couldn’t start the check. Nothing changed — try again.'**
+  /// **'Couldn’t start the check. Nothing changed. Try again.'**
   String get walletDeepScanFailed;
 
   /// #390 rel-H1 inline message when the check exceeds the FFI wedge timeout. The widen MAY have committed (a durable local write), so this must NOT claim 'nothing changed' — it's neutral and says money appears in the balance if it did.
   ///
   /// In en, this message translates to:
-  /// **'This is taking longer than usual. If your older swap addresses were checked, anything found appears in your balance — check back shortly.'**
+  /// **'This is taking longer than usual. If your older swap addresses were checked, anything found appears in your balance. Check back shortly.'**
   String get walletDeepScanSlow;
 
   /// #390 snackbar for the swapDisabled refusal (a host kill switch stopped the polling the check depends on).
@@ -5129,7 +5129,7 @@ abstract class WalletLocalizations {
   /// #390 inline message for the checkOutstanding refusal (a prior check is still registering/polling — at most one per ~48h settlement window). B4: names the real horizon (‘up to a couple of days’) instead of ‘a little while’.
   ///
   /// In en, this message translates to:
-  /// **'Still checking the last range — this can take up to a couple of days, but usually much less. It finishes on its own; check again later.'**
+  /// **'Still checking the last range. This can take up to a couple of days, but usually much less. It finishes on its own; check again later.'**
   String get walletDeepScanRefusedOutstanding;
 
   /// #390 B5 — softer privacy nudge shown when the connection/transport state hasn’t loaded yet (Tor status unknown), so the privacy hint is never silently dropped. Distinct from walletDeepScanTorHint (a CONFIRMED Tor fallback).
@@ -5141,13 +5141,13 @@ abstract class WalletLocalizations {
   /// #390 C1 — a dismissible banner on the wallet home while a deep scan the user ran is still surfacing money (pending > 0). Sync-NEUTRAL wording (‘as it’s found’, not ‘as your wallet syncs’) so it stays honest while offline; survives closing the sheet.
   ///
   /// In en, this message translates to:
-  /// **'Still checking your older swap addresses — anything found appears in your balance.'**
+  /// **'Still checking your older swap addresses. Anything found appears in your balance.'**
   String get walletDeepScanBannerChecking;
 
   /// #390 cross-pointer on the Rescan sheet: a rescan re-scans compact blocks (no transparent outputs) and keeps the restore ceiling, so it cannot surface old-swap funds; point the affected user at the deep scan.
   ///
   /// In en, this message translates to:
-  /// **'Looking for money from an old swap? A rescan won’t find that — use “Check older swap addresses” instead.'**
+  /// **'Looking for money from an old swap? A rescan won’t find that. Use “Check older swap addresses” instead.'**
   String get walletRescanSwapPointer;
 
   /// #390 one-time post-restore note title, shown once after the first restore’s catch-up finishes.
@@ -5201,7 +5201,7 @@ abstract class WalletLocalizations {
   /// Banner for SyncServerFallback.choiceRefusedByTransport (FR-29 E12): the remembered CUSTOM server is an unencrypted http:// address, which only the SDK's own direct connection may carry — under the app's private path the default is in use, the choice is kept. host = the server now in use.
   ///
   /// In en, this message translates to:
-  /// **'Your saved server uses an unencrypted address, which your app\'s private path cannot carry — using {host}.'**
+  /// **'Your saved server uses an unencrypted address, which your app\'s private path cannot carry. Using {host}.'**
   String walletSyncServerFallbackRefusedByTransport(String host);
 
   /// Screen-reader name of the (i) button after a label; opens the explanation that used to sit on screen (S13). label = the label the button follows, verbatim.
@@ -5333,7 +5333,7 @@ abstract class WalletLocalizations {
   /// Detail-sheet explanation for a wallet-created row that reads Expired while the wallet still owes the payment (TxSummary.delivery == retryPending, S7 C1): the old transaction expired unmined and the wallet will re-send it once the expiry is safely buried. The row label stays 'Retrying'. The 'don't send it again yourself' clause is the point: a manual re-send pays twice.
   ///
   /// In en, this message translates to:
-  /// **'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.'**
+  /// **'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself, so don\'t send it again yourself.'**
   String get walletTxExplainRetryingExpired;
 }
 

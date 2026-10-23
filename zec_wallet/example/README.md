@@ -12,27 +12,27 @@ This app shows how a host consumes that boundary.
 
 ## What it demonstrates
 
-- **Onboarding** — create a new wallet or restore from a BIP39 phrase, with the
+- **Onboarding**: create a new wallet or restore from a BIP39 phrase, with the
   recovery phrase shown once on a screenshot-protected (`FLAG_SECURE`) screen.
-- **Balance, send, receive** — the ZIP-321 send pipeline with money-safety
+- **Balance, send, receive**: the ZIP-321 send pipeline with money-safety
   confirmations, a QR receive address, and sync status.
-- **History** — transaction list with memo content and an incoming-tx watch
+- **History**: transaction list with memo content and an incoming-tx watch
   stream.
-- **Sync & rescan** — live sync status plus a rescan/change-birthday recovery
+- **Sync & rescan**: live sync status plus a rescan/change-birthday recovery
   flow.
-- **Swap** — an optional ZEC↔asset on-ramp via NEAR Intents (the `swap-near`
+- **Swap**: an optional ZEC↔asset on-ramp via NEAR Intents (the `swap-near`
   adapter; gated by host config).
-- **Key custody & delete** — Settings → Security renders the measured custody
+- **Key custody & delete**: Settings → Security renders the measured custody
   tier (StrongBox / TEE / Secure Enclave / software) and whether deletion
   removes a key held by secure hardware or is best effort, then performs the
   destructive wipe honestly.
-- **Settings** — the wallet overflow menu's "Settings": the Tor switch first,
-  then theme mode, text scale and AMOLED.
-- **Device log** — Settings → Device log (Off / Errors only / Detailed), and
+- **Settings**: the wallet overflow menu's "Settings", with the Tor switch
+  first, then theme mode, text scale and AMOLED.
+- **Device log**: Settings → Device log (Off / Errors only / Detailed), and
   **Share device log**. See below.
-- **Tor** — the optional `zec_wallet_tor` package, off until the user turns on
+- **Tor**: the optional `zec_wallet_tor` package, off until the user turns on
   "Use the built-in Tor plugin" at the top of Settings
-  (`lib/core/tor/tor_plugin.dart`). Its native library measured 9.8–15.3 MB
+  (`lib/core/tor/tor_plugin.dart`). Its native library measured 9.8 to 15.3 MB
   per Android ABI in the release build.
 
 ## The device log
@@ -66,7 +66,7 @@ the whole text rides in the link's `body=`:
 ## Running
 
 The SDK is an `ffiPlugin`: Cargokit builds and bundles the Rust core into device
-builds automatically — no manual Rust step.
+builds automatically, with no manual Rust step.
 
 ```sh
 flutter pub get
@@ -88,14 +88,14 @@ funds:
 flutter run --dart-define=ZEC_WALLET_SWAP_JWT=<token>
 ```
 
-Without it, quotes fail closed back to the form (no money risk) — everything
+Without it, quotes fail closed back to the form (no money risk). Everything
 else works.
 
 ## Tests
 
-- `flutter test` — host-VM widget/unit tests. These never build native code;
+- `flutter test`: host-VM widget/unit tests. These never build native code;
   the wallet runs against a fake session, so the suite is fast and offline.
-- `flutter test integration_test` — on-device gates: the bridge self-test
+- `flutter test integration_test`: on-device gates, namely the bridge self-test
   (`bridge_selftest_test.dart`, drives `runBridgeSelftest` from
   `lib/bridge_selftest.dart`) and the custody round-trip
   (`custody_e2e_test.dart`, exercises the device's real keystore). These need a

@@ -5,7 +5,7 @@ A ZEC (Zcash) wallet SDK for Flutter with a Rust core. The core is built on
 Seeds and spending keys stay in Rust; Dart sees addresses, balances, statuses
 and typed errors.
 
-**Status: pre-release (0.0.1).** The SDK holds and spends real funds and has
+**Status: pre-release.** The SDK holds and spends real funds and has
 not had an independent security audit. See [SECURITY.md](SECURITY.md).
 
 ## What is in this repository
@@ -18,7 +18,7 @@ not had an independent security audit. See [SECURITY.md](SECURITY.md).
 | [`zec_wallet_tor/`](zec_wallet_tor) | optional Tor for the wallet's traffic; an app that does not add it carries no Tor code | [`zec_wallet_tor`](https://pub.dev/packages/zec_wallet_tor) |
 | [`dialer-tor/`](dialer-tor) | a standalone Tor dialer over arti, used by `zec_wallet_tor` | [`dialer-tor`](https://crates.io/crates/dialer-tor) on crates.io |
 | `zec-wallet-core/`, `zec-wallet-swap-near/`, `apple-secure-enclave/` | the Rust crates behind `zec_wallet`: the wallet core, the NEAR swap adapter, the Secure Enclave key store | vendored into the `zec_wallet` package |
-| [`docs/`](docs) | the SDK's specs and architecture decisions, at the paths the code cites | — |
+| [`docs/`](docs) | the SDK's specs and architecture decisions, at the paths the code cites | not a package |
 
 Each package has its own README with the integration steps, and its own
 CHANGELOG.
@@ -48,8 +48,8 @@ change has to pass.
 
 ## Platforms
 
-Android and iOS are tested on phones and macOS on a development machine. In
-0.0.1 a wallet runs on those three.
+Android and iOS are tested on phones and macOS on a development machine. A
+wallet runs on those three today.
 
 **Linux and Windows cannot hold a wallet yet.** The packages build there (Linux
 arm64 is compiled and its tests run; Windows has not been built), but the
@@ -68,8 +68,8 @@ for a later release.
   fix needs the actual fork point, and the wallet cannot find it yet.
   A server that does this can make the wallet misjudge which funds are
   spendable: a note can be offered before it is safe to spend, or funds can
-  look stuck. The server cannot take funds. Until this is fixed, 0.0.1 is not ready to
-  hold large amounts; use it with small amounts and a light server you trust.
+  look stuck. The server cannot take funds. Until this is fixed, the SDK is not ready
+  to hold large amounts; use it with small amounts and a light server you trust.
   [Issue #1](https://github.com/alvorado-lab/zec-wallet/issues/1) tracks it,
   and CI skips its test by name until then.
 
@@ -79,6 +79,11 @@ for a later release.
 (`docs/adr/`), so a comment such as `docs/specs/wallet-sdk.md §6.3` or
 `ADR-0552` resolves in this repository. [`docs/README.md`](docs/README.md)
 explains which references point outside it.
+
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md)
+explains how a change gets in and the style it is held to.
 
 ## Security
 

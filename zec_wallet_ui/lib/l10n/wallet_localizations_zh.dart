@@ -19,14 +19,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      '钱包设置功能将在后续版本中推出。设置过程会引导您先写下恢复短语，然后才能接收资金——因此在没有备份的情况下，资金绝不会面临风险。';
+      '钱包设置功能将在后续版本中推出。设置过程会引导您先写下恢复短语，然后才能接收资金，因此在没有备份的情况下，资金绝不会面临风险。';
 
   @override
   String get walletStartupFailedTitle => '钱包无法启动';
 
   @override
   String get walletStartupFailedBody =>
-      '出现问题，导致钱包无法在此设备上加载。如果您已有钱包，其资金不受影响——资金保存在 Zcash 网络上，可通过恢复短语找回。请重试；如果问题持续出现，请关闭应用后重新打开。';
+      '出现问题，导致钱包无法在此设备上加载。如果您已有钱包，其资金不受影响：资金保存在 Zcash 网络上，可通过恢复短语找回。请重试；如果问题持续出现，请关闭应用后重新打开。';
 
   @override
   String get walletBalanceLabel => '余额';
@@ -146,10 +146,10 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletTxFundsKept => '没有资金从您的钱包转出';
 
   @override
-  String get walletTxExplainQueued => '已保存在此设备上，位于「已保存并待处理」中——您可以在那里发送或取消。';
+  String get walletTxExplainQueued => '已保存在此设备上，位于「已保存并待处理」中，您可以在那里发送或取消。';
 
   @override
-  String get walletTxExplainPending => '已发送至 Zcash 网络——正在等待区块确认。';
+  String get walletTxExplainPending => '已发送至 Zcash 网络，正在等待区块确认。';
 
   @override
   String get walletTxExplainRetrying =>
@@ -190,7 +190,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletRescanRangeTitle => '扫描回溯的时间范围';
 
   @override
-  String get walletRescanRangeAll => '扫描您的全部历史记录——速度最慢，但可找回所有资金。';
+  String get walletRescanRangeAll => '扫描您的全部历史记录。速度最慢，但可找回所有资金。';
 
   @override
   String get walletRescanRangeDefault =>
@@ -223,11 +223,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      '此操作将重新扫描区块链。较近的日期只需几分钟；回溯较远则可能需要数小时。同步在后台运行——您可以继续使用钱包。';
+      '此操作将重新扫描区块链。较近的日期只需几分钟；回溯较远则可能需要数小时。同步在后台运行，您可以继续使用钱包。';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      '此钱包中的一笔付款仍在确认中。钱包通常会在其完成前拒绝重新扫描——您可以尝试，但预计会被拒绝。';
+      '此钱包中的一笔付款仍在确认中。钱包通常会在其完成前拒绝重新扫描。您可以尝试，但预计会被拒绝。';
 
   @override
   String get walletRescanConfirm => '开始重新扫描';
@@ -240,40 +240,40 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      '正在重建您的历史记录——扫描整条区块链。随着进度追赶，您的余额和活动记录将逐步填充。';
+      '正在重建您的历史记录，扫描整条区块链。随着进度追赶，您的余额和活动记录将逐步填充。';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return '正在从 $date 重建您的历史记录——随着进度追赶，您的余额和活动记录将逐步填充。';
+    return '正在从 $date 重建您的历史记录。随着进度追赶，您的余额和活动记录将逐步填充。';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      '正在从您钱包的起始点重建您的历史记录——随着进度追赶，您的余额和活动记录将逐步填充。';
+      '正在从您钱包的起始点重建您的历史记录。随着进度追赶，您的余额和活动记录将逐步填充。';
 
   @override
   String get walletCatchUpBanner =>
-      '正在追赶进度——钱包同步时，您的余额和活动记录将逐步填充。您收到的任何款项均安全无虞。';
+      '正在追赶进度。钱包同步时，您的余额和活动记录将逐步填充。您收到的任何款项均安全无虞。';
 
   @override
   String get walletCatchUpRescanBanner =>
-      '重新扫描后，正在重建您的历史记录——随着进度追赶，您的余额和活动记录将逐步填充。您收到的任何款项均安全无虞。';
+      '重新扫描后，正在重建您的历史记录。随着进度追赶，您的余额和活动记录将逐步填充。您收到的任何款项均安全无虞。';
 
   @override
   String get walletRescanFailedNotice =>
-      '目前无法重新扫描——您的资金安全无虞，只是余额和历史记录可能需要一点时间才能赶上进度。请稍后再试。';
+      '目前无法重新扫描。您的资金安全无虞，只是余额和历史记录可能需要一点时间才能赶上进度。请稍后再试。';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      '付款仍在确认中，因此系统暂停了重新扫描以保护您的资金。您的钱包未发生任何变化——请在几个小时后重试，并在此期间保持应用打开且联网。';
+      '付款仍在确认中，因此系统暂停了重新扫描以保护您的资金。您的钱包未发生任何变化。请在几个小时后重试，并在此期间保持应用打开且联网。';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      '重新扫描会随着钱包同步而重建您的历史记录，且同步目前未在运行。您的钱包未发生任何变化——请在同步运行后重试。';
+      '重新扫描会随着钱包同步而重建您的历史记录，且同步目前未在运行。您的钱包未发生任何变化。请在同步运行后重试。';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      '可用存储空间不足，无法重建您的钱包历史记录——您的资金安全无虞，只是余额和历史记录可能需要一点时间才能赶上进度。请释放一些空间后重试。';
+      '可用存储空间不足，无法重建您的钱包历史记录。您的资金安全无虞，只是余额和历史记录可能需要一点时间才能赶上进度。请释放一些空间后重试。';
 
   @override
   String get walletRescanFailedDismiss => '关闭';
@@ -282,7 +282,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletActivityRebuilding => '正在重建您的历史记录…';
 
   @override
-  String get walletActivityCatchingUp => '仍在追赶进度——您收到的任何款项都会显示在此处。';
+  String get walletActivityCatchingUp => '仍在追赶进度，您收到的任何款项都会显示在此处。';
 
   @override
   String get walletActivitySyncNotRunning => '同步运行后，您的余额和历史记录将完成加载。';
@@ -298,7 +298,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      '不计入「当前可用」——需先屏蔽这些资金才能使用。在此之前，它们在链上仍是公开可见的。';
+      '不计入「当前可用」：需先屏蔽这些资金才能使用。在此之前，它们在链上仍是公开可见的。';
 
   @override
   String get walletTransparentNoteWatchOnly => '这些资金在链上仍是公开可见的。';
@@ -353,7 +353,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      '无法检查是否有付款仍在完成中。正在重试——在此之前，请先在您的活动中查看是否有待处理的付款，然后再重新发送。';
+      '无法检查是否有付款仍在完成中。正在重试。在此之前，请先在您的活动中查看是否有待处理的付款，然后再重新发送。';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -392,7 +392,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      '这些资金目前低于值得屏蔽的金额——网络费用会超过屏蔽带来的收益。待稍有更多资金到账后即可屏蔽。';
+      '这些资金目前低于值得屏蔽的金额：网络费用会超过屏蔽带来的收益。待稍有更多资金到账后即可屏蔽。';
 
   @override
   String get walletShieldDoneTitle => '屏蔽已提交';
@@ -401,7 +401,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletShieldDoneBody => '您的资金正在转入屏蔽余额，将很快在链上得到确认。';
 
   @override
-  String get walletShieldSavedTitle => '已保存——我们将完成屏蔽';
+  String get walletShieldSavedTitle => '已保存，我们将完成屏蔽';
 
   @override
   String get walletShieldSavedBody =>
@@ -436,7 +436,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletMoveSheetTitle => '转为公开';
 
   @override
-  String get walletMoveSheetSubtitle => '将屏蔽 ZEC 发送到您自己的公开地址——适用于不接受屏蔽存款的交易所。';
+  String get walletMoveSheetSubtitle => '将屏蔽 ZEC 发送到您自己的公开地址，适用于不接受屏蔽存款的交易所。';
 
   @override
   String get walletMoveDestinationLabel => '您的公开地址';
@@ -448,7 +448,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return '可转出：$amount ZEC——您的余额仍在追赶进度';
+    return '可转出：$amount ZEC（您的余额仍在追赶进度）';
   }
 
   @override
@@ -456,7 +456,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      '转至公开地址会将这些资金移出您的屏蔽余额——金额及您的公开地址将在 Zcash 区块链上公开可见。';
+      '转至公开地址会将这些资金移出您的屏蔽余额，金额及您的公开地址将在 Zcash 区块链上公开可见。';
 
   @override
   String get walletMoveWalletEnded => '钱包会话已结束。请关闭后重新打开以再次尝试。';
@@ -496,7 +496,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletMoveDoneBody => '您的资金正在转入公开地址，很快将在链上确认。';
 
   @override
-  String get walletMoveSavedTitle => '已保存——我们将完成转移';
+  String get walletMoveSavedTitle => '已保存，我们将完成转移';
 
   @override
   String get walletMoveSavedBody => '此次转移已保存，您的钱包将在之后的同步中发送。资金没有任何损失。';
@@ -518,7 +518,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      '您的钱包仍在追赶进度——您收到的任何款项将在同步完成后变为可转出。';
+      '您的钱包仍在追赶进度。您收到的任何款项将在同步完成后变为可转出。';
 
   @override
   String get walletMoveCouldNotLoad => '无法加载您的公开地址，请重试。';
@@ -533,7 +533,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSnapshotUnavailable => '目前无法读取钱包，它将自动刷新。';
 
   @override
-  String get walletBalanceStale => '无法刷新——显示您上次已知的余额。';
+  String get walletBalanceStale => '无法刷新，显示的是您上次已知的余额。';
 
   @override
   String get walletSyncStartFailed => '无法开始同步，我们将持续重试。';
@@ -598,7 +598,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSyncSpendableReady => '资金已可使用。';
 
   @override
-  String get walletSyncCatchingUp => '正在追赶网络进度——深度初始同步可能需要一段时间。完成之前您仍可继续使用本应用';
+  String get walletSyncCatchingUp => '正在追赶网络进度，深度初始同步可能需要一段时间。完成之前您仍可继续使用本应用';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -622,7 +622,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      '目前无法连接到 Zcash 网络。我们将自动持续重试——请检查您的网络连接，也可能是服务器暂时不可用。';
+      '目前无法连接到 Zcash 网络。我们将自动持续重试。请检查您的网络连接，也可能是服务器暂时不可用。';
 
   @override
   String get walletStallTor =>
@@ -639,7 +639,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      '此服务器发送的数据不可能正确，因此同步已停止。这不是连接问题——请切换到其他服务器。如果所有服务器都被拒绝，请重新扫描历史记录：钱包可能保留了来自早前服务器的错误记录。';
+      '此服务器发送的数据不可能正确，因此同步已停止。这不是连接问题，请切换到其他服务器。如果所有服务器都被拒绝，请重新扫描历史记录：钱包可能保留了来自早前服务器的错误记录。';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -677,11 +677,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
   }
 
   @override
-  String get walletSyncExplainIdle => '同步尚未开始——它会自动开始，无需任何操作。';
+  String get walletSyncExplainIdle => '同步尚未开始。它会自动开始，无需任何操作。';
 
   @override
   String get walletSyncExplainStartFailed =>
-      '同步未能启动。您的资金安全无虞——钱包目前只是没有在检查新的活动。请在下方重试，或重新打开应用。';
+      '同步未能启动。您的资金安全无虞，钱包目前只是没有在检查新的活动。请在下方重试，或重新打开应用。';
 
   @override
   String get walletSyncExplainStarting => '钱包正在联系 Zcash 网络并准备扫描，通常只需几秒钟。';
@@ -691,7 +691,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      '钱包正在检查区块链中的区块以查找您的资金。发现新交易时，余额和活动记录会随之更新——同步完成前，您仍可继续使用本应用。';
+      '钱包正在检查区块链中的区块以查找您的资金。发现新交易时，余额和活动记录会随之更新。同步完成前，您仍可继续使用本应用。';
 
   @override
   String get walletSyncExplainUpToDate => '已与 Zcash 网络完全同步。您的余额和活动记录均为最新。';
@@ -701,11 +701,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      '无法连接到 Zcash 网络——如果您处于离线状态，这属于正常情况，也可能是服务器暂时不可用。您的资金是安全的：余额显示的是上次同步时的状态，排队中的转账会保留在「已保存并待处理」中。连接会自动重试。';
+      '无法连接到 Zcash 网络。如果您处于离线状态，这属于正常情况，也可能是服务器暂时不可用。您的资金是安全的：余额显示的是上次同步时的状态，排队中的转账会保留在「已保存并待处理」中。连接会自动重试。';
 
   @override
   String get walletSyncExplainOffline =>
-      '没有网络连接。您的资金是安全的——余额显示的是上次同步时的状态，排队中的转账会保留在「已保存并待处理」中。';
+      '没有网络连接。您的资金是安全的：余额显示的是上次同步时的状态，排队中的转账会保留在「已保存并待处理」中。';
 
   @override
   String get walletSyncExplainUnknown => '钱包正在同步。余额和活动记录会随进度更新。';
@@ -731,37 +731,37 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletTorActiveUnattested => '正在使用隐私通道（隐私性未验证）';
 
   @override
-  String get walletTorFellBack => 'Tor 不可用——正在使用直接连接';
+  String get walletTorFellBack => 'Tor 不可用，正在使用直接连接';
 
   @override
-  String get walletTorUnavailable => '隐私通道不可用——未连接';
+  String get walletTorUnavailable => '隐私通道不可用，未连接';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport 不可用——未连接';
+    return '$transport 不可用，未连接';
   }
 
   @override
-  String get walletTorUnanswered => '隐私通道已连接——没有任何回应';
+  String get walletTorUnanswered => '隐私通道已连接，但没有任何回应';
 
   @override
-  String get walletTorUnansweredUnattested => '隐私通道已连接——没有任何回应（隐私性未验证）';
+  String get walletTorUnansweredUnattested => '隐私通道已连接，但没有任何回应（隐私性未验证）';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport 已连接——没有任何回应';
+    return '$transport 已连接，但没有任何回应';
   }
 
   @override
-  String get walletTorUnansweredDirect => '非隐私（您应用的直接连接）——没有任何回应';
+  String get walletTorUnansweredDirect => '非隐私（您应用的直接连接），没有任何回应';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return '经由 $transport 已连接——没有任何回应；代理可以关联各个连接';
+    return '经由 $transport 已连接，但没有任何回应；代理可以关联各个连接';
   }
 
   @override
-  String get walletTorUnknown => 'Tor 状态未知——请视为未受保护';
+  String get walletTorUnknown => 'Tor 状态未知，请视为未受保护';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -863,7 +863,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      '无法连接到此服务器。请检查地址——如果地址无误，则可能是此服务器没有回应，也可能是您的应用当前无法连上它。请重试，或换一台服务器。';
+      '无法连接到此服务器。请检查地址。如果地址无误，则可能是此服务器没有回应，也可能是您的应用当前无法连上它。请重试，或换一台服务器。';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -893,7 +893,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return '无法切换 — 仍在使用 $host。';
+    return '无法切换，仍在使用 $host。';
   }
 
   @override
@@ -926,23 +926,23 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      '隐私通道已接受此连接，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器——钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
+      '隐私通道已接受此连接，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器，钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport 已接受此连接，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器——钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
+    return '$transport 已接受此连接，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器，钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      '钱包流量直接连接到服务器，服务器可以看到您的 IP 地址。此连接已被接受，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器——钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
+      '钱包流量直接连接到服务器，服务器可以看到您的 IP 地址。此连接已被接受，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器，钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      '此连接的隐私性无法验证——请视为不私密。此连接已被接受，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器——钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
+      '此连接的隐私性无法验证，请视为不私密。此连接已被接受，但已有一分钟没有任何回应。可能是通道，也可能是钱包服务器，钱包无法分辨。钱包会持续重试；如果一直不恢复，请换一台服务器，或检查您应用的网络设置。';
 
   @override
-  String get walletTransportExplainUnverified => '此连接的隐私性无法验证——请视为不私密。';
+  String get walletTransportExplainUnverified => '此连接的隐私性无法验证，请视为不私密。';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -953,7 +953,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      '创建一个新钱包以接收和持有 ZEC。在任何资金到账之前，我们会生成一个恢复短语，并引导您完成备份——确保资金在未备份的情况下绝不会面临风险。';
+      '创建一个新钱包以接收和持有 ZEC。在任何资金到账之前，我们会生成一个恢复短语，并引导您完成备份，确保资金在未备份的情况下绝不会面临风险。';
 
   @override
   String get walletCreateButton => '创建新钱包';
@@ -1003,7 +1003,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return '从 $date 开始扫描——在此之前收到的资金将不会显示。钱包更早创建？请选择更早的日期。';
+    return '从 $date 开始扫描，在此之前收到的资金将不会显示。钱包更早创建？请选择更早的日期。';
   }
 
   @override
@@ -1035,7 +1035,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      '输入您的恢复短语以还原钱包——请按顺序输入或粘贴单词，单词之间用空格分隔。仅支持标准短语：如果您的钱包使用了额外的密码短语（「第25个单词」），本应用目前尚无法还原它——您将看到一个空钱包，而不是错误提示。';
+      '输入您的恢复短语以还原钱包。请按顺序输入或粘贴单词，单词之间用空格分隔。仅支持标准短语：如果您的钱包使用了额外的密码短语（「第25个单词」），本应用目前尚无法还原它。您将看到一个空钱包，而不是错误提示。';
 
   @override
   String get walletRestorePhraseHint => '单词一  单词二  单词三  …';
@@ -1060,8 +1060,8 @@ class WalletLocalizationsZh extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count 个单词不是恢复单词——请更正高亮显示的单词',
-      one: '1 个单词不是恢复单词——请更正高亮显示的单词',
+      other: '$count 个单词不是恢复单词，请更正高亮显示的单词',
+      one: '1 个单词不是恢复单词，请更正高亮显示的单词',
     );
     return '$_temp0';
   }
@@ -1091,11 +1091,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletRestoreBirthdayTitle => '扫描起始时间';
 
   @override
-  String get walletRestoreBirthdayNone => '我们将扫描您的全部历史记录——速度较慢，但不会遗漏任何内容。';
+  String get walletRestoreBirthdayNone => '我们将扫描您的全部历史记录。速度较慢，但不会遗漏任何内容。';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return '从 $date 开始扫描——在此之前收到的资金将不会显示。钱包更早创建？请选择更早的日期，或选择「扫描全部历史记录」。';
+    return '从 $date 开始扫描，在此之前收到的资金将不会显示。钱包更早创建？请选择更早的日期，或选择「扫描全部历史记录」。';
   }
 
   @override
@@ -1136,7 +1136,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      '这些单词是恢复您钱包和资金的唯一途径。请按顺序抄写下来，并存放在安全隐秘的地方。切勿与任何人分享，也不要存储在网络上——任何掌握这些单词的人都能取走您的资金。';
+      '这些单词是恢复您钱包和资金的唯一途径。请按顺序抄写下来，并存放在安全隐秘的地方。切勿与任何人分享，也不要存储在网络上：任何掌握这些单词的人都能取走您的资金。';
 
   @override
   String get walletBackupSecureNoteAndroid => '此屏幕已禁用截屏功能。';
@@ -1176,7 +1176,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      '此操作会从设备中删除此钱包并返回起始页面。设置完成前，无法通过本应用存入任何资金。\n\n如果此钱包曾持有资金——或曾通过恢复短语恢复——只有该短语才能将其找回。';
+      '此操作会从设备中删除此钱包并返回起始页面。设置完成前，无法通过本应用存入任何资金。\n\n如果此钱包曾持有资金，或曾通过恢复短语恢复，只有该短语才能将其找回。';
 
   @override
   String get walletBackupStartOverConfirm => '删除并重新开始';
@@ -1204,7 +1204,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      '此钱包是使用安装它的应用中的账户设置的，因此没有属于自己的恢复短语。您的资金将与该账户一起恢复——请使用该账户的备份以确保资金安全。';
+      '此钱包是使用安装它的应用中的账户设置的，因此没有属于自己的恢复短语。您的资金将与该账户一起恢复，请使用该账户的备份以确保资金安全。';
 
   @override
   String get walletExportViewingKeyTitle => '导出查看密钥';
@@ -1214,7 +1214,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      '分享您钱包的只读副本——可以查看交易记录，但无法花费资金。';
+      '分享您钱包的只读副本：可以查看交易记录，但无法花费资金。';
 
   @override
   String get walletExportViewingKeyWarning =>
@@ -1259,7 +1259,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      '这是一个仅观察钱包。它是通过查看密钥设置的，因此可以查看余额和交易记录，但不持有花费密钥——这里没有需要备份的内容，也无法发送资金。';
+      '这是一个仅观察钱包。它是通过查看密钥设置的，因此可以查看余额和交易记录，但不持有花费密钥：这里没有需要备份的内容，也无法发送资金。';
 
   @override
   String get walletWatchOnlyBadge => '仅观察';
@@ -1280,7 +1280,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      '此钱包的安全密钥已不可用，因此无法在此设备上打开。您的资金是安全的——请使用恢复短语进行恢复。';
+      '此钱包的安全密钥已不可用，因此无法在此设备上打开。您的资金是安全的，请使用恢复短语进行恢复。';
 
   @override
   String get walletOnboardingFailedRestoreAction => '使用恢复短语恢复';
@@ -1290,7 +1290,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      '继续前请确保您已备好恢复短语——下一屏需要用它来恢复您的资金。您的资金安全存储在区块链上，并由该短语控制。此操作将从本设备移除无法读取的钱包数据，以便重新构建。';
+      '继续前请确保您已备好恢复短语，下一屏需要用它来恢复您的资金。您的资金安全存储在区块链上，并由该短语控制。此操作将从本设备移除无法读取的钱包数据，以便重新构建。';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => '取消';
@@ -1307,23 +1307,23 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      '钱包设置未完成。请重试以完成设置——没有任何数据丢失。';
+      '钱包设置未完成。请重试以完成设置，没有任何数据丢失。';
 
   @override
   String get walletOnboardingFailedUnknown => '设置钱包时出现问题。请重试。';
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      '此应用的钱包配置有误，导致钱包无法启动。重试无法解决问题——请将此情况报告给该应用的开发者。您的资金不受影响。';
+      '此应用的钱包配置有误，导致钱包无法启动。重试无法解决问题，请将此情况报告给该应用的开发者。您的资金不受影响。';
 
   @override
   String get walletSendButton => '发送';
 
   @override
-  String get walletSendSyncNotRunning => '同步未在运行——您的可用余额无法更新';
+  String get walletSendSyncNotRunning => '同步未在运行，您的可用余额无法更新';
 
   @override
-  String get walletSendWaitingForFunds => '仍在同步——您有可用余额后即可发送';
+  String get walletSendWaitingForFunds => '仍在同步，您有可用余额后即可发送';
 
   @override
   String get walletSendNoSpendableYet => '暂无可用余额';
@@ -1338,8 +1338,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSendUnavailable => '您的钱包目前尚未就绪。请返回后重试。';
 
   @override
-  String get walletSendWatchOnly =>
-      '这是一个仅观察钱包。它可以显示余额和接收付款，但不持有任何花费密钥——因此无法发送。';
+  String get walletSendWatchOnly => '这是一个仅观察钱包。它可以显示余额和接收付款，但不持有任何花费密钥，因此无法发送。';
 
   @override
   String get walletSendExpiredTitle => '此付款请求已过期';
@@ -1349,7 +1348,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
       '发送页面打开耗时超过五秒，因此应用已被告知未发送任何内容。该答复为最终结果：无法从此处支付此请求。如需支付，请从应用重新开始。';
 
   @override
-  String get walletSendFaultWatchOnly => '这是一个仅观察钱包——它不持有任何花费密钥，因此无法发送。';
+  String get walletSendFaultWatchOnly => '这是一个仅观察钱包，它不持有任何花费密钥，因此无法发送。';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1358,7 +1357,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return '可发送余额：$amount ZEC——您的余额仍在追赶进度';
+    return '可发送余额：$amount ZEC（您的余额仍在追赶进度）';
   }
 
   @override
@@ -1470,7 +1469,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSendLargeConfirmOverThreshold => '这是一笔大额付款。付款一旦发送即无法撤销。';
 
   @override
-  String get walletSendLargeConfirmBoth => '这是一笔大额付款——几乎是您的全部余额。付款一旦发送即无法撤销。';
+  String get walletSendLargeConfirmBoth => '这是一笔大额付款，几乎是您的全部余额。付款一旦发送即无法撤销。';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1487,7 +1486,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSendSentBody => '您的付款已广播至网络。';
 
   @override
-  String get walletSendSavedTitle => '已保存——我们将继续完成发送';
+  String get walletSendSavedTitle => '已保存，我们将继续完成发送';
 
   @override
   String get walletSendSavedBody => '您的付款目前未能发出，已被保存，您的钱包将在之后的同步中发送。资金不会有任何损失。';
@@ -1512,7 +1511,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSendAlreadyTitle => '已提交';
 
   @override
-  String get walletSendAlreadyBody => '此付款已提交——不会被重复发送。';
+  String get walletSendAlreadyBody => '此付款已提交，不会被重复发送。';
 
   @override
   String get walletSendFailedTitle => '付款未能完成';
@@ -1537,7 +1536,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return '可用余额不足——您拥有 $available ZEC，此付款需要 $required ZEC。';
+    return '可用余额不足：您拥有 $available ZEC，此付款需要 $required ZEC。';
   }
 
   @override
@@ -1556,7 +1555,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      '此服务器拒绝、隐瞒或错误报告了 Zcash 的一个隐私资金池。在该资金池中收到的资金无法通过此服务器花费，显示的余额是下限。请切换到其他服务器以使用这些资金——这不是连接问题。';
+      '此服务器拒绝、隐瞒或错误报告了 Zcash 的一个隐私资金池。在该资金池中收到的资金无法通过此服务器花费，显示的余额是下限。请切换到其他服务器以使用这些资金。这不是连接问题。';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1592,15 +1591,15 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      '此服务器的链停留在一个网络早在此版本应用构建之前就已越过的区块，因此您的余额仅更新到该区块。新收到的付款可能尚未显示，从此处发出的付款也可能无法送达。请切换到其他服务器以赶上网络进度——这不是连接问题。';
+      '此服务器的链停留在一个网络早在此版本应用构建之前就已越过的区块，因此您的余额仅更新到该区块。新收到的付款可能尚未显示，从此处发出的付款也可能无法送达。请切换到其他服务器以赶上网络进度。这不是连接问题。';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      '正在等待应用更新 — 您的资金是安全的，尚未发送任何内容。';
+      '正在等待应用更新。您的资金是安全的，尚未发送任何内容。';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      '正在等待报告网络版本的服务器 — 请切换服务器。您的资金是安全的，尚未发送任何内容。';
+      '正在等待报告网络版本的服务器，请切换服务器。您的资金是安全的，尚未发送任何内容。';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
@@ -1614,15 +1613,15 @@ class WalletLocalizationsZh extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       hours,
       locale: localeName,
-      other: '发送功能还能使用约 $hours 小时 — 之后请切换服务器。',
-      zero: '发送功能还能使用不到 1 小时 — 之后请切换服务器。',
+      other: '发送功能还能使用约 $hours 小时，之后请切换服务器。',
+      zero: '发送功能还能使用不到 1 小时，之后请切换服务器。',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return '发送功能还能使用约 $blocks 个区块 — 之后请切换服务器。';
+    return '发送功能还能使用约 $blocks 个区块，之后请切换服务器。';
   }
 
   @override
@@ -1640,19 +1639,19 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      '此服务器不说明自己运行在哪个版本的 Zcash 网络上，因此本应用无法确认它签名的付款会被接受。 您的余额是最新的。 请切换到其他服务器 — 这不是连接问题。';
+      '此服务器不说明自己运行在哪个版本的 Zcash 网络上，因此本应用无法确认它签名的付款会被接受。 您的余额是最新的。 请切换到其他服务器。这不是连接问题。';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      '此服务器不说明自己运行在哪个版本的 Zcash 网络上，因此本应用无法确认它签名的付款会被接受。 它还持续提供了此钱包随后不得不撤销的区块，因此您的余额可能不是最新的。 请切换到其他服务器 — 这不是连接问题。';
+      '此服务器不说明自己运行在哪个版本的 Zcash 网络上，因此本应用无法确认它签名的付款会被接受。 它还持续提供了此钱包随后不得不撤销的区块，因此您的余额可能不是最新的。 请切换到其他服务器。这不是连接问题。';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      '此服务器还在持续提供此钱包随后不得不撤销的区块 — 请切换服务器。';
+      '此服务器还在持续提供此钱包随后不得不撤销的区块，请切换服务器。';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      '您的余额仍在追赶进度——钱包同步时，可能会有更多余额变为可用。';
+      '您的余额仍在追赶进度。钱包同步时，可能会有更多余额变为可用。';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1693,7 +1692,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSendFaultMemoNotSendable => '该备注无法发送。请删除后重试。';
 
   @override
-  String get walletSendFaultMemoConflict => '无法发送此笔付款——应用为其附加了两条备注。未发送任何内容。';
+  String get walletSendFaultMemoConflict => '无法发送此笔付款：应用为其附加了两条备注。未发送任何内容。';
 
   @override
   String get walletSendFaultNetworkMismatch => '该地址属于其他网络。';
@@ -1746,7 +1745,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSwapUnavailableOff => '兑换功能目前不可用。';
 
   @override
-  String get walletSwapUnavailableWatchOnly => '这是一个仅观察钱包——它无法兑换。';
+  String get walletSwapUnavailableWatchOnly => '这是一个仅观察钱包，它无法兑换。';
 
   @override
   String get walletSwapDone => '完成';
@@ -1761,7 +1760,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return '可兑换余额：$amount ZEC——您的余额仍在追赶进度';
+    return '可兑换余额：$amount ZEC（您的余额仍在追赶进度）';
   }
 
   @override
@@ -1786,7 +1785,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return '一个 $chain 地址——您兑换后的资产将发送到此处。请仔细核对链是否正确。';
+    return '一个 $chain 地址，您兑换后的资产将发送到此处。请仔细核对链是否正确。';
   }
 
   @override
@@ -1805,7 +1804,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSwapExecuting => '正在启动兑换…';
 
   @override
-  String get walletSwapExecuteStillWorking => '仍在处理中——兑换正在启动。此过程最多可能需要一分钟。';
+  String get walletSwapExecuteStillWorking => '仍在处理中，兑换正在启动。此过程最多可能需要一分钟。';
 
   @override
   String get walletSwapReviewTitle => '确认兑换';
@@ -1829,14 +1828,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return '报价有效期约为 $time——请在过期前确认。';
+    return '报价有效期约为 $time，请在过期前确认。';
   }
 
   @override
-  String get walletSwapQuoteExpiresUnderMinute => '报价有效期不到一分钟——请在过期前确认。';
+  String get walletSwapQuoteExpiresUnderMinute => '报价有效期不到一分钟，请在过期前确认。';
 
   @override
-  String get walletSwapQuoteExpired => '此报价已过期。请返回获取新报价——原汇率已不再保证，现在发送可能导致退款。';
+  String get walletSwapQuoteExpired => '此报价已过期。请返回获取新报价：原汇率已不再保证，现在发送可能导致退款。';
 
   @override
   String get walletCountdownUnderMinute => '不到一分钟';
@@ -1861,7 +1860,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      '卖出兑换会解除您 ZEC 的屏蔽保护——存款交易是公开的，服务商一侧的交易在其网络上同样公开可见。';
+      '卖出兑换会解除您 ZEC 的屏蔽保护：存款交易是公开的，服务商一侧的交易在其网络上同样公开可见。';
 
   @override
   String get walletSwapDiscloseTitle => '兑换服务商将看到的信息';
@@ -1904,7 +1903,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      '您的钱包正在将 ZEC 存款发送至服务商。如果您短暂离线，系统会在您重新联网后自动发送——但发送窗口很短，如果窗口在此之前关闭，兑换将直接结束，不会进行任何交换。您的 ZEC 仍然是您的，但可能需要长达一小时才能再次显示为可用余额。';
+      '您的钱包正在将 ZEC 存款发送至服务商。如果您短暂离线，系统会在您重新联网后自动发送。但发送窗口很短，如果窗口在此之前关闭，兑换将直接结束，不会进行任何交换。您的 ZEC 仍然是您的，但可能需要长达一小时才能再次显示为可用余额。';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -1912,7 +1911,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      '此次兑换仍在等待存款到账。存款说明已不再保存在此设备上——如果您已经发送了资金，系统会检测到；如果尚未发送，请让此次兑换过期后重新开始一笔新的兑换。';
+      '此次兑换仍在等待存款到账。存款说明已不再保存在此设备上。如果您已经发送了资金，系统会检测到；如果尚未发送，请让此次兑换过期后重新开始一笔新的兑换。';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -1925,7 +1924,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      '存款窗口已过期。如果您尚未发送存款，此次兑换将直接结束——准备好后可以重新获取报价。';
+      '存款窗口已过期。如果您尚未发送存款，此次兑换将直接结束，准备好后可以重新获取报价。';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -1948,15 +1947,15 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSwapInFlightRowGeneric => '有一笔兑换正在进行中。';
 
   @override
-  String get walletSwapInFlightRowPastWindow => '存款窗口已过期——请查看此次兑换的状态。';
+  String get walletSwapInFlightRowPastWindow => '存款窗口已过期，请查看此次兑换的状态。';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      '此次兑换尚未在此处得到确认结果——请打开查看。任何退回此钱包的 ZEC 将在同步后显示在您的余额中。';
+      '此次兑换尚未在此处得到确认结果，请打开查看。任何退回此钱包的 ZEC 将在同步后显示在您的余额中。';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      '此次兑换尚未在此处得到确认结果——请打开查看。此次兑换送达此钱包的任何 ZEC 将在同步后显示在您的余额中。';
+      '此次兑换尚未在此处得到确认结果，请打开查看。此次兑换送达此钱包的任何 ZEC 将在同步后显示在您的余额中。';
 
   @override
   String get walletSwapRowOutcomeSuccess => '兑换已完成。';
@@ -1975,15 +1974,15 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      '此操作仅将该兑换从此列表中移除——不会取消兑换本身，此钱包也将停止追踪其退款。稍后退回的 ZEC 仍属于此钱包；完整重新扫描可以找到它。';
+      '此操作仅将该兑换从此列表中移除，不会取消兑换本身，此钱包也将停止追踪其退款。稍后退回的 ZEC 仍属于此钱包；完整重新扫描可以找到它。';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      '此操作仅将该兑换从此列表中移除——不会取消兑换本身，此钱包也将停止追踪即将到账的 ZEC。稍后到账的 ZEC 仍属于此钱包；完整重新扫描可以找到它。如果该兑换改为退款，退款将以您发送的资产原路退回，不会进入此钱包。';
+      '此操作仅将该兑换从此列表中移除，不会取消兑换本身，此钱包也将停止追踪即将到账的 ZEC。稍后到账的 ZEC 仍属于此钱包；完整重新扫描可以找到它。如果该兑换改为退款，退款将以您发送的资产原路退回，不会进入此钱包。';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      '此操作仅将该兑换从此列表中移除——不会取消兑换本身，此钱包也将停止追踪仍从其中到账的 ZEC。稍后到账的 ZEC 仍属于此钱包；完整重新扫描可以找到它。';
+      '此操作仅将该兑换从此列表中移除，不会取消兑换本身，此钱包也将停止追踪仍从其中到账的 ZEC。稍后到账的 ZEC 仍属于此钱包；完整重新扫描可以找到它。';
 
   @override
   String get walletSwapRemoveBodyDone => '此操作会将已完成的兑换从列表中移除。';
@@ -2059,7 +2058,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      '此次兑换未能完成，服务商已将您的 ZEC 退回此钱包。这笔资金将作为未屏蔽资金到账，并在钱包下次同步后显示在您的余额中——这可能需要一些时间。';
+      '此次兑换未能完成，服务商已将您的 ZEC 退回此钱包。这笔资金将作为未屏蔽资金到账，并在钱包下次同步后显示在您的余额中，这可能需要一些时间。';
 
   @override
   String get walletSwapStatusFailedTitle => '兑换失败';
@@ -2072,7 +2071,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      '服务商已没有此次兑换的记录——很可能已过期。如果已完成存款，服务商应将其退回至退款地址。该兑换将保留在您的列表中，此钱包会持续追踪它的 ZEC，以防它仍会到账；您可以随时将其从列表中移除。';
+      '服务商已没有此次兑换的记录，很可能已过期。如果已完成存款，服务商应将其退回至退款地址。该兑换将保留在您的列表中，此钱包会持续追踪它的 ZEC，以防它仍会到账；您可以随时将其从列表中移除。';
 
   @override
   String get walletSwapStatusUnknownTitle => '状态不可用';
@@ -2089,14 +2088,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      '此处的兑换功能已关闭，因此目前无法追踪此次兑换。如果已退款，ZEC 会退回此钱包——在兑换功能重新开启且钱包完成同步后，将显示在您的余额中。';
+      '此处的兑换功能已关闭，因此目前无法追踪此次兑换。如果已退款，ZEC 会退回此钱包，在兑换功能重新开启且钱包完成同步后，将显示在您的余额中。';
 
   @override
   String get walletSwapTrackingError => '无法追踪此次兑换。';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      '无法为此次兑换开启追踪。兑换本身可能仍在进行——已存入的资金将在服务商一侧结算或退回。';
+      '无法为此次兑换开启追踪。兑换本身可能仍在进行，已存入的资金将在服务商一侧结算或退回。';
 
   @override
   String get walletSwapFaultDestinationRequired => '请输入用于接收兑换资产的地址。';
@@ -2132,19 +2131,19 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      '已有一笔兑换正在进行中。待其完全结算或报价过期后，您可以开始新的兑换——这可能需要一段时间。';
+      '已有一笔兑换正在进行中。待其完全结算或报价过期后，您可以开始新的兑换，这可能需要一段时间。';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      '此钱包尚无法设置退款地址——这通常只是意味着首次同步尚未完成。请等待同步完成后再重试。';
+      '此钱包尚无法设置退款地址。这通常只是意味着首次同步尚未完成。请等待同步完成后再重试。';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      '此钱包尚无法为该兑换设置收款地址——这通常只是意味着首次同步尚未完成。请等待同步完成后再重试。';
+      '此钱包尚无法为该兑换设置收款地址。这通常只是意味着首次同步尚未完成。请等待同步完成后再重试。';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      '兑换未能及时启动——可能是网络连接较慢，也可能是钱包当时正忙。请获取新报价后重试。';
+      '兑换未能及时启动，可能是网络连接较慢，也可能是钱包当时正忙。请获取新报价后重试。';
 
   @override
   String get walletSwapFaultStoreBusyRetry => '钱包暂时繁忙。请重试。';
@@ -2168,7 +2167,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return '此次兑换（含网络费用）大约需要 $needed ZEC，但目前仅有 $spendable ZEC 可用。您的余额仍在追赶进度——不久后可能会有更多余额可用。';
+    return '此次兑换（含网络费用）大约需要 $needed ZEC，但目前仅有 $spendable ZEC 可用。您的余额仍在追赶进度，不久后可能会有更多余额可用。';
   }
 
   @override
@@ -2196,7 +2195,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSwapRefundHint => '若兑换失败，您的币将退回至此地址';
 
   @override
-  String get walletSwapRefundHelper => '位于您发送资产所在的链上——而非 Zcash 地址。';
+  String get walletSwapRefundHelper => '位于您发送资产所在的链上，而非 Zcash 地址。';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2205,7 +2204,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return '一个 $chain 地址——若兑换失败，您的币将退回至此。并非 Zcash 地址。';
+    return '一个 $chain 地址，若兑换失败，您的币将退回至此。并非 Zcash 地址。';
   }
 
   @override
@@ -2213,7 +2212,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      '若兑换无法完成，服务商会将您的币退回到您付款所在链上的此地址。请输入一个您自己掌控的地址——钱包无法为您校验外部链地址，因此请仔细核实。';
+      '若兑换无法完成，服务商会将您的币退回到您付款所在链上的此地址。请输入一个您自己掌控的地址。钱包无法为您校验外部链地址，因此请仔细核实。';
 
   @override
   String get walletSwapRefundScanTooltip => '扫描退款地址 QR 码';
@@ -2264,7 +2263,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSwapPickerTitleReceive => '选择要接收的资产';
 
   @override
-  String get walletSwapPickerStale => '无法刷新资产列表——正在显示最近一次已知列表。';
+  String get walletSwapPickerStale => '无法刷新资产列表，正在显示最近一次已知列表。';
 
   @override
   String get walletSwapPickerEmpty => '目前没有可兑换的资产。请稍后重试。';
@@ -2298,20 +2297,20 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSwapSlippageCustomLabel => '自定义滑点';
 
   @override
-  String get walletSwapSlippageMayFail => '过低——若价格波动，兑换可能失败。';
+  String get walletSwapSlippageMayFail => '过低：若价格波动，兑换可能失败。';
 
   @override
   String get walletSwapSlippageNormal => '安全的容差范围。';
 
   @override
-  String get walletSwapSlippageRisky => '过高——您可能收到明显低于报价的金额。';
+  String get walletSwapSlippageRisky => '过高：您可能收到明显低于报价的金额。';
 
   @override
-  String get walletSwapSlippageTooHigh => '过高——兑换将被拒绝。请将其降至10%或更低。';
+  String get walletSwapSlippageTooHigh => '过高：兑换将被拒绝。请将其降至10%或更低。';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return '您至少将收到 $zec ZEC——这是您$slippage%滑点下的最低保障。最终金额不会低于此数值。';
+    return '您至少将收到 $zec ZEC，这是您$slippage%滑点下的最低保障。最终金额不会低于此数值。';
   }
 
   @override
@@ -2319,14 +2318,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      '在您屏蔽资金前——到账时会提示您一键完成——收到的金额会短暂处于公开状态，可在链上查看。小额到账可能会保持公开，直至累积到一定数量。';
+      '在您屏蔽资金前（到账时会提示您一键完成），收到的金额会短暂处于公开状态，可在链上查看。小额到账可能会保持公开，直至累积到一定数量。';
 
   @override
   String get walletSwapRefundVerifyTitle => '验证您的退款地址';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      '请逐字符核对——若兑换失败，您的币将退回至此地址。钱包无法为您验证外部地址。';
+      '请逐字符核对：若兑换失败，您的币将退回至此地址。钱包无法为您验证外部地址。';
 
   @override
   String get walletSwapRefundVerifyAck => '我已确认退款地址正确无误。';
@@ -2336,7 +2335,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return '请逐字符核对——您将在此地址收到 $asset。钱包无法为您验证外部地址。';
+    return '请逐字符核对：您将在此地址收到 $asset。钱包无法为您验证外部地址。';
   }
 
   @override
@@ -2375,7 +2374,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      '此存款窗口已关闭。请勿再发送资金——请重新发起兑换。如您已发送，服务商应退款至您的退款地址。';
+      '此存款窗口已关闭。请勿再发送资金，请重新发起兑换。如您已发送，服务商应退款至您的退款地址。';
 
   @override
   String get walletSwapDepositQrLabel => '存款地址的 QR 码';
@@ -2413,11 +2412,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      '这不会取消您的兑换——它将在后台继续进行。但您需要存款地址才能付款，如尚未复制，请先复制。';
+      '这不会取消您的兑换，它将在后台继续进行。但您需要存款地址才能付款，如尚未复制，请先复制。';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      '这不会取消您的兑换——它将在后台继续进行。存款窗口已关闭。请勿再向存款地址发送资金。如您已发送，服务商应退款至您的退款地址。';
+      '这不会取消您的兑换，它将在后台继续进行。存款窗口已关闭。请勿再向存款地址发送资金。如您已发送，服务商应退款至您的退款地址。';
 
   @override
   String get walletSwapDepositBackStay => '留下';
@@ -2448,7 +2447,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      '您的钱包正在您的设备上准备此地址——如果钱包正忙于其他工作，可能需要一点时间。';
+      '您的钱包正在您的设备上准备此地址。如果钱包正忙于其他工作，可能需要一点时间。';
 
   @override
   String get walletReceiveRetry => '重试';
@@ -2478,7 +2477,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      '新地址——无法与您的其他地址关联。付款到此地址仍会进入此钱包，您之前的地址仍可正常使用。此地址不会再次显示——请立即复制。';
+      '新地址，无法与您的其他地址关联。付款到此地址仍会进入此钱包，您之前的地址仍可正常使用。此地址不会再次显示，请立即复制。';
 
   @override
   String get walletReceiveFreshError => '创建新地址失败，请重试。';
@@ -2496,7 +2495,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletReceiveRequestAmountLabel => '金额（可选）';
 
   @override
-  String get walletReceiveFreshCopyNow => '此地址不会再次显示——请立即复制。';
+  String get walletReceiveFreshCopyNow => '此地址不会再次显示，请立即复制。';
 
   @override
   String get walletSecurityMenuItem => '安全…';
@@ -2550,18 +2549,18 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      '从此设备删除该钱包及其密钥。它不持有花费密钥，因此没有需要备份的内容——可随时使用其查看密钥重新添加。';
+      '从此设备删除该钱包及其密钥。它不持有花费密钥，因此没有需要备份的内容，可随时使用其查看密钥重新添加。';
 
   @override
   String get securityDeleteDialogTitle => '删除此钱包？';
 
   @override
   String get securityDeleteDialogBody =>
-      '此操作将从此设备移除该钱包及其密钥。请确保您已备份恢复短语——这是找回资金的唯一方式。';
+      '此操作将从此设备移除该钱包及其密钥。请确保您已备份恢复短语，这是找回资金的唯一方式。';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      '此操作将从此设备移除该钱包及其密钥。它不持有花费密钥，因此无需备份任何内容——您可以日后使用其查看密钥重新添加。';
+      '此操作将从此设备移除该钱包及其密钥。它不持有花费密钥，因此无需备份任何内容，您可以日后使用其查看密钥重新添加。';
 
   @override
   String get securityDeleteDialogConfirm => '删除';
@@ -2570,11 +2569,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get securityDeleteDialogCancel => '取消';
 
   @override
-  String get securityDeleteFailedSnack => '无法删除钱包——您的钱包未发生变化。请重试。';
+  String get securityDeleteFailedSnack => '无法删除钱包，您的钱包未发生变化。请重试。';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return '请先完成服务器切换——切换会在 $seconds 秒内完成或停止。然后再次尝试删除钱包。';
+    return '请先完成服务器切换，切换会在 $seconds 秒内完成或停止。然后再次尝试删除钱包。';
   }
 
   @override
@@ -2585,24 +2584,24 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      '这些付款尚未发送。其金额仍计入您的余额——但您的钱包正在发送的付款除外，其金额可能已被预留。';
+      '这些付款尚未发送。其金额仍计入您的余额，但您的钱包正在发送的付款除外，其金额可能已被预留。';
 
   @override
   String get walletParkedCancel => '取消';
 
   @override
-  String get walletParkedPausedHint => '已暂停——此付款不会自行发送。您的资金是安全的。立即发送，或取消。';
+  String get walletParkedPausedHint => '已暂停，此付款不会自行发送。您的资金是安全的。立即发送，或取消。';
 
   @override
   String get walletParkedRetryStale => '此付款已不再等待。请查看您的待处理付款和活动记录。';
 
   @override
   String get walletParkedAlreadyInProgress =>
-      '此付款已不再等待——您的钱包可能已经在发送它。请查看「已保存并待处理」和您的活动记录。';
+      '此付款已不再等待，您的钱包可能已经在发送它。请查看「已保存并待处理」和您的活动记录。';
 
   @override
   String get walletReclaimExplainer =>
-      '一次性地址付款已被卡住。您可以重新开启——此操作会在您自己的地址之间转移一小笔资金，随后返还。';
+      '一次性地址付款已被卡住。您可以重新开启：此操作会在您自己的地址之间转移一小笔资金，随后返还。';
 
   @override
   String get walletReclaimButton => '重新开启发送';
@@ -2656,7 +2655,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      '此操作将丢弃已保存的付款。由于尚未发送，您的钱包不会有任何支出——但此操作无法撤销。';
+      '此操作将丢弃已保存的付款。由于尚未发送，您的钱包不会有任何支出，但此操作无法撤销。';
 
   @override
   String get walletParkedCancelConfirmKeep => '保留';
@@ -2668,7 +2667,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletParkedCancelDone => '待处理付款已取消。';
 
   @override
-  String get walletParkedCancelAlreadySending => '此付款可能已在途中——请查看您的活动记录。';
+  String get walletParkedCancelAlreadySending => '此付款可能已在途中，请查看您的活动记录。';
 
   @override
   String get walletParkedCancelFailed => '暂时无法取消。您的付款未发生变化。请重试。';
@@ -2699,14 +2698,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return '正在恢复 $amount——仍有部分资金需要再次尝试。';
+    return '正在恢复 $amount，仍有部分资金需要再次尝试。';
   }
 
   @override
-  String get walletRecoverRetry => '部分资金需要再次尝试——请再次运行恢复操作。';
+  String get walletRecoverRetry => '部分资金需要再次尝试，请再次运行恢复操作。';
 
   @override
-  String get walletRecoverTruncated => '尚未检查所有一次性地址——请再次运行以检查其余部分。';
+  String get walletRecoverTruncated => '尚未检查所有一次性地址，请再次运行以检查其余部分。';
 
   @override
   String get walletRecoverNothing => '当前没有可恢复的资金。';
@@ -2736,11 +2735,11 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      '您的钱包正在准备此付款——其金额可能已被预留。您的资金是安全的。如果未完成，它会自行返回列表。';
+      '您的钱包正在准备此付款，其金额可能已被预留。您的资金是安全的。如果未完成，它会自行返回列表。';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      '您的钱包正在准备此付款——其金额可能已被预留。您的资金是安全的，但只有在您的钱包再次同步后才能完成。';
+      '您的钱包正在准备此付款，其金额可能已被预留。您的资金是安全的，但只有在您的钱包再次同步后才能完成。';
 
   @override
   String get walletParkedSendNow => '立即发送';
@@ -2773,7 +2772,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      '尚未准备好发送。您的付款已保存，且已不再暂停——请稍后再次尝试「立即发送」，或选择取消。';
+      '尚未准备好发送。您的付款已保存，且已不再暂停。请稍后再次尝试「立即发送」，或选择取消。';
 
   @override
   String get walletParkedAuthorizeFailed => '暂时无法发送。您的付款未发生变化。请重试。';
@@ -2785,8 +2784,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletTransparentFundsTitle => '公开资金';
 
   @override
-  String get walletTransparentFundsIntro =>
-      '公开资金在区块链上公开可见——金额、地址以及这些资金的历史记录都是如此。';
+  String get walletTransparentFundsIntro => '公开资金在区块链上公开可见，包括金额、地址以及这些资金的历史记录。';
 
   @override
   String get walletExpertToggleLabel => '高级：公开资金';
@@ -2809,13 +2807,13 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletSettingsSaveFailed => '无法保存此设置。请重试。';
 
   @override
-  String get walletAutoShieldIncomplete => '自动屏蔽未能完成——这些资金仍然公开可见。您现在可以屏蔽这些资金。';
+  String get walletAutoShieldIncomplete => '自动屏蔽未能完成，这些资金仍然公开可见。您现在可以屏蔽这些资金。';
 
   @override
-  String get walletSendPrivacyShielded => '屏蔽付款——金额和收款人在链上保持私密。';
+  String get walletSendPrivacyShielded => '屏蔽付款：金额和收款人在链上保持私密。';
 
   @override
-  String get walletSendPrivacyTransparent => '公开付款——金额和地址在区块链上公开可见。';
+  String get walletSendPrivacyTransparent => '公开付款：金额和地址在区块链上公开可见。';
 
   @override
   String get walletActivityPublicBadge => '链上公开可见';
@@ -2829,7 +2827,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   }
 
   @override
-  String get walletTransparentFundsAutoOff => '自动屏蔽已关闭——公开资金将保持公开可见，直至您将其屏蔽。';
+  String get walletTransparentFundsAutoOff => '自动屏蔽已关闭。公开资金将保持公开可见，直至您将其屏蔽。';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -2848,7 +2846,7 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletTxDetailVisibility => '可见性';
 
   @override
-  String get walletTransparentFundsAutoDenied => '自动屏蔽已暂停——本次会话未获批准。您仍可手动屏蔽。';
+  String get walletTransparentFundsAutoDenied => '自动屏蔽已暂停：本次会话未获批准。您仍可手动屏蔽。';
 
   @override
   String get walletDeepScanMenuItem => '检查较早的兑换地址…';
@@ -2861,14 +2859,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      '如果您还原了此钱包，并且它以前经常使用兑换功能，其最早期兑换的资金可能需要额外的步骤才能找到。此检查会查找这些资金——找到的任何资金将在钱包同步时显示在您的余额中。';
+      '如果您还原了此钱包，并且它以前经常使用兑换功能，其最早期兑换的资金可能需要额外的步骤才能找到。此检查会查找这些资金，找到的任何资金将在钱包同步时显示在您的余额中。';
 
   @override
   String get walletDeepScanCoverage => '您较早的兑换地址已检查至此。如果旧兑换中的资金仍未找到，请检查更早的地址。';
 
   @override
   String get walletDeepScanCoveragePending =>
-      '仍在检查当前范围——找到的任何资金都将显示在您的余额中。这可能需要一些时间。';
+      '仍在检查当前范围，找到的任何资金都将显示在您的余额中。这可能需要一些时间。';
 
   @override
   String get walletDeepScanCoverageUnknown => '检查您钱包最早期兑换中的资金。';
@@ -2893,14 +2891,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletDeepScanRescanBusy => '重新扫描完成后，您就可以检查较早的兑换地址了。';
 
   @override
-  String get walletDeepScanRan => '正在检查较早的兑换地址——找到的任何资金都将显示在您的余额中。';
+  String get walletDeepScanRan => '正在检查较早的兑换地址，找到的任何资金都将显示在您的余额中。';
 
   @override
-  String get walletDeepScanFailed => '无法开始检查。未发生任何变化——请重试。';
+  String get walletDeepScanFailed => '无法开始检查。未发生任何变化，请重试。';
 
   @override
   String get walletDeepScanSlow =>
-      '此操作耗时比平常更长。如果已检查您较早的兑换地址，找到的任何资金都将显示在您的余额中——请稍后再查看。';
+      '此操作耗时比平常更长。如果已检查您较早的兑换地址，找到的任何资金都将显示在您的余额中，请稍后再查看。';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -2908,17 +2906,17 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      '仍在检查上一个范围——最长可能需要一两天时间，但通常快得多。此过程会自动完成，请稍后再次检查。';
+      '仍在检查上一个范围。最长可能需要一两天时间，但通常快得多。此过程会自动完成，请稍后再次检查。';
 
   @override
   String get walletDeepScanTorUnknownHint =>
       '暂时无法确认您连接的隐私状态。为了获得更高的隐私性，建议在 Tor 处于活动状态后再检查。';
 
   @override
-  String get walletDeepScanBannerChecking => '仍在检查较早的兑换地址——找到的任何资金都将显示在您的余额中。';
+  String get walletDeepScanBannerChecking => '仍在检查较早的兑换地址，找到的任何资金都将显示在您的余额中。';
 
   @override
-  String get walletRescanSwapPointer => '在寻找旧兑换中的资金？重新扫描无法找到它——请改用「检查较早的兑换地址」。';
+  String get walletRescanSwapPointer => '在寻找旧兑换中的资金？重新扫描无法找到它，请改用「检查较早的兑换地址」。';
 
   @override
   String get walletDeepScanRestoreNoteTitle => '还原了曾使用兑换功能的钱包？';
@@ -2999,15 +2997,14 @@ class WalletLocalizationsZh extends WalletLocalizations {
   String get walletLoadingLabel => '加载中';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => '再次发送前请先查看';
 
   @override
-  String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+  String get walletSendUnknownBody => '我们无法确认此笔付款。再次发送前，请先在“活动”中查看。';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      '我们无法确认此笔付款是否已保存。再次发送前，请先查看您的待处理付款。';
 
   @override
   String get walletShieldUnknownTitle => '再次屏蔽前请先查看';
@@ -3023,5 +3020,5 @@ class WalletLocalizationsZh extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      '此次尝试在网络确认前已过期。您的钱包会自动重新发送这笔付款，请勿自行再次发送。';
 }

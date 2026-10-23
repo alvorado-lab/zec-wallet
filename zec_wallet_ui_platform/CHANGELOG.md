@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3
+
+- The README's install snippet names `zec_wallet_ui` 0.0.3. No change to the
+  plugin itself; it works with `zec_wallet_ui` 0.0.1 and 0.0.3.
+- Version 0.0.2 was prepared with this change and never published.
+
 ## 0.0.1
 
 Initial release. The optional native companion for `zec_wallet_ui`.

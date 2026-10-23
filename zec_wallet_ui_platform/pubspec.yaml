@@ -13,7 +13,7 @@
 # plugin answers. See README.md.
 name: zec_wallet_ui_platform
 description: "Keeps the recovery phrase, balance and addresses out of screenshots and the app switcher for zec_wallet_ui on Android and iOS, with no native code in your app."
-version: 0.0.1
+version: 0.0.3
 homepage: https://github.com/alvorado-lab/zec-wallet
 repository: https://github.com/alvorado-lab/zec-wallet/tree/main/zec_wallet_ui_platform
 
@@ -30,9 +30,10 @@ dev_dependencies:
     sdk: flutter
   # For the CONTRACT TEST only: pins this plugin's channel-name constants
   # equal to zec_wallet_ui's, so a rename on either side fails a test rather
-  # than silently breaking the wiring at runtime. Named by version (lockstep
-  # releases); the in-repo path lives in dependency_overrides.
-  zec_wallet_ui: ^0.0.1
+  # than silently breaking the wiring at runtime. Named by version (the
+  # zec_wallet_ui release of the same cut); the in-repo path lives in
+  # dependency_overrides.
+  zec_wallet_ui: ^0.0.3
 
 # In-repo resolution: the sibling directories. Ignored by `pub publish`.
 dependency_overrides:

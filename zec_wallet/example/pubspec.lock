@@ -1087,28 +1087,28 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.2"
+    version: "0.0.4"
   zec_wallet_tor:
     dependency: "direct main"
     description:
       path: "../../zec_wallet_tor"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.3"
   zec_wallet_ui:
     dependency: "direct main"
     description:
       path: "../../zec_wallet_ui"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.3"
   zec_wallet_ui_platform:
     dependency: "direct main"
     description:
       path: "../../zec_wallet_ui_platform"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.3"
 sdks:
   dart: ">=3.11.4 <4.0.0"
   flutter: ">=3.41.0"

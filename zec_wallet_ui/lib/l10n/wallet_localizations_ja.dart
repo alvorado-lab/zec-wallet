@@ -26,7 +26,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletStartupFailedBody =>
-      'この端末でのウォレットの読み込みが、何らかの理由で妨げられました。すでにウォレットをお持ちの場合、その資金への影響はありません — 資金はZcashネットワーク上に存在し、リカバリーフレーズで復元できます。もう一度お試しください。問題が続く場合は、アプリを一度閉じてから開き直してください。';
+      'この端末でのウォレットの読み込みが、何らかの理由で妨げられました。すでにウォレットをお持ちの場合、その資金への影響はありません。資金はZcashネットワーク上に存在し、リカバリーフレーズで復元できます。もう一度お試しください。問題が続く場合は、アプリを一度閉じてから開き直してください。';
 
   @override
   String get walletBalanceLabel => '残高';
@@ -147,7 +147,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'この端末に保存されており、「保存済み・保留中」にあります — そこから送信またはキャンセルできます。';
+      'この端末に保存されており、「保存済み・保留中」にあります。そこから送信またはキャンセルできます。';
 
   @override
   String get walletTxExplainPending => 'Zcashネットワークに送信済みです。ブロックでの承認をお待ちください。';
@@ -231,7 +231,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'このウォレットからの支払いがまだ確定していません。通常、完了するまでウォレットは再スキャンを拒否します — 試すことはできますが、拒否されるものとお考えください。';
+      'このウォレットからの支払いがまだ確定していません。通常、完了するまでウォレットは再スキャンを拒否します。試すことはできますが、拒否されるものとお考えください。';
 
   @override
   String get walletRescanConfirm => '再スキャンを開始';
@@ -302,7 +302,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      '「今すぐ使用可能」には含まれません — この資金を使用するにはシールドしてください。それまでの間、チェーン上で公開されたままになります。';
+      '「今すぐ使用可能」には含まれません。この資金を使用するにはシールドしてください。それまでの間、チェーン上で公開されたままになります。';
 
   @override
   String get walletTransparentNoteWatchOnly => 'これらの資金はチェーン上で公開されたままになります。';
@@ -407,7 +407,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletShieldDoneBody => '資金はシールド残高へ移動中です。まもなくチェーン上で承認されます。';
 
   @override
-  String get walletShieldSavedTitle => '保存しました — シールドを完了します';
+  String get walletShieldSavedTitle => '保存しました。シールドを完了します';
 
   @override
   String get walletShieldSavedBody =>
@@ -505,7 +505,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletMoveDoneBody => '資金は公開アドレスへ移動中です。まもなくチェーン上で承認されます。';
 
   @override
-  String get walletMoveSavedTitle => '保存しました — 移動を完了します';
+  String get walletMoveSavedTitle => '保存しました。移動を完了します';
 
   @override
   String get walletMoveSavedBody =>
@@ -544,7 +544,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSnapshotUnavailable => '現在ウォレットを読み込めませんでした。自動的に更新されます。';
 
   @override
-  String get walletBalanceStale => '更新できませんでした — 最後に確認できた残高を表示しています。';
+  String get walletBalanceStale => '更新できませんでした。最後に確認できた残高を表示しています。';
 
   @override
   String get walletSyncStartFailed => '同期を開始できませんでした。引き続き自動的に再試行します。';
@@ -610,7 +610,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'ネットワークに追いついています — 初回の大規模な同期には時間がかかることがあります。完了するまでの間もアプリを引き続き使用できます';
+      'ネットワークに追いついています。初回の大規模な同期には時間がかかることがあります。完了するまでの間もアプリを引き続き使用できます';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -634,7 +634,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      '現在Zcashネットワークに接続できません。自動的に再試行を続けます — インターネット接続をご確認いただくか、サーバーが一時的に利用できない可能性があります。';
+      '現在Zcashネットワークに接続できません。自動的に再試行を続けます。インターネット接続をご確認ください。サーバーが一時的に利用できない可能性もあります。';
 
   @override
   String get walletStallTor =>
@@ -690,11 +690,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
   }
 
   @override
-  String get walletSyncExplainIdle => '同期はまだ開始されていません — 自動的に開始されます。操作は必要ありません。';
+  String get walletSyncExplainIdle => '同期はまだ開始されていません。自動的に開始されます。操作は必要ありません。';
 
   @override
   String get walletSyncExplainStartFailed =>
-      '同期を開始できませんでした。資金は安全です — ウォレットが新しいアクティビティを確認していないだけです。下のボタンからもう一度お試しいただくか、アプリを開き直してください。';
+      '同期を開始できませんでした。資金は安全です。ウォレットが新しいアクティビティを確認していないだけです。下のボタンからもう一度お試しいただくか、アプリを開き直してください。';
 
   @override
   String get walletSyncExplainStarting =>
@@ -705,7 +705,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'ウォレットがブロックチェーンのブロックを確認し、資金を検出しています。新しい取引が見つかると残高と履歴が更新されます — 完了するまでの間もアプリを引き続き使用できます。';
+      'ウォレットがブロックチェーンのブロックを確認し、資金を検出しています。新しい取引が見つかると残高と履歴が更新されます。完了するまでの間もアプリを引き続き使用できます。';
 
   @override
   String get walletSyncExplainUpToDate => 'Zcashネットワークと完全に同期しています。残高と履歴は最新です。';
@@ -715,11 +715,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'Zcashネットワークに接続できません — オフラインの場合はこれは正常な状態です。または、サーバーが一時的に利用できない可能性があります。資金は安全です。残高は最後に同期した状態を表示しており、送信待ちの支払いは「保存済み・保留中」に保存されたままになります。接続は自動的に再試行されます。';
+      'Zcashネットワークに接続できません。オフラインの場合はこれは正常な状態です。または、サーバーが一時的に利用できない可能性があります。資金は安全です。残高は最後に同期した状態を表示しており、送信待ちの支払いは「保存済み・保留中」に保存されたままになります。接続は自動的に再試行されます。';
 
   @override
   String get walletSyncExplainOffline =>
-      'ネットワークに接続されていません。資金は安全です — 残高は最後に同期した状態を表示しており、送信待ちの支払いは「保存済み・保留中」に保存されたままになります。';
+      'ネットワークに接続されていません。資金は安全です。残高は最後に同期した状態を表示しており、送信待ちの支払いは「保存済み・保留中」に保存されたままになります。';
 
   @override
   String get walletSyncExplainUnknown => 'ウォレットは同期中です。進行に伴い残高と履歴が更新されます。';
@@ -745,38 +745,38 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletTorActiveUnattested => 'プライベート経路を使用中（プライバシーは未検証）';
 
   @override
-  String get walletTorFellBack => 'Torが利用できません — 直接接続を使用中';
+  String get walletTorFellBack => 'Torが利用できません。直接接続を使用中';
 
   @override
-  String get walletTorUnavailable => 'プライベート経路が利用できません — 未接続';
+  String get walletTorUnavailable => 'プライベート経路が利用できません（未接続）';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transportが利用できません — 未接続';
+    return '$transportが利用できません（未接続）';
   }
 
   @override
-  String get walletTorUnanswered => 'プライベート経路に接続済み — 応答がありません';
+  String get walletTorUnanswered => 'プライベート経路に接続済み、応答がありません';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'プライベート経路に接続済み — 応答がありません（プライバシーは未検証）';
+      'プライベート経路に接続済み、応答がありません（プライバシーは未検証）';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transportに接続済み — 応答がありません';
+    return '$transportに接続済み、応答がありません';
   }
 
   @override
-  String get walletTorUnansweredDirect => '非プライベート（アプリの直接接続） — 応答がありません';
+  String get walletTorUnansweredDirect => '非プライベート（アプリの直接接続）：応答がありません';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return '$transport経由で接続済み — 応答がありません。接続がプロキシで関連付けられる可能性があります';
+    return '$transport経由で接続済み、応答がありません。接続がプロキシで関連付けられる可能性があります';
   }
 
   @override
-  String get walletTorUnknown => 'Torの状態が不明です — 保護されていないものとして扱ってください';
+  String get walletTorUnknown => 'Torの状態が不明です。保護されていないものとして扱ってください';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -879,7 +879,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'このサーバーに接続できませんでした。アドレスをご確認ください — 正しい場合は、このサーバーが応答していないか、アプリが今このサーバーに到達できていません。もう一度お試しいただくか、別のサーバーをお選びください。';
+      'このサーバーに接続できませんでした。アドレスをご確認ください。正しい場合は、このサーバーが応答していないか、アプリが今このサーバーに到達できていません。もう一度お試しいただくか、別のサーバーをお選びください。';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -958,11 +958,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'この接続のプライバシーは検証できません — 非公開ではないものとして扱ってください。接続は受け付けられましたが、1分間なにも返ってきていません。経路側かウォレットサーバー側かは、ウォレットには区別できません。再試行を続けます。解消しない場合は、別のサーバーを試すか、アプリのネットワーク設定を確認してください。';
+      'この接続のプライバシーは検証できません。非公開ではないものとして扱ってください。接続は受け付けられましたが、1分間なにも返ってきていません。経路側かウォレットサーバー側かは、ウォレットには区別できません。再試行を続けます。解消しない場合は、別のサーバーを試すか、アプリのネットワーク設定を確認してください。';
 
   @override
   String get walletTransportExplainUnverified =>
-      'この接続のプライバシーは検証できません — 非公開ではないものとして扱ってください。';
+      'この接続のプライバシーは検証できません。非公開ではないものとして扱ってください。';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1025,7 +1025,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return '$date以降をスキャンします — それより前に受け取った資金は表示されません。それより古いウォレットの場合は、より前の日付を選択してください。';
+    return '$date以降をスキャンします。それより前に受け取った資金は表示されません。それより古いウォレットの場合は、より前の日付を選択してください。';
   }
 
   @override
@@ -1061,7 +1061,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'リカバリーフレーズを入力してウォレットを復元してください — 単語を順番どおりに、スペースで区切って入力または貼り付けます。対応するのは標準的なフレーズのみです。追加のパスフレーズ(「25番目の単語」)を使用していたウォレットは、現時点ではこのアプリで復元できません。その場合、エラーではなく空のウォレットが表示されます。';
+      'リカバリーフレーズを入力してウォレットを復元してください。単語を順番どおりに、スペースで区切って入力または貼り付けます。対応するのは標準的なフレーズのみです。追加のパスフレーズ(「25番目の単語」)を使用していたウォレットは、現時点ではこのアプリで復元できません。その場合、エラーではなく空のウォレットが表示されます。';
 
   @override
   String get walletRestorePhraseHint => '単語1  単語2  単語3  …';
@@ -1086,8 +1086,8 @@ class WalletLocalizationsJa extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count個の単語がリカバリー単語ではありません — ハイライトされた単語を修正してください',
-      one: '1つの単語がリカバリー単語ではありません — ハイライトされた単語を修正してください',
+      other: '$count個の単語がリカバリー単語ではありません。ハイライトされた単語を修正してください',
+      one: '1つの単語がリカバリー単語ではありません。ハイライトされた単語を修正してください',
     );
     return '$_temp0';
   }
@@ -1121,7 +1121,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return '$date以降をスキャンします — それより前に受け取った資金は表示されません。それより古いウォレットの場合は、より前の日付を選択するか、履歴をすべてスキャンしてください。';
+    return '$date以降をスキャンします。それより前に受け取った資金は表示されません。それより古いウォレットの場合は、より前の日付を選択するか、履歴をすべてスキャンしてください。';
   }
 
   @override
@@ -1165,7 +1165,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'この単語列は、ウォレットと資金を復元できる唯一の手段です。順番どおりに書き留め、安全で人目につかない場所に保管してください。他人に教えたり、オンラインに保存したりしないでください — この単語列を知る者は誰でも資金を奪うことができます。';
+      'この単語列は、ウォレットと資金を復元できる唯一の手段です。順番どおりに書き留め、安全で人目につかない場所に保管してください。他人に教えたり、オンラインに保存したりしないでください。この単語列を知る者は誰でも資金を奪うことができます。';
 
   @override
   String get walletBackupSecureNoteAndroid => 'この画面ではスクリーンショットが無効になっています。';
@@ -1234,7 +1234,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'このウォレットは、インストール元のアプリのアカウントを使ってセットアップされているため、独自のリカバリーフレーズはありません。資金はそのアカウントと一緒に復元されます — 資金を守るには、そのアカウントのバックアップをご利用ください。';
+      'このウォレットは、インストール元のアプリのアカウントを使ってセットアップされているため、独自のリカバリーフレーズはありません。資金はそのアカウントと一緒に復元されます。資金を守るには、そのアカウントのバックアップをご利用ください。';
 
   @override
   String get walletExportViewingKeyTitle => 'ビューイングキーをエクスポート';
@@ -1244,15 +1244,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      'ウォレットの閲覧専用コピーを共有します — 履歴の確認はできますが、送金はできません。';
+      'ウォレットの閲覧専用コピーを共有します。履歴の確認はできますが、送金はできません。';
 
   @override
   String get walletExportViewingKeyWarning =>
-      'このキーを持つ人は、このウォレットがこれまでに受け取ったすべての取引と送ったすべての取引 — そして今後行われるすべての取引を見ることができます。資金を送ることはできず、ウォレットを復元することもできません。共有する相手は、会計士やご自身の別の端末など、全履歴を見せても構わないと信頼できる人に限ってください。共有を取り消す唯一の方法は、資金を新しいウォレットに移すことです。';
+      'このキーを持つ人は、このウォレットがこれまでに受け取ったすべての取引と送ったすべての取引、そして今後行われるすべての取引を見ることができます。資金を送ることはできず、ウォレットを復元することもできません。共有する相手は、会計士やご自身の別の端末など、全履歴を見せても構わないと信頼できる人に限ってください。共有を取り消す唯一の方法は、資金を新しいウォレットに移すことです。';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'このキーを持つ人は、このウォレットがこれまでに受け取ったすべての取引と送ったすべての取引 — そして今後行われるすべての取引を見ることができます。資金を送ることはできず、ウォレットを復元することもできません。共有する相手は、会計士やご自身の別の端末など、全履歴を見せても構わないと信頼できる人に限ってください。一度共有すると、共有を取り消すことはできません。';
+      'このキーを持つ人は、このウォレットがこれまでに受け取ったすべての取引と送ったすべての取引、そして今後行われるすべての取引を見ることができます。資金を送ることはできず、ウォレットを復元することもできません。共有する相手は、会計士やご自身の別の端末など、全履歴を見せても構わないと信頼できる人に限ってください。一度共有すると、共有を取り消すことはできません。';
 
   @override
   String get walletExportViewingKeyReveal => 'ビューイングキーを表示';
@@ -1291,7 +1291,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'これはウォッチオンリーウォレットです。ビューイングキーから設定されているため、残高や履歴は確認できますが、送金キーは保持していません — バックアップするものはなく、資金を送ることもできません。';
+      'これはウォッチオンリーウォレットです。ビューイングキーから設定されているため、残高や履歴は確認できますが、送金キーは保持していません。そのため、バックアップするものはなく、資金を送ることもできません。';
 
   @override
   String get walletWatchOnlyBadge => 'ウォッチオンリー';
@@ -1312,7 +1312,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'このウォレットのセキュアキーが失われたため、この端末では開けません。資金は安全です — リカバリーフレーズから復元してください。';
+      'このウォレットのセキュアキーが失われたため、この端末では開けません。資金は安全です。リカバリーフレーズから復元してください。';
 
   @override
   String get walletOnboardingFailedRestoreAction => 'リカバリーフレーズから復元';
@@ -1322,7 +1322,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      '続ける前に、リカバリーフレーズを手元にご用意ください — 次の画面で資金を復元するために必要です。資金はブロックチェーン上で安全に保たれており、そのフレーズによって管理されています。この操作により、この端末上の読み取れなくなったウォレットデータが削除され、再構築できるようになります。';
+      '続ける前に、リカバリーフレーズを手元にご用意ください。次の画面で資金を復元するために必要です。資金はブロックチェーン上で安全に保たれており、そのフレーズによって管理されています。この操作により、この端末上の読み取れなくなったウォレットデータが削除され、再構築できるようになります。';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'キャンセル';
@@ -1341,7 +1341,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'ウォレットのセットアップが完了しませんでした。もう一度お試しいただくと完了します — 何も失われていません。';
+      'ウォレットのセットアップが完了しませんでした。もう一度お試しいただくと完了します。何も失われていません。';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1355,11 +1355,10 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSendButton => '送金';
 
   @override
-  String get walletSendSyncNotRunning => '同期は実行されていません — 使用可能な残高を更新できません';
+  String get walletSendSyncNotRunning => '同期は実行されていません。使用可能な残高を更新できません';
 
   @override
-  String get walletSendWaitingForFunds =>
-      '同期はまだ進行中です — 使用可能な残高があると送金できるようになります';
+  String get walletSendWaitingForFunds => '同期はまだ進行中です。使用可能な残高があると送金できるようになります';
 
   @override
   String get walletSendNoSpendableYet => '使用可能な残高がまだありません';
@@ -1375,7 +1374,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'これはウォッチオンリーのウォレットです。残高の表示や支払いの受け取りはできますが、送金キーを持っていません — そのため送金できません。';
+      'これはウォッチオンリーのウォレットです。残高の表示や支払いの受け取りはできますが、送金キーを持っていないため送金できません。';
 
   @override
   String get walletSendExpiredTitle => 'この支払いリクエストは期限切れです';
@@ -1386,7 +1385,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'これはウォッチオンリーのウォレットです — 送金キーを持っていないため、送金できません。';
+      'これはウォッチオンリーのウォレットです。送金キーを持っていないため、送金できません。';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1514,7 +1513,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'これは高額な支払いです — ほぼ残高全額に相当します。送金した支払いは取り消せません。';
+      'これは高額な支払いです（ほぼ残高全額に相当します）。送金した支払いは取り消せません。';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1531,7 +1530,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSendSentBody => '支払いはネットワークにブロードキャストされました。';
 
   @override
-  String get walletSendSavedTitle => '保存しました — 送信を完了します';
+  String get walletSendSavedTitle => '保存しました。送信を完了します';
 
   @override
   String get walletSendSavedBody =>
@@ -1559,7 +1558,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSendAlreadyTitle => '送信済みです';
 
   @override
-  String get walletSendAlreadyBody => 'この支払いはすでに送信されています — 二重に送信されることはありません。';
+  String get walletSendAlreadyBody => 'この支払いはすでに送信されています。二重に送信されることはありません。';
 
   @override
   String get walletSendFailedTitle => '支払いを完了できませんでした';
@@ -1586,7 +1585,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return '使用可能な残高が不足しています — 保有額は$available ZECで、この送金には$required ZECが必要です。';
+    return '使用可能な残高が不足しています。保有額は$available ZECで、この送金には$required ZECが必要です。';
   }
 
   @override
@@ -1645,11 +1644,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'アプリの更新を待っています — 資金は安全で、まだ何も送金されていません。';
+      'アプリの更新を待っています。資金は安全で、まだ何も送金されていません。';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'ネットワークのバージョンを報告するサーバーを待っています — サーバーを切り替えてください。資金は安全で、まだ何も送金されていません。';
+      'ネットワークのバージョンを報告するサーバーを待っています。サーバーを切り替えてください。資金は安全で、まだ何も送金されていません。';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
@@ -1663,15 +1662,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       hours,
       locale: localeName,
-      other: '送金はあと約$hours時間は可能です — その後はサーバーを切り替えてください。',
-      zero: '送金はあと1時間未満は可能です — その後はサーバーを切り替えてください。',
+      other: '送金はあと約$hours時間は可能です。その後はサーバーを切り替えてください。',
+      zero: '送金はあと1時間未満は可能です。その後はサーバーを切り替えてください。',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return '送金はあと約$blocksブロックの間は可能です — その後はサーバーを切り替えてください。';
+    return '送金はあと約$blocksブロックの間は可能です。その後はサーバーを切り替えてください。';
   }
 
   @override
@@ -1689,15 +1688,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'このサーバーはZcashネットワークのどのバージョンにあるかを伝えないため、このアプリは署名した支払いが受け入れられることを確認できません。 残高は最新です。 別のサーバーに切り替えてください — これは接続の問題ではありません。';
+      'このサーバーはZcashネットワークのどのバージョンにあるかを伝えないため、このアプリは署名した支払いが受け入れられることを確認できません。 残高は最新です。 別のサーバーに切り替えてください。これは接続の問題ではありません。';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'このサーバーはZcashネットワークのどのバージョンにあるかを伝えないため、このアプリは署名した支払いが受け入れられることを確認できません。 さらに、このウォレットが後で取り消さざるを得なかったブロックを繰り返し提供しているため、残高は最新でない可能性があります。 別のサーバーに切り替えてください — これは接続の問題ではありません。';
+      'このサーバーはZcashネットワークのどのバージョンにあるかを伝えないため、このアプリは署名した支払いが受け入れられることを確認できません。 さらに、このウォレットが後で取り消さざるを得なかったブロックを繰り返し提供しているため、残高は最新でない可能性があります。 別のサーバーに切り替えてください。これは接続の問題ではありません。';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'このサーバーは、このウォレットが後で取り消さざるを得なくなるブロックを繰り返し提供しています — サーバーを切り替えてください。';
+      'このサーバーは、このウォレットが後で取り消さざるを得なくなるブロックを繰り返し提供しています。サーバーを切り替えてください。';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
@@ -1806,7 +1805,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'これはウォッチオンリーのウォレットです — スワップできません。';
+      'これはウォッチオンリーのウォレットのため、スワップできません。';
 
   @override
   String get walletSwapDone => '完了';
@@ -1846,7 +1845,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return '$chainのアドレスです — スワップ後の資産の送付先です。チェーンが正しいか必ずご確認ください。';
+    return '$chainのアドレスです。スワップ後の資産の送付先です。チェーンが正しいか必ずご確認ください。';
   }
 
   @override
@@ -1866,7 +1865,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'まだ処理中です — スワップを開始しています。最大で1分ほどかかることがあります。';
+      'まだ処理中です。スワップを開始しています。最大で1分ほどかかることがあります。';
 
   @override
   String get walletSwapReviewTitle => 'スワップを確認';
@@ -1890,16 +1889,16 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return '見積もりの有効期限まで残り約$timeです — 期限が切れる前にご確認ください。';
+    return '見積もりの有効期限まで残り約$timeです。期限が切れる前にご確認ください。';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      '見積もりの有効期限まで残り1分未満です — 期限が切れる前にご確認ください。';
+      '見積もりの有効期限まで残り1分未満です。期限が切れる前にご確認ください。';
 
   @override
   String get walletSwapQuoteExpired =>
-      'この見積もりは期限切れです。戻って新しい見積もりを取得してください — このレートはもう保証されておらず、このまま送信すると返金になる可能性があります。';
+      'この見積もりは期限切れです。戻って新しい見積もりを取得してください。このレートはもう保証されておらず、このまま送信すると返金になる可能性があります。';
 
   @override
   String get walletCountdownUnderMinute => '1分未満';
@@ -1924,7 +1923,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'ZECをスワップして出す際、ZECはシールド解除されます — 入金は公開された取引となり、プロバイダー側もそのネットワーク上で公開されます。';
+      'ZECをスワップして出す際、ZECはシールド解除されます。入金は公開された取引となり、プロバイダー側もそのネットワーク上で公開されます。';
 
   @override
   String get walletSwapDiscloseTitle => 'スワッププロバイダーに見える情報';
@@ -1976,7 +1975,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'このスワップはまだ入金を待っています。入金手順はこの端末ではもう確認できません — すでに送金済みの場合は検出されます。まだ送金していない場合は、このスワップを期限切れにして新しいスワップを開始してください。';
+      'このスワップはまだ入金を待っています。入金手順はこの端末ではもう確認できません。すでに送金済みの場合は検出されます。まだ送金していない場合は、このスワップを期限切れにして新しいスワップを開始してください。';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -1989,7 +1988,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      '入金期限を過ぎました。まだ入金を送信していない場合、このスワップはそのまま終了します — 準備ができたら新しい見積もりを取得できます。';
+      '入金期限を過ぎました。まだ入金を送信していない場合、このスワップはそのまま終了します。準備ができたら新しい見積もりを取得できます。';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2013,15 +2012,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      '入金期限を過ぎました — このスワップのステータスをご確認ください。';
+      '入金期限を過ぎました。このスワップのステータスをご確認ください。';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'このスワップはここではまだ確定した結果に至っていません — 開いて確認してください。このウォレットに戻ってくるZECは、同期後に残高に反映されます。';
+      'このスワップはここではまだ確定した結果に至っていません。開いて確認してください。このウォレットに戻ってくるZECは、同期後に残高に反映されます。';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'このスワップはここではまだ確定した結果に至っていません — 開いて確認してください。このスワップがこのウォレットに届けるZECは、同期後に残高に反映されます。';
+      'このスワップはここではまだ確定した結果に至っていません。開いて確認してください。このスワップがこのウォレットに届けるZECは、同期後に残高に反映されます。';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'スワップが完了しました。';
@@ -2139,7 +2138,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'プロバイダーにこのスワップの記録がありません — おそらく期限切れになったと考えられます。入金が行われていた場合、プロバイダーは返金先アドレスへ返金するはずです。このスワップはリストに残り、このウォレットはそのZECがそれでも届く場合に備えて追跡を続けます。いつでもリストから削除できます。';
+      'プロバイダーにこのスワップの記録がありません。おそらく期限切れになったと考えられます。入金が行われていた場合、プロバイダーは返金先アドレスへ返金するはずです。このスワップはリストに残り、このウォレットはそのZECがそれでも届く場合に備えて追跡を続けます。いつでもリストから削除できます。';
 
   @override
   String get walletSwapStatusUnknownTitle => 'ステータスを取得できません';
@@ -2156,14 +2155,14 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'ここではスワップ機能がオフになっているため、このスワップは現在追跡できません。返金された場合、ZECはこのウォレットに戻ります — スワップ機能を再度オンにしてウォレットが同期すると、残高に反映されます。';
+      'ここではスワップ機能がオフになっているため、このスワップは現在追跡できません。返金された場合、ZECはこのウォレットに戻ります。スワップ機能を再度オンにしてウォレットが同期すると、残高に反映されます。';
 
   @override
   String get walletSwapTrackingError => 'このスワップを追跡できませんでした。';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'このスワップの追跡を開始できませんでした。スワップ自体はそのまま進行している可能性があります — 入金済みの資金は、プロバイダー側で決済または返金されます。';
+      'このスワップの追跡を開始できませんでした。スワップ自体はそのまま進行している可能性があります。入金済みの資金は、プロバイダー側で決済または返金されます。';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2209,15 +2208,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'このウォレットではまだ返金アドレスを設定できません — 通常、これは最初の同期がまだ完了していないことを意味します。同期が完了するのを待ってから、もう一度お試しください。';
+      'このウォレットではまだ返金アドレスを設定できません。通常、これは最初の同期がまだ完了していないことを意味します。同期が完了するのを待ってから、もう一度お試しください。';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'このウォレットではまだこのスワップの受取アドレスを設定できません — 通常、これは最初の同期がまだ完了していないことを意味します。同期が完了するのを待ってから、もう一度お試しください。';
+      'このウォレットではまだこのスワップの受取アドレスを設定できません。通常、これは最初の同期がまだ完了していないことを意味します。同期が完了するのを待ってから、もう一度お試しください。';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'スワップを時間内に開始できませんでした — 接続が遅かったか、ウォレットが混み合っていた可能性があります。新しい見積もりを取得してもう一度お試しください。';
+      'スワップを時間内に開始できませんでした。接続が遅かったか、ウォレットが混み合っていた可能性があります。新しい見積もりを取得してもう一度お試しください。';
 
   @override
   String get walletSwapFaultStoreBusyRetry => 'ウォレットが一時的に混み合っています。もう一度お試しください。';
@@ -2241,7 +2240,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'このスワップにはネットワーク手数料を含めて約$needed ZECが必要ですが、現在使用可能なのは$spendable ZECのみです。残高はまだ追いつき中です — まもなくさらに使用可能になる場合があります。';
+    return 'このスワップにはネットワーク手数料を含めて約$needed ZECが必要ですが、現在使用可能なのは$spendable ZECのみです。残高はまだ追いつき中のため、まもなくさらに使用可能になる場合があります。';
   }
 
   @override
@@ -2273,7 +2272,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSwapRefundHint => 'スワップが失敗した場合にコインが返却される場所';
 
   @override
-  String get walletSwapRefundHelper => '送金元のチェーン上のアドレスです — Zcashアドレスではありません。';
+  String get walletSwapRefundHelper => '送金元のチェーン上のアドレスです。Zcashアドレスではありません。';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2282,7 +2281,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return '$chainのアドレスです — スワップが失敗した場合にコインが返却される場所です。Zcashアドレスではありません。';
+    return '$chainのアドレスです。スワップが失敗した場合にコインが返却される場所です。Zcashアドレスではありません。';
   }
 
   @override
@@ -2290,7 +2289,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'スワップが完了できない場合、プロバイダーは支払い元のチェーン上でこのアドレスへコインを送り返します。ご自身が管理するアドレスを入力してください — このウォレットは他チェーンのアドレスを検証できないため、ご自身で慎重にご確認ください。';
+      'スワップが完了できない場合、プロバイダーは支払い元のチェーン上でこのアドレスへコインを送り返します。ご自身が管理するアドレスを入力してください。このウォレットは他チェーンのアドレスを検証できないため、ご自身で慎重にご確認ください。';
 
   @override
   String get walletSwapRefundScanTooltip => '返金先アドレスのQRコードをスキャン';
@@ -2342,7 +2341,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSwapPickerTitleReceive => '受け取る資産を選択';
 
   @override
-  String get walletSwapPickerStale => '資産リストを更新できませんでした — 最後に取得したリストを表示しています。';
+  String get walletSwapPickerStale => '資産リストを更新できませんでした。最後に取得したリストを表示しています。';
 
   @override
   String get walletSwapPickerEmpty => '現在スワップ可能な資産がありません。後でもう一度お試しください。';
@@ -2376,22 +2375,20 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletSwapSlippageCustomLabel => 'カスタムスリッページ';
 
   @override
-  String get walletSwapSlippageMayFail =>
-      '非常に低い値です — 価格が変動するとスワップが失敗する可能性があります。';
+  String get walletSwapSlippageMayFail => '非常に低い値です。価格が変動するとスワップが失敗する可能性があります。';
 
   @override
   String get walletSwapSlippageNormal => '安全な許容値です。';
 
   @override
-  String get walletSwapSlippageRisky => '高い値です — 見積もりより大幅に少なく受け取る可能性があります。';
+  String get walletSwapSlippageRisky => '高い値です。見積もりより大幅に少なく受け取る可能性があります。';
 
   @override
-  String get walletSwapSlippageTooHigh =>
-      '高すぎます — このスワップは拒否されます。10%以下に下げてください。';
+  String get walletSwapSlippageTooHigh => '高すぎるため、このスワップは拒否されます。10%以下に下げてください。';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return '少なくとも$zec ZECを受け取ります — これは$slippage%のスリッページ許容値による下限です。最終的な金額がこれを下回ることはありません。';
+    return '少なくとも$zec ZECを受け取ります。これは$slippage%のスリッページ許容値による下限です。最終的な金額がこれを下回ることはありません。';
   }
 
   @override
@@ -2399,14 +2396,14 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'シールドするまでの間 — ワンタップで行え、到着時に案内が表示されます — 受け取った金額は一時的に公開状態となり、チェーン上で閲覧可能です。少額の場合、一定額が貯まるまで公開のままとなることがあります。';
+      'シールドするまでの間（ワンタップで行え、到着時に案内が表示されます）、受け取った金額は一時的に公開状態となり、チェーン上で閲覧可能です。少額の場合、一定額が貯まるまで公開のままとなることがあります。';
 
   @override
   String get walletSwapRefundVerifyTitle => '返金先アドレスを確認';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      '1文字ずつ確認してください — スワップが失敗した場合、コインはここへ返却されます。このウォレットは他チェーンのアドレスを検証できません。';
+      '1文字ずつ確認してください。スワップが失敗した場合、コインはここへ返却されます。このウォレットは他チェーンのアドレスを検証できません。';
 
   @override
   String get walletSwapRefundVerifyAck => '返金先アドレスが正しいことを確認しました。';
@@ -2416,7 +2413,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return '1文字ずつ確認してください — $assetはこのアドレスで受け取ります。このウォレットは他チェーンのアドレスを検証できません。';
+    return '1文字ずつ確認してください。$assetはこのアドレスで受け取ります。このウォレットは他チェーンのアドレスを検証できません。';
   }
 
   @override
@@ -2456,7 +2453,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'この入金期限は終了しました。今は送金しないでください — 新しいスワップを開始してください。すでに送金済みの場合、プロバイダーから返金先アドレスへ返金されるはずです。';
+      'この入金期限は終了しました。今は送金せず、新しいスワップを開始してください。すでに送金済みの場合、プロバイダーから返金先アドレスへ返金されるはずです。';
 
   @override
   String get walletSwapDepositQrLabel => '入金アドレスのQRコード';
@@ -2494,11 +2491,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'この操作でスワップがキャンセルされることはありません — バックグラウンドで継続します。ただし支払いには入金アドレスが必要なため、まだの場合は先にコピーしてください。';
+      'この操作でスワップがキャンセルされることはなく、バックグラウンドで継続します。ただし支払いには入金アドレスが必要なため、まだの場合は先にコピーしてください。';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'この操作でスワップがキャンセルされることはありません — バックグラウンドで継続します。入金期限が終了しました。今は入金アドレスに送金しないでください。すでに送金済みの場合、プロバイダーから返金先アドレスへ返金されるはずです。';
+      'この操作でスワップがキャンセルされることはなく、バックグラウンドで継続します。入金期限が終了しました。今は入金アドレスに送金しないでください。すでに送金済みの場合、プロバイダーから返金先アドレスへ返金されるはずです。';
 
   @override
   String get walletSwapDepositBackStay => 'とどまる';
@@ -2529,7 +2526,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'ウォレットはこのアドレスをこの端末上で準備します — ウォレットが他の処理で混み合っている場合、少し時間がかかることがあります。';
+      'ウォレットはこのアドレスをこの端末上で準備します。ウォレットが他の処理で混み合っている場合、少し時間がかかることがあります。';
 
   @override
   String get walletReceiveRetry => 'もう一度試す';
@@ -2559,7 +2556,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      '新しいアドレス — 他のアドレスとひも付けられません。ここへの支払いも、このウォレットに届き、これまでのアドレスもそのまま使えます。このアドレスはここでは二度と表示されません — 今すぐコピーしてください。';
+      '新しいアドレス：他のアドレスとひも付けられません。ここへの支払いも、このウォレットに届き、これまでのアドレスもそのまま使えます。このアドレスはここでは二度と表示されません。今すぐコピーしてください。';
 
   @override
   String get walletReceiveFreshError => '新しいアドレスを作成できませんでした。もう一度お試しください。';
@@ -2578,8 +2575,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletReceiveRequestAmountLabel => '金額（任意）';
 
   @override
-  String get walletReceiveFreshCopyNow =>
-      'このアドレスはここでは二度と表示されません — 今すぐコピーしてください。';
+  String get walletReceiveFreshCopyNow => 'このアドレスはここでは二度と表示されません。今すぐコピーしてください。';
 
   @override
   String get walletSecurityMenuItem => 'セキュリティ…';
@@ -2635,18 +2631,18 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'この端末からウォレットとその鍵を削除します。送金キーは保持していないため、バックアップするものはなく — ビューイングキーでいつでも再追加できます。';
+      'この端末からウォレットとその鍵を削除します。送金キーは保持していないため、バックアップするものはありません。ビューイングキーでいつでも再追加できます。';
 
   @override
   String get securityDeleteDialogTitle => 'このウォレットを削除しますか?';
 
   @override
   String get securityDeleteDialogBody =>
-      'この操作により、この端末からウォレットとその鍵が削除されます。リカバリーフレーズを必ずバックアップしてください — それが資金を復元する唯一の手段です。';
+      'この操作により、この端末からウォレットとその鍵が削除されます。リカバリーフレーズを必ずバックアップしてください。それが資金を復元する唯一の手段です。';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'この操作により、この端末からウォレットとその鍵が削除されます。送金キーは保持していないため、バックアップの必要はなく — ビューイングキーがあれば後で再追加できます。';
+      'この操作により、この端末からウォレットとその鍵が削除されます。送金キーは保持していないため、バックアップの必要はありません。ビューイングキーがあれば後で再追加できます。';
 
   @override
   String get securityDeleteDialogConfirm => '削除';
@@ -2656,11 +2652,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'ウォレットを削除できませんでした — ウォレットに変更はありません。もう一度お試しください。';
+      'ウォレットを削除できませんでした。ウォレットに変更はありません。もう一度お試しください。';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return '先にサーバーの切り替えを完了してください — 切り替えは$seconds秒以内に完了または停止します。その後、もう一度ウォレットの削除をお試しください。';
+    return '先にサーバーの切り替えを完了してください。切り替えは$seconds秒以内に完了または停止します。その後、もう一度ウォレットの削除をお試しください。';
   }
 
   @override
@@ -2671,25 +2667,25 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'これらの支払いはまだ送信されていません。金額は引き続き残高に含まれています — ただし、ウォレットが送信中の支払いは、その金額がすでに充当されている可能性があります。';
+      'これらの支払いはまだ送信されていません。金額は引き続き残高に含まれています。ただし、ウォレットが送信中の支払いは、その金額がすでに充当されている可能性があります。';
 
   @override
   String get walletParkedCancel => 'キャンセル';
 
   @override
   String get walletParkedPausedHint =>
-      '一時停止中 — この支払いは自動的には送信されません。資金は安全です。今すぐ送金するか、キャンセルしてください。';
+      '一時停止中：この支払いは自動的には送信されません。資金は安全です。今すぐ送金するか、キャンセルしてください。';
 
   @override
   String get walletParkedRetryStale => 'この支払いはもう保留されていません。保留中の支払いと履歴をご確認ください。';
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'この支払いはもう待機していません — ウォレットがすでに送信している可能性があります。「保存済み・保留中」と履歴をご確認ください。';
+      'この支払いはもう待機していません。ウォレットがすでに送信している可能性があります。「保存済み・保留中」と履歴をご確認ください。';
 
   @override
   String get walletReclaimExplainer =>
-      '使い捨てアドレスでの送信が詰まっています。再開できます — ご自身のアドレス間で少額を移動し、それが戻ってきます。';
+      '使い捨てアドレスでの送信が詰まっています。再開できます。ご自身のアドレス間で少額を移動し、それが戻ってきます。';
 
   @override
   String get walletReclaimButton => '送信を再開';
@@ -2758,7 +2754,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'この支払いはすでに送信済みか送信中の可能性があります — 履歴をご確認ください。';
+      'この支払いはすでに送信済みか送信中の可能性があります。履歴をご確認ください。';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2790,15 +2786,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return '$amountを回収中です — 一部の資金には再試行が必要です。';
+    return '$amountを回収中です。一部の資金には再試行が必要です。';
   }
 
   @override
-  String get walletRecoverRetry => '一部の資金には再試行が必要です — 回収をもう一度実行してください。';
+  String get walletRecoverRetry => '一部の資金には再試行が必要です。回収をもう一度実行してください。';
 
   @override
   String get walletRecoverTruncated =>
-      'まだすべての使い捨てアドレスを確認できていません — 残りを確認するにはもう一度実行してください。';
+      'まだすべての使い捨てアドレスを確認できていません。残りを確認するにはもう一度実行してください。';
 
   @override
   String get walletRecoverNothing => '現在回収できるものはありません。';
@@ -2828,11 +2824,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'ウォレットがこの支払いを準備しています — その金額はすでに充当されている可能性があります。資金は安全です。完了しない場合は、自動的に一覧に戻ります。';
+      'ウォレットがこの支払いを準備しています。その金額はすでに充当されている可能性があります。資金は安全です。完了しない場合は、自動的に一覧に戻ります。';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'ウォレットがこの支払いを準備しています — その金額はすでに充当されている可能性があります。資金は安全ですが、ウォレットが再び同期するまでは完了できません。';
+      'ウォレットがこの支払いを準備しています。その金額はすでに充当されている可能性があります。資金は安全ですが、ウォレットが再び同期するまでは完了できません。';
 
   @override
   String get walletParkedSendNow => '今すぐ送金';
@@ -2866,7 +2862,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'まだ送金する準備ができていません。支払いは保存されており、一時停止は解除されました — 後でもう一度「今すぐ送金」をお試しいただくか、キャンセルしてください。';
+      'まだ送金する準備ができていません。支払いは保存されており、一時停止は解除されました。後でもう一度「今すぐ送金」をお試しいただくか、キャンセルしてください。';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -2906,14 +2902,14 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      '自動シールドが完了しませんでした — この資金はまだ公開されています。今すぐシールドできます。';
+      '自動シールドが完了しませんでした。この資金はまだ公開されています。今すぐシールドできます。';
 
   @override
-  String get walletSendPrivacyShielded => 'シールドされた支払い — 金額と送金先はチェーン上で非公開のままです。';
+  String get walletSendPrivacyShielded => 'シールドされた支払い：金額と送金先はチェーン上で非公開のままです。';
 
   @override
   String get walletSendPrivacyTransparent =>
-      '公開の支払い — 金額とアドレスはブロックチェーン上で公開されています。';
+      '公開の支払い：金額とアドレスはブロックチェーン上で公開されています。';
 
   @override
   String get walletActivityPublicBadge => 'ブロックチェーン上で公開';
@@ -2929,7 +2925,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      '自動シールドはオフです — 公開の資金はご自身でシールドするまで公開されたままになります。';
+      '自動シールドはオフです。公開の資金はご自身でシールドするまで公開されたままになります。';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -2949,7 +2945,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      '自動シールドは今回のセッションでは一時停止されています — 承認されなかったためです。手動でのシールドは引き続き行えます。';
+      '自動シールドは承認されなかったため、今回のセッションでは一時停止されています。手動でのシールドは引き続き行えます。';
 
   @override
   String get walletDeepScanMenuItem => 'より古いスワップアドレスを確認…';
@@ -2962,7 +2958,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'このウォレットを復元し、以前スワップを多く利用していた場合、最も古いスワップの資金は見つけるのに追加の手順が必要になることがあります。この確認はそれを探します — 見つかったものはウォレットの同期に伴い残高に反映されます。';
+      'このウォレットを復元し、以前スワップを多く利用していた場合、最も古いスワップの資金は見つけるのに追加の手順が必要になることがあります。この確認はそれを探します。見つかったものはウォレットの同期に伴い残高に反映されます。';
 
   @override
   String get walletDeepScanCoverage =>
@@ -2970,7 +2966,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      '現在の範囲を確認中です — 見つかったものは残高に反映されます。少し時間がかかることがあります。';
+      '現在の範囲を確認中です。見つかったものは残高に反映されます。少し時間がかかることがあります。';
 
   @override
   String get walletDeepScanCoverageUnknown => 'ウォレットの最も古いスワップからの資金を確認します。';
@@ -2996,14 +2992,14 @@ class WalletLocalizationsJa extends WalletLocalizations {
       '再スキャンが終了すると、より古いスワップアドレスを確認できるようになります。';
 
   @override
-  String get walletDeepScanRan => 'より古いスワップアドレスを確認しています — 見つかったものは残高に反映されます。';
+  String get walletDeepScanRan => 'より古いスワップアドレスを確認しています。見つかったものは残高に反映されます。';
 
   @override
-  String get walletDeepScanFailed => '確認を開始できませんでした。変更はありません — もう一度お試しください。';
+  String get walletDeepScanFailed => '確認を開始できませんでした。変更はありません。もう一度お試しください。';
 
   @override
   String get walletDeepScanSlow =>
-      '通常より時間がかかっています。より古いスワップアドレスが確認された場合、見つかったものは残高に反映されます — しばらくしてからもう一度ご確認ください。';
+      '通常より時間がかかっています。より古いスワップアドレスが確認された場合、見つかったものは残高に反映されます。しばらくしてからもう一度ご確認ください。';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3011,7 +3007,7 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      '前回の範囲をまだ確認中です — 最大で2日ほどかかることがありますが、通常はもっと短時間で終わります。自動的に完了しますので、しばらく待ってから、もう一度確認してください。';
+      '前回の範囲をまだ確認中です。最大で2日ほどかかることがありますが、通常はもっと短時間で終わります。自動的に完了しますので、しばらく待ってから、もう一度確認してください。';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3019,11 +3015,11 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'より古いスワップアドレスをまだ確認中です — 見つかったものは残高に反映されます。';
+      'より古いスワップアドレスをまだ確認中です。見つかったものは残高に反映されます。';
 
   @override
   String get walletRescanSwapPointer =>
-      '古いスワップからの資金をお探しですか?再スキャンではそれは見つかりません — 代わりに「より古いスワップアドレスを確認」をご利用ください。';
+      '古いスワップからの資金をお探しですか?再スキャンではそれは見つかりません。代わりに「より古いスワップアドレスを確認」をご利用ください。';
 
   @override
   String get walletDeepScanRestoreNoteTitle => 'スワップを利用していたウォレットを復元しましたか?';
@@ -3104,15 +3100,15 @@ class WalletLocalizationsJa extends WalletLocalizations {
   String get walletLoadingLabel => '読み込み中';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'もう一度送信する前に確認してください';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'この支払いを確認できませんでした。もう一度送信する前に「履歴」を確認してください。';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'この支払いが保存されたか確認できませんでした。もう一度送信する前に、保留中の支払いを確認してください。';
 
   @override
   String get walletShieldUnknownTitle => 'もう一度シールドする前に確認してください';
@@ -3129,5 +3125,5 @@ class WalletLocalizationsJa extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'この試行はネットワークが承認する前に期限切れになりました。ウォレットが自動で支払いを再送信するため、ご自身で再送信しないでください。';
 }

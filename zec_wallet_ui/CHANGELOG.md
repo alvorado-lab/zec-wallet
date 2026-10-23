@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.0.3
+
+- Requires `zec_wallet` 0.0.4, a security release (see its changelog).
+  0.0.1 accepted only `zec_wallet` 0.0.1, so it could not be used beside
+  later releases.
+- The UI strings read more plainly in all 16 languages; the meaning is the
+  same. No string key was added or removed. If your app asserts on a wallet string's
+  text, check it against the new `wallet_en.arb`.
+- Four strings that were still in English in every other language are now
+  translated: the three shown when a send's outcome is unknown
+  (`walletSendUnknownTitle`, `walletSendUnknownBody`,
+  `walletSendUnknownQueuedBody`) and `walletTxExplainRetryingExpired`.
+- Version 0.0.2 was prepared with the string changes and never published.
+
 ## 0.0.1
 
 Initial release. The reusable wallet UI for the `zec_wallet` SDK, embeddable in

@@ -23,7 +23,7 @@ exclude = ["dialer-tor", "zec_wallet_tor/rust"]
 [workspace.package]
 # The published version: `sdkVersion()` reports it, so it equals the
 # `zec_wallet` pubspec's (`api::meta` tests hold the two together).
-version = "0.0.2"
+version = "0.0.4"
 edition = "2024"
 rust-version = "1.96"
 # MIT only: the packages ship one LICENSE (MIT), and the crates travel inside
@@ -93,7 +93,7 @@ ring           = { version = "=0.17.14", default-features = false }
 # ring/rustls (arch review W3-inc-2a). NOT in pins_policy's POLICED set: it
 # legitimately DIFFERS from root's rusqlite (0.32, relim-store) post-carve.
 rusqlite       = { version = "=0.37.0", default-features = false, features = ["bundled-sqlcipher-vendored-openssl", "array"] }
-rustls         = { version = "=0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
+rustls         = { version = "=0.23.46", default-features = false, features = ["ring", "std", "tls12"] }
 # §4.3/§6.3 wallet DB schema + migrations — audited whole (ADR-0005 r5; our code
 # is glue only). `WalletDb::from_connection` wraps OUR SQLCipher-keyed rusqlite
 # connection (db.rs) and `init_wallet_db` runs the schemerz migrations. `orchard`
@@ -207,7 +207,7 @@ tracing   = "0.1"
 # span/event fields. `registry` gives the layered subscriber the custom capture
 # layer composes onto; never pulled by the shipped lib/bridge.
 tracing-subscriber = { version = "0.3", default-features = false, features = ["registry"] }
-webpki-roots   = "=1.0.7"
+webpki-roots   = "=1.0.10"
 zcash_address  = { version = "=0.13.0", default-features = false, features = ["std"] }
 # USK/UFVK/UA derivation — audited whole (ADR-0005 r5). transparent-inputs OFF
 # means we derive NO transparent spend key and the default UA carries no

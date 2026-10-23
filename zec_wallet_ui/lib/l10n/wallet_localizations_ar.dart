@@ -19,14 +19,14 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      'سيتوفر إعداد المحفظة في إصدار لاحق. سيرشدك الإعداد إلى تدوين عبارة الاسترداد الخاصة بك قبل أن يصبح استلام أي أموال ممكنًا — حتى لا يتعرض أي شيء للخطر دون نسخة احتياطية.';
+      'سيتوفر إعداد المحفظة في إصدار لاحق. سيرشدك الإعداد إلى تدوين عبارة الاسترداد الخاصة بك قبل أن يصبح استلام أي أموال ممكنًا، حتى لا يتعرض أي شيء للخطر دون نسخة احتياطية.';
 
   @override
   String get walletStartupFailedTitle => 'تعذّر تشغيل المحفظة';
 
   @override
   String get walletStartupFailedBody =>
-      'شيء ما حال دون تحميل المحفظة على هذا الجهاز. إذا كانت لديك محفظة بالفعل، فأموالها لم تتأثر — فهي موجودة على شبكة Zcash ويمكن استعادتها باستخدام عبارة الاسترداد الخاصة بك. أعد المحاولة؛ وإذا استمرت المشكلة، أغلق التطبيق وأعد فتحه.';
+      'شيء ما حال دون تحميل المحفظة على هذا الجهاز. إذا كانت لديك محفظة بالفعل، فأموالها لم تتأثر، فهي موجودة على شبكة Zcash ويمكن استعادتها باستخدام عبارة الاسترداد الخاصة بك. أعد المحاولة؛ وإذا استمرت المشكلة، أغلق التطبيق وأعد فتحه.';
 
   @override
   String get walletBalanceLabel => 'الرصيد';
@@ -150,11 +150,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'محفوظة على هذا الجهاز، ضمن \"محفوظة وقيد الانتظار\" — يمكنك إرسالها أو إلغاؤها من هناك.';
+      'محفوظة على هذا الجهاز، ضمن \"محفوظة وقيد الانتظار\"، ويمكنك إرسالها أو إلغاؤها من هناك.';
 
   @override
   String get walletTxExplainPending =>
-      'أُرسلت إلى شبكة Zcash — بانتظار التأكيد ضمن كتلة.';
+      'أُرسلت إلى شبكة Zcash، وهي بانتظار التأكيد ضمن كتلة.';
 
   @override
   String get walletTxExplainRetrying =>
@@ -200,7 +200,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletRescanRangeAll =>
-      'فحص كامل سجلّك — الأبطأ، لكنه يستعيد كل شيء.';
+      'فحص كامل سجلّك: الأبطأ، لكنه يستعيد كل شيء.';
 
   @override
   String get walletRescanRangeDefault =>
@@ -233,11 +233,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      'سيؤدي هذا إلى إعادة فحص سلسلة الكتل. التواريخ الحديثة تستغرق دقائق؛ أما الفحص إلى الماضي البعيد فقد يستغرق ساعات. تعمل المزامنة في الخلفية — يمكنك متابعة استخدام محفظتك.';
+      'سيؤدي هذا إلى إعادة فحص سلسلة الكتل. التواريخ الحديثة تستغرق دقائق؛ أما الفحص إلى الماضي البعيد فقد يستغرق ساعات. تعمل المزامنة في الخلفية، ويمكنك متابعة استخدام محفظتك.';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'لا تزال هناك عملية دفع من هذه المحفظة قيد التسوية. عادةً ما ترفض المحفظة إعادة الفحص حتى تكتمل — يمكنك المحاولة، لكن توقّع أن يُرفض الطلب.';
+      'لا تزال هناك عملية دفع من هذه المحفظة قيد التسوية. عادةً ما ترفض المحفظة إعادة الفحص حتى تكتمل. يمكنك المحاولة، لكن توقّع أن يُرفض الطلب.';
 
   @override
   String get walletRescanConfirm => 'بدء إعادة الفحص';
@@ -250,40 +250,40 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      'جارٍ إعادة بناء سجلّك — يتم فحص السلسلة بأكملها. سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية.';
+      'جارٍ إعادة بناء سجلّك، ويتم فحص السلسلة بأكملها. سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية.';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return 'جارٍ إعادة بناء سجلّك ابتداءً من $date — سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية.';
+    return 'جارٍ إعادة بناء سجلّك ابتداءً من $date. سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية.';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      'جارٍ إعادة بناء سجلّك ابتداءً من بداية محفظتك — سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية.';
+      'جارٍ إعادة بناء سجلّك ابتداءً من بداية محفظتك. سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية.';
 
   @override
   String get walletCatchUpBanner =>
-      'جارٍ اللحاق بالركب — يظهر رصيدك ونشاطك تدريجيًا مع مزامنة المحفظة. كل ما تستلمه آمن.';
+      'جارٍ اللحاق بالركب. يظهر رصيدك ونشاطك تدريجيًا مع مزامنة المحفظة. كل ما تستلمه آمن.';
 
   @override
   String get walletCatchUpRescanBanner =>
-      'جارٍ إعادة بناء سجلّك بعد إعادة الفحص — سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية. كل ما تستلمه آمن.';
+      'جارٍ إعادة بناء سجلّك بعد إعادة الفحص. سيظهر رصيدك ونشاطك تدريجيًا مع تقدّم العملية. كل ما تستلمه آمن.';
 
   @override
   String get walletRescanFailedNotice =>
-      'تعذّرت إعادة الفحص الآن — أموالك آمنة، لكن رصيدك وسجلّك قد يحتاجان بعض الوقت للحاق بالركب. أعد المحاولة بعد قليل.';
+      'تعذّرت إعادة الفحص الآن. أموالك آمنة، لكن رصيدك وسجلّك قد يحتاجان بعض الوقت للحاق بالركب. أعد المحاولة بعد قليل.';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      'لا تزال هناك عملية دفع قيد التسوية، لذا تم إيقاف إعادة الفحص مؤقتًا لحماية أموالك. محفظتك دون تغيير — أعد المحاولة خلال ساعتين تقريبًا مع إبقاء التطبيق مفتوحًا ومتصلًا بالإنترنت.';
+      'لا تزال هناك عملية دفع قيد التسوية، لذا تم إيقاف إعادة الفحص مؤقتًا لحماية أموالك. محفظتك دون تغيير. أعد المحاولة خلال ساعتين تقريبًا مع إبقاء التطبيق مفتوحًا ومتصلًا بالإنترنت.';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      'إعادة الفحص تعيد بناء سجلّك أثناء مزامنة محفظتك، والمزامنة لا تعمل الآن. محفظتك دون تغيير — أعد المحاولة بمجرد أن تعمل المزامنة.';
+      'إعادة الفحص تعيد بناء سجلّك أثناء مزامنة محفظتك، والمزامنة لا تعمل الآن. محفظتك دون تغيير. أعد المحاولة بمجرد أن تعمل المزامنة.';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      'لا توجد مساحة كافية لإعادة بناء سجل محفظتك — أموالك آمنة، لكن رصيدك وسجلّك قد يحتاجان بعض الوقت للحاق بالركب. حرّر بعض المساحة وأعد المحاولة.';
+      'لا توجد مساحة كافية لإعادة بناء سجل محفظتك. أموالك آمنة، لكن رصيدك وسجلّك قد يحتاجان بعض الوقت للحاق بالركب. حرّر بعض المساحة وأعد المحاولة.';
 
   @override
   String get walletRescanFailedDismiss => 'إغلاق';
@@ -293,7 +293,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletActivityCatchingUp =>
-      'لا يزال اللحاق بالركب جاريًا — كل ما تستلمه سيظهر هنا.';
+      'لا يزال اللحاق بالركب جاريًا، وكل ما تستلمه سيظهر هنا.';
 
   @override
   String get walletActivitySyncNotRunning =>
@@ -310,7 +310,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      'غير مشمولة في \"قابل للإنفاق الآن\" — قم بحماية هذه الأموال لتتمكن من إنفاقها. وحتى ذلك الحين تبقى مرئية علنًا على السلسلة.';
+      'غير مشمولة في \"قابل للإنفاق الآن\". قم بحماية هذه الأموال لتتمكن من إنفاقها. وحتى ذلك الحين تبقى مرئية علنًا على السلسلة.';
 
   @override
   String get walletTransparentNoteWatchOnly =>
@@ -370,7 +370,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      'تعذّر التحقق مما إذا كانت هناك دفعة لا تزال قيد الإكمال. جارٍ إعادة المحاولة — وإلى ذلك الحين، ابحث عن دفعة معلّقة في نشاطك قبل أن ترسل مرة أخرى.';
+      'تعذّر التحقق مما إذا كانت هناك دفعة لا تزال قيد الإكمال. جارٍ إعادة المحاولة. وإلى ذلك الحين، ابحث عن دفعة معلّقة في نشاطك قبل أن ترسل مرة أخرى.';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -410,7 +410,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      'هذه الأموال أقل من المبلغ الذي يستحق الحماية حاليًا — إذ ستفوق رسوم الشبكة الفائدة منها. ستصبح قابلة للحماية بمجرد وصول مبلغ إضافي.';
+      'هذه الأموال أقل من المبلغ الذي يستحق الحماية حاليًا، إذ ستفوق رسوم الشبكة الفائدة منها. ستصبح قابلة للحماية بمجرد وصول مبلغ إضافي.';
 
   @override
   String get walletShieldDoneTitle => 'تم إرسال طلب الحماية';
@@ -420,7 +420,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
       'أموالك في طريقها إلى رصيدك المحمي. سيتم تأكيدها على السلسلة قريبًا.';
 
   @override
-  String get walletShieldSavedTitle => 'تم الحفظ — سنُكمل الحماية';
+  String get walletShieldSavedTitle => 'تم الحفظ، وسنُكمل الحماية';
 
   @override
   String get walletShieldSavedBody =>
@@ -458,7 +458,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletMoveSheetSubtitle =>
-      'أرسل ZEC محميًا إلى عنوانك العلني الخاص — مفيد عند التعامل مع منصة تبادل لا تقبل الإيداع المحمي.';
+      'أرسل ZEC محميًا إلى عنوانك العلني الخاص. مفيد عند التعامل مع منصة تبادل لا تقبل الإيداع المحمي.';
 
   @override
   String get walletMoveDestinationLabel => 'عنوانك العلني';
@@ -470,7 +470,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'المتاح للنقل: $amount ZEC — رصيدك لا يزال يلحق بالركب';
+    return 'المتاح للنقل: $amount ZEC (رصيدك لا يزال يلحق بالركب)';
   }
 
   @override
@@ -478,7 +478,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      'النقل إلى عنوان علني يُخرج هذه الأموال من رصيدك المحمي — إذ يصبح المبلغ وعنوانك العلني مرئيَين علنًا على سلسلة كتل Zcash.';
+      'النقل إلى عنوان علني يُخرج هذه الأموال من رصيدك المحمي، إذ يصبح المبلغ وعنوانك العلني مرئيَين علنًا على سلسلة كتل Zcash.';
 
   @override
   String get walletMoveWalletEnded =>
@@ -520,7 +520,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
       'أموالك في طريقها إلى عنوانك العلني. ستُؤكَّد على السلسلة قريبًا.';
 
   @override
-  String get walletMoveSavedTitle => 'تم الحفظ — سنُكمل النقل';
+  String get walletMoveSavedTitle => 'تم الحفظ، وسنُكمل النقل';
 
   @override
   String get walletMoveSavedBody =>
@@ -545,7 +545,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'محفظتك لا تزال تلحق بالركب — كل ما تستلمه يصبح متاحًا للنقل بمجرد اكتمال المزامنة.';
+      'محفظتك لا تزال تلحق بالركب. كل ما تستلمه يصبح متاحًا للنقل بمجرد اكتمال المزامنة.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -562,7 +562,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
       'تعذّرت قراءة المحفظة الآن. ستتحدّث تلقائيًا.';
 
   @override
-  String get walletBalanceStale => 'تعذّر التحديث — يُعرض آخر رصيد معروف.';
+  String get walletBalanceStale => 'تعذّر التحديث، ويُعرض آخر رصيد معروف.';
 
   @override
   String get walletSyncStartFailed => 'تعذّر بدء المزامنة. سنواصل المحاولة.';
@@ -631,7 +631,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'جارٍ اللحاق بالشبكة — قد تستغرق المزامنة الأولية الكاملة بعض الوقت. يمكنك متابعة استخدام التطبيق حتى تكتمل';
+      'جارٍ اللحاق بالشبكة، وقد تستغرق المزامنة الأولية الكاملة بعض الوقت. يمكنك متابعة استخدام التطبيق حتى تكتمل';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -656,7 +656,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      'يتعذّر الوصول إلى شبكة Zcash حاليًا. سنواصل المحاولة تلقائيًا — يُرجى التحقق من اتصالك بالإنترنت، أو قد يكون الخادم غير متاح مؤقتًا.';
+      'يتعذّر الوصول إلى شبكة Zcash حاليًا. سنواصل المحاولة تلقائيًا. يُرجى التحقق من اتصالك بالإنترنت، أو قد يكون الخادم غير متاح مؤقتًا.';
 
   @override
   String get walletStallTor =>
@@ -676,7 +676,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      'أرسل هذا الخادم بيانات لا يمكن أن تكون صحيحة، لذلك توقفت المزامنة. هذه ليست مشكلة في الاتصال — انتقل إلى خادم آخر. إذا رُفضت جميع الخوادم، أعد فحص السجل: قد تحتفظ المحفظة بسجل خاطئ من خادم سابق.';
+      'أرسل هذا الخادم بيانات لا يمكن أن تكون صحيحة، لذلك توقفت المزامنة. هذه ليست مشكلة في الاتصال، فانتقل إلى خادم آخر. إذا رُفضت جميع الخوادم، أعد فحص السجل: قد تحتفظ المحفظة بسجل خاطئ من خادم سابق.';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -721,11 +721,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainIdle =>
-      'لم تبدأ المزامنة بعد — تبدأ تلقائيًا. لا حاجة لأي إجراء.';
+      'لم تبدأ المزامنة بعد، وستبدأ تلقائيًا. لا حاجة لأي إجراء.';
 
   @override
   String get walletSyncExplainStartFailed =>
-      'تعذّر بدء المزامنة. أموالك آمنة — المحفظة لا تتحقق حاليًا من أي نشاط جديد فحسب. أعد المحاولة أدناه، أو أعد فتح التطبيق.';
+      'تعذّر بدء المزامنة. أموالك آمنة، فالمحفظة لا تتحقق حاليًا من أي نشاط جديد فحسب. أعد المحاولة أدناه، أو أعد فتح التطبيق.';
 
   @override
   String get walletSyncExplainStarting =>
@@ -736,7 +736,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'تتحقق المحفظة من كتل سلسلة الكتل بحثًا عن أموالك. يتحدّث رصيدك ونشاطك عند العثور على معاملات جديدة — يمكنك متابعة استخدام التطبيق حتى تكتمل العملية.';
+      'تتحقق المحفظة من كتل سلسلة الكتل بحثًا عن أموالك. يتحدّث رصيدك ونشاطك عند العثور على معاملات جديدة، ويمكنك متابعة استخدام التطبيق حتى تكتمل العملية.';
 
   @override
   String get walletSyncExplainUpToDate =>
@@ -748,11 +748,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'يتعذّر الوصول إلى شبكة Zcash — وهذا أمر طبيعي إذا كنت غير متصل بالإنترنت، أو قد يكون الخادم غير متاح مؤقتًا. أموالك آمنة: يُعرض الرصيد بحسب آخر حالة تمت مزامنتها، وتبقى العمليات المُدرجة في قائمة الانتظار محفوظة ضمن \"محفوظة وقيد الانتظار\". تتم إعادة محاولة الاتصال تلقائيًا.';
+      'يتعذّر الوصول إلى شبكة Zcash. وهذا أمر طبيعي إذا كنت غير متصل بالإنترنت، أو قد يكون الخادم غير متاح مؤقتًا. أموالك آمنة: يُعرض الرصيد بحسب آخر حالة تمت مزامنتها، وتبقى العمليات المُدرجة في قائمة الانتظار محفوظة ضمن \"محفوظة وقيد الانتظار\". تتم إعادة محاولة الاتصال تلقائيًا.';
 
   @override
   String get walletSyncExplainOffline =>
-      'لا يوجد اتصال بالشبكة. أموالك آمنة — يُعرض الرصيد بحسب آخر حالة تمت مزامنتها، وتبقى العمليات المُدرجة في قائمة الانتظار محفوظة ضمن \"محفوظة وقيد الانتظار\".';
+      'لا يوجد اتصال بالشبكة. أموالك آمنة: يُعرض الرصيد بحسب آخر حالة تمت مزامنتها، وتبقى العمليات المُدرجة في قائمة الانتظار محفوظة ضمن \"محفوظة وقيد الانتظار\".';
 
   @override
   String get walletSyncExplainUnknown =>
@@ -780,40 +780,40 @@ class WalletLocalizationsAr extends WalletLocalizations {
       'المسار الخاص قيد الاستخدام (الخصوصية غير مؤكدة)';
 
   @override
-  String get walletTorFellBack => 'Tor غير متاح — يُستخدم اتصال مباشر';
+  String get walletTorFellBack => 'Tor غير متاح، ويُستخدم اتصال مباشر';
 
   @override
-  String get walletTorUnavailable => 'المسار الخاص غير متاح — غير متصل';
+  String get walletTorUnavailable => 'المسار الخاص غير متاح: غير متصل';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport غير متاح — غير متصل';
+    return '$transport غير متاح: غير متصل';
   }
 
   @override
-  String get walletTorUnanswered => 'المسار الخاص متصل — لا يصل أي رد';
+  String get walletTorUnanswered => 'المسار الخاص متصل، لكن لا يصل أي رد';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'المسار الخاص متصل — لا يصل أي رد (الخصوصية غير مؤكدة)';
+      'المسار الخاص متصل، لكن لا يصل أي رد (الخصوصية غير مؤكدة)';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport متصل — لا يصل أي رد';
+    return '$transport متصل، لكن لا يصل أي رد';
   }
 
   @override
   String get walletTorUnansweredDirect =>
-      'غير خاص (اتصال تطبيقك المباشر) — لا يصل أي رد';
+      'غير خاص (اتصال تطبيقك المباشر): لا يصل أي رد';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return 'متصل عبر $transport — لا يصل أي رد؛ يمكن للوكيل ربط الاتصالات ببعضها';
+    return 'متصل عبر $transport، لكن لا يصل أي رد؛ يمكن للوكيل ربط الاتصالات ببعضها';
   }
 
   @override
   String get walletTorUnknown =>
-      'حالة Tor غير معروفة — تعامل معها على أنها غير محمية';
+      'حالة Tor غير معروفة، فتعامل معها على أنها غير محمية';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -918,7 +918,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'تعذّر الوصول إلى هذا الخادم. تحقق من العنوان — وإذا كان صحيحًا، فإما أن هذا الخادم لا يستجيب أو أن تطبيقك لا يستطيع الوصول إليه الآن. حاول مرة أخرى أو اختر خادمًا آخر.';
+      'تعذّر الوصول إلى هذا الخادم. تحقق من العنوان. وإذا كان صحيحًا، فإما أن هذا الخادم لا يستجيب أو أن تطبيقك لا يستطيع الوصول إليه الآن. حاول مرة أخرى أو اختر خادمًا آخر.';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -951,7 +951,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return 'تعذّر التبديل — لا يزال $host قيد الاستخدام.';
+    return 'تعذّر التبديل، ولا يزال $host قيد الاستخدام.';
   }
 
   @override
@@ -986,24 +986,24 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      'قبِل المسار الخاص الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة — لا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
+      'قبِل المسار الخاص الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة، ولا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport قبِل الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة — لا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
+    return '$transport قبِل الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة، ولا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      'تتصل حركة بيانات المحفظة مباشرة بالخادم. يمكن للخادم رؤية عنوان IP الخاص بك. تم قبول الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة — لا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
+      'تتصل حركة بيانات المحفظة مباشرة بالخادم. يمكن للخادم رؤية عنوان IP الخاص بك. تم قبول الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة، ولا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'يتعذّر التحقق من خصوصية هذا الاتصال — تعامل معه على أنه غير خاص. تم قبول الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة — لا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
+      'يتعذّر التحقق من خصوصية هذا الاتصال، فتعامل معه على أنه غير خاص. تم قبول الاتصال، لكن لم يصل أي رد منذ دقيقة. قد يكون السبب المسار أو خادم المحفظة، ولا تستطيع المحفظة التمييز بينهما. ستواصل المحاولة؛ وإذا استمر ذلك، جرّب خادمًا آخر أو تحقّق من إعدادات الشبكة في تطبيقك.';
 
   @override
   String get walletTransportExplainUnverified =>
-      'يتعذّر التحقق من خصوصية هذا الاتصال — تعامل معه على أنه غير خاص.';
+      'يتعذّر التحقق من خصوصية هذا الاتصال، فتعامل معه على أنه غير خاص.';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1014,7 +1014,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      'أنشئ محفظة جديدة لاستلام ZEC والاحتفاظ به. سننشئ عبارة استرداد ونرشدك إلى نسخها احتياطيًا قبل أن يتسنى وصول أي أموال — حتى لا يتعرض أي شيء للخطر دون نسخة احتياطية.';
+      'أنشئ محفظة جديدة لاستلام ZEC والاحتفاظ به. سننشئ عبارة استرداد ونرشدك إلى نسخها احتياطيًا قبل أن يتسنى وصول أي أموال، حتى لا يتعرض أي شيء للخطر دون نسخة احتياطية.';
 
   @override
   String get walletCreateButton => 'إنشاء محفظة جديدة';
@@ -1067,7 +1067,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return 'الفحص من $date فصاعدًا — لن تظهر الأموال المستلمة قبل ذلك التاريخ. محفظة أقدم؟ اختر تاريخًا أبكر.';
+    return 'الفحص من $date فصاعدًا، ولن تظهر الأموال المستلمة قبل ذلك التاريخ. محفظة أقدم؟ اختر تاريخًا أبكر.';
   }
 
   @override
@@ -1103,7 +1103,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'أدخل عبارة الاسترداد لاستعادة محفظتك — اكتب الكلمات أو ألصقها بالترتيب، مفصولة بمسافات. العبارات القياسية فقط: إذا استخدمت محفظتك عبارة مرور إضافية (\"الكلمة الخامسة والعشرون\")، لا يمكن لهذا التطبيق استعادتها بعد — سترى محفظة فارغة، وليس خطأً.';
+      'أدخل عبارة الاسترداد لاستعادة محفظتك: اكتب الكلمات أو ألصقها بالترتيب، مفصولة بمسافات. العبارات القياسية فقط: إذا استخدمت محفظتك عبارة مرور إضافية (\"الكلمة الخامسة والعشرون\")، لا يمكن لهذا التطبيق استعادتها بعد، وسترى محفظة فارغة، وليس خطأً.';
 
   @override
   String get walletRestorePhraseHint =>
@@ -1130,8 +1130,8 @@ class WalletLocalizationsAr extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count كلمات ليست كلمات استرداد صحيحة — صحّح الكلمات المميّزة',
-      one: 'كلمة واحدة ليست كلمة استرداد صحيحة — صحّح الكلمة المميّزة',
+      other: '$count كلمات ليست كلمات استرداد صحيحة، فصحّح الكلمات المميّزة',
+      one: 'كلمة واحدة ليست كلمة استرداد صحيحة، فصحّح الكلمة المميّزة',
     );
     return '$_temp0';
   }
@@ -1162,11 +1162,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletRestoreBirthdayNone =>
-      'سنفحص سجلّك بالكامل — أبطأ، لكن لن يُفوَّت شيء.';
+      'سنفحص سجلّك بالكامل. هذا أبطأ، لكن لن يُفوَّت شيء.';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return 'الفحص من $date فصاعدًا — لن تظهر الأموال المستلمة قبل ذلك التاريخ. محفظة أقدم؟ اختر تاريخًا أبكر، أو فحص كل السجل.';
+    return 'الفحص من $date فصاعدًا، ولن تظهر الأموال المستلمة قبل ذلك التاريخ. محفظة أقدم؟ اختر تاريخًا أبكر، أو فحص كل السجل.';
   }
 
   @override
@@ -1210,7 +1210,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'هذه الكلمات هي الوسيلة الوحيدة لاسترداد محفظتك وأموالك. دوّنها بالترتيب واحتفظ بها في مكان آمن وخاص. لا تشاركها أبدًا ولا تخزّنها على الإنترنت — فأي شخص يملك هذه الكلمات يمكنه الاستيلاء على أموالك.';
+      'هذه الكلمات هي الوسيلة الوحيدة لاسترداد محفظتك وأموالك. دوّنها بالترتيب واحتفظ بها في مكان آمن وخاص. لا تشاركها أبدًا ولا تخزّنها على الإنترنت، فأي شخص يملك هذه الكلمات يمكنه الاستيلاء على أموالك.';
 
   @override
   String get walletBackupSecureNoteAndroid =>
@@ -1256,7 +1256,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      'سيؤدي هذا إلى حذف هذه المحفظة من الجهاز وإعادتك إلى البداية. لا يمكن إيداع أي شيء عبر هذا التطبيق قبل اكتمال الإعداد.\n\nإذا سبق أن احتوت هذه المحفظة على أموال — أو استُعيدت من عبارة استرداد — فتلك العبارة وحدها يمكنها استعادتها.';
+      'سيؤدي هذا إلى حذف هذه المحفظة من الجهاز وإعادتك إلى البداية. لا يمكن إيداع أي شيء عبر هذا التطبيق قبل اكتمال الإعداد.\n\nإذا سبق أن احتوت هذه المحفظة على أموال، أو استُعيدت من عبارة استرداد، فتلك العبارة وحدها يمكنها استعادتها.';
 
   @override
   String get walletBackupStartOverConfirm => 'حذف والبدء من جديد';
@@ -1285,7 +1285,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'تم إعداد هذه المحفظة باستخدام حسابك من التطبيق الذي ثبّتها، لذا ليست لها عبارة استرداد خاصة بها. تُسترد أموالك مع ذلك الحساب — استخدم نسخته الاحتياطية للحفاظ عليها بأمان.';
+      'تم إعداد هذه المحفظة باستخدام حسابك من التطبيق الذي ثبّتها، لذا ليست لها عبارة استرداد خاصة بها. تُسترد أموالك مع ذلك الحساب، فاستخدم نسخته الاحتياطية للحفاظ عليها بأمان.';
 
   @override
   String get walletExportViewingKeyTitle => 'تصدير مفتاح المشاهدة';
@@ -1295,7 +1295,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      'مشاركة نسخة للمشاهدة فقط من محفظتك — يمكنها رؤية سجلك، لكن لا يمكنها الإنفاق.';
+      'مشاركة نسخة للمشاهدة فقط من محفظتك: يمكنها رؤية سجلك، لكن لا يمكنها الإنفاق.';
 
   @override
   String get walletExportViewingKeyWarning =>
@@ -1343,7 +1343,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'هذه محفظة للمشاهدة فقط. تم إعدادها من مفتاح مشاهدة، لذا يمكنها رؤية رصيدك وسجلك لكنها لا تملك أي مفاتيح إنفاق — لا يوجد هنا شيء لنسخه احتياطيًا، ولا يمكنها إرسال الأموال.';
+      'هذه محفظة للمشاهدة فقط. تم إعدادها من مفتاح مشاهدة، لذا يمكنها رؤية رصيدك وسجلك لكنها لا تملك أي مفاتيح إنفاق. لا يوجد هنا شيء لنسخه احتياطيًا، ولا يمكنها إرسال الأموال.';
 
   @override
   String get walletWatchOnlyBadge => 'مشاهدة فقط';
@@ -1360,11 +1360,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedAlreadyOpen =>
-      'هذه المحفظة مفتوحة في نافذة أو تطبيق آخر، أو لا تزال تُنهي عملية سابقة. أغلق أي نافذة أخرى تستخدمها — أو انتظر لحظة — ثم أعد المحاولة.';
+      'هذه المحفظة مفتوحة في نافذة أو تطبيق آخر، أو لا تزال تُنهي عملية سابقة. أغلق أي نافذة أخرى تستخدمها، أو انتظر لحظة، ثم أعد المحاولة.';
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'لم يعد المفتاح الآمن لهذه المحفظة متاحًا، لذا يتعذّر فتحها على هذا الجهاز. أموالك آمنة — استعدها من عبارة الاسترداد لاستردادها.';
+      'لم يعد المفتاح الآمن لهذه المحفظة متاحًا، لذا يتعذّر فتحها على هذا الجهاز. أموالك آمنة، فاستعدها من عبارة الاسترداد لاستردادها.';
 
   @override
   String get walletOnboardingFailedRestoreAction =>
@@ -1375,7 +1375,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      'تأكّد من امتلاكك عبارة الاسترداد قبل المتابعة — ستحتاجها في الشاشة التالية لاسترداد أموالك. أموالك آمنة على سلسلة الكتل وتخضع لتلك العبارة. سيؤدي هذا إلى إزالة بيانات المحفظة غير القابلة للقراءة من هذا الجهاز حتى يتم إعادة بنائها.';
+      'تأكّد من امتلاكك عبارة الاسترداد قبل المتابعة، فستحتاجها في الشاشة التالية لاسترداد أموالك. أموالك آمنة على سلسلة الكتل وتخضع لتلك العبارة. سيؤدي هذا إلى إزالة بيانات المحفظة غير القابلة للقراءة من هذا الجهاز حتى يتم إعادة بنائها.';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'إلغاء';
@@ -1394,7 +1394,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'لم يكتمل إعداد المحفظة. أعد المحاولة لإتمامه — لم يُفقد شيء.';
+      'لم يكتمل إعداد المحفظة. أعد المحاولة لإتمامه، فلم يُفقد شيء.';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1402,18 +1402,18 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      'إعداد محفظة هذا التطبيق غير مهيأ بشكل صحيح، لذا يتعذّر على المحفظة البدء. إعادة المحاولة لن تُجدي نفعًا — يُرجى إبلاغ مطوّر التطبيق بذلك. أموالك لم تتأثر.';
+      'إعداد محفظة هذا التطبيق غير مهيأ بشكل صحيح، لذا يتعذّر على المحفظة البدء. إعادة المحاولة لن تُجدي نفعًا، فيُرجى إبلاغ مطوّر التطبيق بذلك. أموالك لم تتأثر.';
 
   @override
   String get walletSendButton => 'إرسال';
 
   @override
   String get walletSendSyncNotRunning =>
-      'المزامنة لا تعمل — لا يمكن تحديث رصيدك القابل للإنفاق';
+      'المزامنة لا تعمل، لذا لا يمكن تحديث رصيدك القابل للإنفاق';
 
   @override
   String get walletSendWaitingForFunds =>
-      'لا تزال المزامنة جارية — يمكنك الإرسال بمجرد أن يكون لديك رصيد قابل للإنفاق';
+      'لا تزال المزامنة جارية. يمكنك الإرسال بمجرد أن يكون لديك رصيد قابل للإنفاق';
 
   @override
   String get walletSendNoSpendableYet => 'لا يوجد رصيد قابل للإنفاق بعد';
@@ -1431,7 +1431,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'هذه محفظة للمشاهدة فقط. يمكنها إظهار الأرصدة واستلام المدفوعات، لكنها لا تحتوي على مفاتيح إنفاق — لذا لا يمكنها الإرسال.';
+      'هذه محفظة للمشاهدة فقط. يمكنها إظهار الأرصدة واستلام المدفوعات، لكنها لا تحتوي على مفاتيح إنفاق، لذا لا يمكنها الإرسال.';
 
   @override
   String get walletSendExpiredTitle => 'انتهت صلاحية طلب الدفع هذا';
@@ -1442,7 +1442,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'هذه محفظة للمشاهدة فقط — لا تحتوي على مفاتيح إنفاق، لذا لا يمكنها الإرسال.';
+      'هذه محفظة للمشاهدة فقط، ولا تحتوي على مفاتيح إنفاق، لذا لا يمكنها الإرسال.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1451,7 +1451,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'المتاح للإرسال: $amount ZEC — رصيدك لا يزال يلحق بالركب';
+    return 'المتاح للإرسال: $amount ZEC (رصيدك لا يزال يلحق بالركب)';
   }
 
   @override
@@ -1573,7 +1573,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'هذه دفعة كبيرة — تقارب رصيدك بأكمله. لا يمكن التراجع عن دفعة أُرسلت.';
+      'هذه دفعة كبيرة تقارب رصيدك بأكمله. لا يمكن التراجع عن دفعة أُرسلت.';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1590,7 +1590,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
   String get walletSendSentBody => 'تم بث دفعتك إلى الشبكة.';
 
   @override
-  String get walletSendSavedTitle => 'تم الحفظ — سنُكمل الإرسال';
+  String get walletSendSavedTitle => 'تم الحفظ، وسنُكمل الإرسال';
 
   @override
   String get walletSendSavedBody =>
@@ -1619,7 +1619,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSendAlreadyBody =>
-      'تم إرسال هذه الدفعة مسبقًا — لن تُرسل مرتين.';
+      'تم إرسال هذه الدفعة مسبقًا، ولن تُرسل مرتين.';
 
   @override
   String get walletSendFailedTitle => 'تعذّر إتمام الدفعة';
@@ -1646,7 +1646,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return 'الرصيد القابل للإنفاق غير كافٍ — لديك $available ZEC وهذا يتطلّب $required ZEC.';
+    return 'الرصيد القابل للإنفاق غير كافٍ: لديك $available ZEC وهذا يتطلّب $required ZEC.';
   }
 
   @override
@@ -1667,7 +1667,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      'يرفض هذا الخادم أحد مجمعات Zcash المحمية أو يحجبه أو يبلّغ عنه بشكل خاطئ. لا يمكن إنفاق الأموال المستلمة في ذلك المجمع عبر هذا الخادم، والرصيد المعروض هو حد أدنى. انتقل إلى خادم آخر لاستخدامها — هذه ليست مشكلة في الاتصال.';
+      'يرفض هذا الخادم أحد مجمعات Zcash المحمية أو يحجبه أو يبلّغ عنه بشكل خاطئ. لا يمكن إنفاق الأموال المستلمة في ذلك المجمع عبر هذا الخادم، والرصيد المعروض هو حد أدنى. انتقل إلى خادم آخر لاستخدامها. هذه ليست مشكلة في الاتصال.';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1704,19 +1704,19 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      'تتوقف نسخة السلسلة لدى هذا الخادم عند كتلة تجاوزتها الشبكة قبل بناء هذا الإصدار من التطبيق، لذا فإن رصيدك محدّث حتى تلك الكتلة فقط. قد لا تظهر المدفوعات الجديدة الواردة إليك بعد، وقد لا يصل دفع مُرسل من هنا. انتقل إلى خادم آخر للحاق بالشبكة — هذه ليست مشكلة في الاتصال.';
+      'تتوقف نسخة السلسلة لدى هذا الخادم عند كتلة تجاوزتها الشبكة قبل بناء هذا الإصدار من التطبيق، لذا فإن رصيدك محدّث حتى تلك الكتلة فقط. قد لا تظهر المدفوعات الجديدة الواردة إليك بعد، وقد لا يصل دفع مُرسل من هنا. انتقل إلى خادم آخر للحاق بالشبكة. هذه ليست مشكلة في الاتصال.';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'في انتظار تحديث التطبيق — أموالك آمنة ولم يُرسل أي شيء.';
+      'في انتظار تحديث التطبيق. أموالك آمنة ولم يُرسل أي شيء.';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'في انتظار خادم يُبلّغ عن إصدار الشبكة — بدّل الخادم. أموالك آمنة ولم يُرسل أي شيء.';
+      'في انتظار خادم يُبلّغ عن إصدار الشبكة، فبدّل الخادم. أموالك آمنة ولم يُرسل أي شيء.';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
-      'في انتظار خادم يُبلّغ عن إصدار الشبكة. إذا كان تاريخ هذا الجهاز ووقته غير صحيحين، فصحّحهما أولاً — ثم بدّل الخادم. أموالك آمنة ولم يُرسل أي شيء.';
+      'في انتظار خادم يُبلّغ عن إصدار الشبكة. إذا كان تاريخ هذا الجهاز ووقته غير صحيحين، فصحّحهما أولاً، ثم بدّل الخادم. أموالك آمنة ولم يُرسل أي شيء.';
 
   @override
   String get walletSyncUnverified =>
@@ -1727,19 +1727,19 @@ class WalletLocalizationsAr extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       hours,
       locale: localeName,
-      other: 'لا يزال الإرسال يعمل لنحو $hours ساعة — ثم بدّل الخادم.',
-      many: 'لا يزال الإرسال يعمل لنحو $hours ساعة — ثم بدّل الخادم.',
-      few: 'لا يزال الإرسال يعمل لنحو $hours ساعات — ثم بدّل الخادم.',
-      two: 'لا يزال الإرسال يعمل لنحو ساعتين — ثم بدّل الخادم.',
-      one: 'لا يزال الإرسال يعمل لنحو ساعة واحدة — ثم بدّل الخادم.',
-      zero: 'لا يزال الإرسال يعمل لأقل من ساعة — ثم بدّل الخادم.',
+      other: 'لا يزال الإرسال يعمل لنحو $hours ساعة، ثم بدّل الخادم.',
+      many: 'لا يزال الإرسال يعمل لنحو $hours ساعة، ثم بدّل الخادم.',
+      few: 'لا يزال الإرسال يعمل لنحو $hours ساعات، ثم بدّل الخادم.',
+      two: 'لا يزال الإرسال يعمل لنحو ساعتين، ثم بدّل الخادم.',
+      one: 'لا يزال الإرسال يعمل لنحو ساعة واحدة، ثم بدّل الخادم.',
+      zero: 'لا يزال الإرسال يعمل لأقل من ساعة، ثم بدّل الخادم.',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return 'لا يزال الإرسال يعمل لنحو $blocks كتلة — ثم بدّل الخادم.';
+    return 'لا يزال الإرسال يعمل لنحو $blocks كتلة، ثم بدّل الخادم.';
   }
 
   @override
@@ -1749,7 +1749,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncGraceEndedClock =>
-      'لم يُبلّغ هذا الخادم عن إصدار الشبكة منذ يوم، لذا لا يستطيع هذا التطبيق التأكد من أن الإرسال آمن. إذا كان تاريخ هذا الجهاز ووقته غير صحيحين، فصحّحهما أولاً — ثم انتقل إلى خادم يُبلّغ عن إصدار الشبكة.';
+      'لم يُبلّغ هذا الخادم عن إصدار الشبكة منذ يوم، لذا لا يستطيع هذا التطبيق التأكد من أن الإرسال آمن. إذا كان تاريخ هذا الجهاز ووقته غير صحيحين، فصحّحهما أولاً، ثم انتقل إلى خادم يُبلّغ عن إصدار الشبكة.';
 
   @override
   String get walletSyncGraceNeverConfirmed =>
@@ -1757,19 +1757,19 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'لا يذكر هذا الخادم على أي إصدار من شبكة Zcash يعمل، لذا لا يستطيع هذا التطبيق التأكد من أن الدفعة التي يوقّعها ستُقبل. رصيدك محدّث. انتقل إلى خادم آخر — هذه ليست مشكلة في الاتصال.';
+      'لا يذكر هذا الخادم على أي إصدار من شبكة Zcash يعمل، لذا لا يستطيع هذا التطبيق التأكد من أن الدفعة التي يوقّعها ستُقبل. رصيدك محدّث. انتقل إلى خادم آخر. هذه ليست مشكلة في الاتصال.';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'لا يذكر هذا الخادم على أي إصدار من شبكة Zcash يعمل، لذا لا يستطيع هذا التطبيق التأكد من أن الدفعة التي يوقّعها ستُقبل. كما استمر في تقديم كتل اضطرت المحفظة بعدها إلى التراجع عنها، لذا قد لا يكون رصيدك محدّثًا. انتقل إلى خادم آخر — هذه ليست مشكلة في الاتصال.';
+      'لا يذكر هذا الخادم على أي إصدار من شبكة Zcash يعمل، لذا لا يستطيع هذا التطبيق التأكد من أن الدفعة التي يوقّعها ستُقبل. كما استمر في تقديم كتل اضطرت المحفظة بعدها إلى التراجع عنها، لذا قد لا يكون رصيدك محدّثًا. انتقل إلى خادم آخر. هذه ليست مشكلة في الاتصال.';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'يواصل هذا الخادم أيضًا تقديم كتل تضطر المحفظة بعدها إلى التراجع عنها — انتقل إلى خادم آخر.';
+      'يواصل هذا الخادم أيضًا تقديم كتل تضطر المحفظة بعدها إلى التراجع عنها، فانتقل إلى خادم آخر.';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'رصيدك لا يزال يلحق بالركب — قد يتوفر المزيد مع مزامنة المحفظة.';
+      'رصيدك لا يزال يلحق بالركب، وقد يتوفر المزيد مع مزامنة المحفظة.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1816,7 +1816,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSendFaultMemoConflict =>
-      'تعذّر إرسال هذه الدفعة — أرفق التطبيق ملاحظتين بها. لم يُرسل أي شيء.';
+      'تعذّر إرسال هذه الدفعة لأن التطبيق أرفق ملاحظتين بها. لم يُرسل أي شيء.';
 
   @override
   String get walletSendFaultNetworkMismatch => 'هذا العنوان مخصص لشبكة مختلفة.';
@@ -1880,7 +1880,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'هذه محفظة للمشاهدة فقط — لا يمكنها المبادلة.';
+      'هذه محفظة للمشاهدة فقط، ولا يمكنها المبادلة.';
 
   @override
   String get walletSwapDone => 'تم';
@@ -1895,7 +1895,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'المتاح للمبادلة: $amount ZEC — رصيدك لا يزال يلحق بالركب';
+    return 'المتاح للمبادلة: $amount ZEC (رصيدك لا يزال يلحق بالركب)';
   }
 
   @override
@@ -1921,7 +1921,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return 'عنوان $chain — حيث يُرسل الأصل الذي حصلت عليه من المبادلة. تحقق جيدًا من صحة السلسلة.';
+    return 'عنوان $chain، حيث يُرسل الأصل الذي حصلت عليه من المبادلة. تحقق جيدًا من صحة السلسلة.';
   }
 
   @override
@@ -1941,7 +1941,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'لا تزال العملية جارية — المبادلة قيد البدء. قد يستغرق هذا حتى دقيقة واحدة.';
+      'لا تزال العملية جارية، والمبادلة قيد البدء. قد يستغرق هذا حتى دقيقة واحدة.';
 
   @override
   String get walletSwapReviewTitle => 'تأكيد المبادلة';
@@ -1965,16 +1965,16 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'عرض السعر صالح لمدة $time تقريبًا — أكّد قبل انتهاء صلاحيته.';
+    return 'عرض السعر صالح لمدة $time تقريبًا. أكّد قبل انتهاء صلاحيته.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'عرض السعر صالح لمدة أقل من دقيقة — أكّد قبل انتهاء صلاحيته.';
+      'عرض السعر صالح لمدة أقل من دقيقة. أكّد قبل انتهاء صلاحيته.';
 
   @override
   String get walletSwapQuoteExpired =>
-      'انتهت صلاحية عرض السعر هذا. ارجع واحصل على عرض جديد — لم يعد السعر مضمونًا، والإرسال الآن قد يؤدي إلى استرداد الأموال.';
+      'انتهت صلاحية عرض السعر هذا. ارجع واحصل على عرض جديد، فلم يعد السعر مضمونًا، والإرسال الآن قد يؤدي إلى استرداد الأموال.';
 
   @override
   String get walletCountdownUnderMinute => 'أقل من دقيقة';
@@ -1999,7 +1999,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'مبادلة ZEC للخارج تُزيل الحماية عنه — فالإيداع معاملة علنية، وجانب المزوّد علني على شبكته.';
+      'مبادلة ZEC للخارج تُزيل الحماية عنه، فالإيداع معاملة علنية، وجانب المزوّد علني على شبكته.';
 
   @override
   String get walletSwapDiscloseTitle => 'ما الذي سيراه مزوّد المبادلة';
@@ -2046,7 +2046,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'محفظتك ترسل إيداع ZEC إلى المزوّد. إذا انقطع اتصالك بالإنترنت لفترة وجيزة، سيُرسَل تلقائيًا بمجرد عودة الاتصال — لكن نافذة الإرسال قصيرة، وإذا أُغلقت قبل ذلك، تنتهي المبادلة ببساطة ولا يتم تبادل أي شيء. يبقى الـZEC الخاص بك ملكًا لك، وقد يستغرق الأمر حتى ساعة قبل أن يظهر مجددًا كرصيد قابل للإنفاق.';
+      'محفظتك ترسل إيداع ZEC إلى المزوّد. إذا انقطع اتصالك بالإنترنت لفترة وجيزة، سيُرسَل تلقائيًا بمجرد عودة الاتصال، لكن نافذة الإرسال قصيرة، وإذا أُغلقت قبل ذلك، تنتهي المبادلة ببساطة ولا يتم تبادل أي شيء. يبقى الـZEC الخاص بك ملكًا لك، وقد يستغرق الأمر حتى ساعة قبل أن يظهر مجددًا كرصيد قابل للإنفاق.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2054,7 +2054,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'لا تزال هذه المبادلة بانتظار إيداعها. لم تعد تعليمات الإيداع متاحة على هذا الجهاز — إذا كنت قد أرسلت الأموال بالفعل، فسيتم رصدها؛ وإذا لم ترسلها بعد، فدع هذه المبادلة تنتهي صلاحيتها وابدأ مبادلة جديدة.';
+      'لا تزال هذه المبادلة بانتظار إيداعها. لم تعد تعليمات الإيداع متاحة على هذا الجهاز. إذا كنت قد أرسلت الأموال بالفعل، فسيتم رصدها؛ وإذا لم ترسلها بعد، فدع هذه المبادلة تنتهي صلاحيتها وابدأ مبادلة جديدة.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2067,7 +2067,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'انتهت مهلة الإيداع. إذا لم ترسل إيداعك بعد، تنتهي هذه المبادلة ببساطة — احصل على عرض سعر جديد عندما تكون مستعدًا.';
+      'انتهت مهلة الإيداع. إذا لم ترسل إيداعك بعد، تنتهي هذه المبادلة ببساطة. احصل على عرض سعر جديد عندما تكون مستعدًا.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2093,15 +2093,15 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'انتهت مهلة الإيداع — تحقق من حالة هذه المبادلة.';
+      'انتهت مهلة الإيداع، فتحقق من حالة هذه المبادلة.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'لم تصل هذه المبادلة إلى نتيجة مؤكدة هنا بعد — افتحها للتحقق. أي ZEC يعود إلى هذه المحفظة يظهر في رصيدك بعد المزامنة.';
+      'لم تصل هذه المبادلة إلى نتيجة مؤكدة هنا بعد، فافتحها للتحقق. أي ZEC يعود إلى هذه المحفظة يظهر في رصيدك بعد المزامنة.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'لم تصل هذه المبادلة إلى نتيجة مؤكدة هنا بعد — افتحها للتحقق. أي ZEC تسلّمه هذه المبادلة إلى هذه المحفظة يظهر في رصيدك بعد المزامنة.';
+      'لم تصل هذه المبادلة إلى نتيجة مؤكدة هنا بعد، فافتحها للتحقق. أي ZEC تسلّمه هذه المبادلة إلى هذه المحفظة يظهر في رصيدك بعد المزامنة.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'اكتملت المبادلة.';
@@ -2120,15 +2120,15 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'هذا يزيل المبادلة من هذه القائمة فقط — ولا يلغي المبادلة نفسها، وستتوقف هذه المحفظة عن تتبّع استردادها. الـZEC المسترد لاحقًا لا يزال ملكًا لهذه المحفظة؛ يمكن لإعادة الفحص الكاملة أن تجده.';
+      'هذا يزيل المبادلة من هذه القائمة فقط، ولا يلغي المبادلة نفسها، وستتوقف هذه المحفظة عن تتبّع استردادها. الـZEC المسترد لاحقًا لا يزال ملكًا لهذه المحفظة؛ يمكن لإعادة الفحص الكاملة أن تجده.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'هذا يزيل المبادلة من هذه القائمة فقط — ولا يلغي المبادلة نفسها، وستتوقف هذه المحفظة عن تتبّع الـZEC الوارد إليها. الـZEC الذي يصل لاحقًا لا يزال ملكًا لهذه المحفظة؛ يمكن لإعادة الفحص الكاملة أن تجده. أما إذا تم استرداد المبادلة بدلاً من ذلك، فيعود الاسترداد بالعملة التي أرسلتها، خارج هذه المحفظة.';
+      'هذا يزيل المبادلة من هذه القائمة فقط، ولا يلغي المبادلة نفسها، وستتوقف هذه المحفظة عن تتبّع الـZEC الوارد إليها. الـZEC الذي يصل لاحقًا لا يزال ملكًا لهذه المحفظة؛ يمكن لإعادة الفحص الكاملة أن تجده. أما إذا تم استرداد المبادلة بدلاً من ذلك، فيعود الاسترداد بالعملة التي أرسلتها، خارج هذه المحفظة.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'هذا يزيل المبادلة من هذه القائمة فقط — ولا يلغي المبادلة نفسها، وستتوقف هذه المحفظة عن تتبّع أي ZEC ما زال في طريقه إليها منها. الـZEC الذي يصل لاحقًا لا يزال ملكًا لهذه المحفظة؛ يمكن لإعادة الفحص الكاملة أن تجده.';
+      'هذا يزيل المبادلة من هذه القائمة فقط، ولا يلغي المبادلة نفسها، وستتوقف هذه المحفظة عن تتبّع أي ZEC ما زال في طريقه إليها منها. الـZEC الذي يصل لاحقًا لا يزال ملكًا لهذه المحفظة؛ يمكن لإعادة الفحص الكاملة أن تجده.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2209,7 +2209,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'لم تكتمل المبادلة، لذا أرسل المزوّد الـZEC الخاص بك إلى هذه المحفظة. يصل كأموال غير محمية ويظهر في رصيدك بعد المزامنة التالية للمحفظة — وقد يستغرق ذلك بعض الوقت.';
+      'لم تكتمل المبادلة، لذا أرسل المزوّد الـZEC الخاص بك إلى هذه المحفظة. يصل كأموال غير محمية ويظهر في رصيدك بعد المزامنة التالية للمحفظة، وقد يستغرق ذلك بعض الوقت.';
 
   @override
   String get walletSwapStatusFailedTitle => 'فشلت المبادلة';
@@ -2223,7 +2223,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'لم يعد لدى المزوّد سجلّ لهذه المبادلة — على الأرجح انتهت صلاحيتها. إذا تم إجراء إيداع، فينبغي أن يعيده المزوّد إلى عنوان الاسترداد. المبادلة تبقى في قائمتك، وتستمر هذه المحفظة في تتبّع الـZEC الخاص بها في حال وصوله لاحقًا؛ يمكنك إزالتها من القائمة في أي وقت.';
+      'لم يعد لدى المزوّد سجلّ لهذه المبادلة، وعلى الأرجح انتهت صلاحيتها. إذا تم إجراء إيداع، فينبغي أن يعيده المزوّد إلى عنوان الاسترداد. المبادلة تبقى في قائمتك، وتستمر هذه المحفظة في تتبّع الـZEC الخاص بها في حال وصوله لاحقًا؛ يمكنك إزالتها من القائمة في أي وقت.';
 
   @override
   String get walletSwapStatusUnknownTitle => 'الحالة غير متاحة';
@@ -2241,14 +2241,14 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'المبادلة معطّلة هنا، لذا لا يمكن تتبّع هذه المبادلة الآن. إذا استُردت، فإن الـZEC يعود إلى هذه المحفظة — ويظهر في رصيدك بعد إعادة تفعيل المبادلة ومزامنة المحفظة.';
+      'المبادلة معطّلة هنا، لذا لا يمكن تتبّع هذه المبادلة الآن. إذا استُردت، فإن الـZEC يعود إلى هذه المحفظة، ويظهر في رصيدك بعد إعادة تفعيل المبادلة ومزامنة المحفظة.';
 
   @override
   String get walletSwapTrackingError => 'تعذّر تتبّع هذه المبادلة.';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'تعذّر فتح تتبّع هذه المبادلة. قد تكون المبادلة نفسها لا تزال جارية — أي أموال تم إيداعها ستُسوَّى أو تُسترد من جانب المزوّد.';
+      'تعذّر فتح تتبّع هذه المبادلة. قد تكون المبادلة نفسها لا تزال جارية، وأي أموال تم إيداعها ستُسوَّى أو تُسترد من جانب المزوّد.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2291,19 +2291,19 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      'هناك مبادلة قيد التنفيذ بالفعل. يمكنك بدء مبادلة جديدة بعد أن تُسوَّى بالكامل أو تنتهي صلاحية عرض سعرها — وقد يستغرق ذلك بعض الوقت.';
+      'هناك مبادلة قيد التنفيذ بالفعل. يمكنك بدء مبادلة جديدة بعد أن تُسوَّى بالكامل أو تنتهي صلاحية عرض سعرها، وقد يستغرق ذلك بعض الوقت.';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'لا يمكن لهذه المحفظة إعداد عنوان استرداد بعد — عادةً ما يعني ذلك ببساطة أن المزامنة الأولى لم تكتمل بعد. انتظر اكتمال المزامنة، ثم أعد المحاولة.';
+      'لا يمكن لهذه المحفظة إعداد عنوان استرداد بعد. عادةً ما يعني ذلك ببساطة أن المزامنة الأولى لم تكتمل بعد. انتظر اكتمال المزامنة، ثم أعد المحاولة.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'لا يمكن لهذه المحفظة إعداد عنوان استلام لهذه المبادلة بعد — عادةً ما يعني ذلك ببساطة أن المزامنة الأولى لم تكتمل بعد. انتظر اكتمال المزامنة، ثم أعد المحاولة.';
+      'لا يمكن لهذه المحفظة إعداد عنوان استلام لهذه المبادلة بعد. عادةً ما يعني ذلك ببساطة أن المزامنة الأولى لم تكتمل بعد. انتظر اكتمال المزامنة، ثم أعد المحاولة.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'تعذّر بدء المبادلة في الوقت المحدد — قد يكون الاتصال بطيئًا، أو كانت المحفظة مشغولة. احصل على عرض سعر جديد وأعد المحاولة.';
+      'تعذّر بدء المبادلة في الوقت المحدد. قد يكون الاتصال بطيئًا، أو كانت المحفظة مشغولة. احصل على عرض سعر جديد وأعد المحاولة.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2328,7 +2328,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'تحتاج هذه المبادلة إلى ما يقارب $needed ZEC شاملة رسوم الشبكة، لكن المتاح للإنفاق حاليًا هو $spendable ZEC فقط. رصيدك لا يزال يلحق بالركب — قد يصبح المزيد متاحًا قريبًا.';
+    return 'تحتاج هذه المبادلة إلى ما يقارب $needed ZEC شاملة رسوم الشبكة، لكن المتاح للإنفاق حاليًا هو $spendable ZEC فقط. رصيدك لا يزال يلحق بالركب، وقد يصبح المزيد متاحًا قريبًا.';
   }
 
   @override
@@ -2361,7 +2361,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapRefundHelper =>
-      'على السلسلة التي ترسل منها — وليس عنوان Zcash.';
+      'على السلسلة التي ترسل منها، وليس عنوان Zcash.';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2370,7 +2370,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return 'عنوان $chain — حيث تعود عملاتك إذا فشلت المبادلة. وليس عنوان Zcash.';
+    return 'عنوان $chain، حيث تعود عملاتك إذا فشلت المبادلة. وليس عنوان Zcash.';
   }
 
   @override
@@ -2378,7 +2378,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'إذا تعذّر إتمام المبادلة، يرسل المزوّد عملاتك مرة أخرى إلى هذا العنوان على السلسلة التي دفعت منها. أدخل عنوانًا تتحكم فيه — لا يمكن للمحفظة التحقق من عنوان خارجي نيابة عنك، لذا تحقّق منه بعناية.';
+      'إذا تعذّر إتمام المبادلة، يرسل المزوّد عملاتك مرة أخرى إلى هذا العنوان على السلسلة التي دفعت منها. أدخل عنوانًا تتحكم فيه. لا يمكن للمحفظة التحقق من عنوان خارجي نيابة عنك، لذا تحقّق منه بعناية.';
 
   @override
   String get walletSwapRefundScanTooltip => 'مسح رمز QR لعنوان الاسترداد';
@@ -2432,7 +2432,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapPickerStale =>
-      'تعذّر تحديث قائمة الأصول — تُعرض آخر قائمة معروفة.';
+      'تعذّر تحديث قائمة الأصول، وتُعرض آخر قائمة معروفة.';
 
   @override
   String get walletSwapPickerEmpty =>
@@ -2469,22 +2469,22 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapSlippageMayFail =>
-      'منخفضة جدًا — قد تفشل المبادلة إذا تحرّك السعر.';
+      'منخفضة جدًا: قد تفشل المبادلة إذا تحرّك السعر.';
 
   @override
   String get walletSwapSlippageNormal => 'نسبة تحمّل آمنة.';
 
   @override
   String get walletSwapSlippageRisky =>
-      'مرتفعة — قد تستلم أقل بشكل ملحوظ مما هو مذكور في عرض السعر.';
+      'مرتفعة: قد تستلم أقل بشكل ملحوظ مما هو مذكور في عرض السعر.';
 
   @override
   String get walletSwapSlippageTooHigh =>
-      'مرتفعة جدًا — سترفض المبادلة. خفّضها إلى 10% أو أقل.';
+      'مرتفعة جدًا، وسترفض المبادلة. خفّضها إلى 10% أو أقل.';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return 'ستستلم على الأقل $zec ZEC — وهو الحد الأدنى بنسبة انزلاق $slippage%. لن ينخفض المبلغ النهائي عن هذا الحد.';
+    return 'ستستلم على الأقل $zec ZEC، وهو الحد الأدنى بنسبة انزلاق $slippage%. لن ينخفض المبلغ النهائي عن هذا الحد.';
   }
 
   @override
@@ -2492,14 +2492,14 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'إلى أن تحمي هذا المبلغ — بلمسة واحدة، ستُذكَّر بذلك عند الوصول — يكون المبلغ المستلم علنيًا ومرئيًا على السلسلة لفترة وجيزة. قد يبقى المبلغ الصغير علنيًا إلى أن يتراكم.';
+      'إلى أن تحمي هذا المبلغ (بلمسة واحدة، وستُذكَّر بذلك عند الوصول)، يكون المبلغ المستلم علنيًا ومرئيًا على السلسلة لفترة وجيزة. قد يبقى المبلغ الصغير علنيًا إلى أن يتراكم.';
 
   @override
   String get walletSwapRefundVerifyTitle => 'تحقّق من عنوان الاسترداد الخاص بك';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      'تحقّق منه حرفًا بحرف — فهذا هو المكان الذي تعود إليه عملاتك إذا فشلت المبادلة. لا يمكن للمحفظة التحقق من عنوان خارجي نيابة عنك.';
+      'تحقّق منه حرفًا بحرف، فهذا هو المكان الذي تعود إليه عملاتك إذا فشلت المبادلة. لا يمكن للمحفظة التحقق من عنوان خارجي نيابة عنك.';
 
   @override
   String get walletSwapRefundVerifyAck =>
@@ -2510,7 +2510,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return 'تحقّق منه حرفًا بحرف — فهذا هو المكان الذي ستستلم فيه $asset. لا يمكن للمحفظة التحقق من عنوان خارجي نيابة عنك.';
+    return 'تحقّق منه حرفًا بحرف، فهذا هو المكان الذي ستستلم فيه $asset. لا يمكن للمحفظة التحقق من عنوان خارجي نيابة عنك.';
   }
 
   @override
@@ -2552,7 +2552,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'أُغلقت مهلة الإيداع هذه. لا ترسل أموالًا الآن — ابدأ مبادلة جديدة. إذا كنت قد أرسلت بالفعل، ينبغي أن يُعيد المزوّد المبلغ إلى عنوان الاسترداد الخاص بك.';
+      'أُغلقت مهلة الإيداع هذه. لا ترسل أموالًا الآن، وابدأ مبادلة جديدة. إذا كنت قد أرسلت بالفعل، ينبغي أن يُعيد المزوّد المبلغ إلى عنوان الاسترداد الخاص بك.';
 
   @override
   String get walletSwapDepositQrLabel => 'رمز QR لعنوان الإيداع';
@@ -2572,7 +2572,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapDepositMemoWarning =>
-      'يجب عليك تضمين هذه المذكرة بالضبط مع إيداعك. الإرسال دونها — أو بمذكرة خاطئة — قد يؤدي إلى فقدان أموالك نهائيًا.';
+      'يجب عليك تضمين هذه المذكرة بالضبط مع إيداعك. الإرسال دونها، أو بمذكرة خاطئة، قد يؤدي إلى فقدان أموالك نهائيًا.';
 
   @override
   String get walletSwapDepositMemoLabel => 'مذكرة / علامة الإيداع';
@@ -2591,11 +2591,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'هذا لن يُلغي مبادلتك — فهي تستمر في الخلفية. لكنك ستحتاج عنوان الإيداع للدفع، لذا انسخه أولًا إن لم تفعل ذلك بعد.';
+      'هذا لن يُلغي مبادلتك، فهي تستمر في الخلفية. لكنك ستحتاج عنوان الإيداع للدفع، لذا انسخه أولًا إن لم تفعل ذلك بعد.';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'هذا لن يُلغي مبادلتك — فهي تستمر في الخلفية. أُغلقت مهلة الإيداع. لا ترسل الأموال إلى عنوان الإيداع الآن. إذا كنت قد أرسلت بالفعل، ينبغي أن يُعيد المزوّد المبلغ إلى عنوان الاسترداد الخاص بك.';
+      'هذا لن يُلغي مبادلتك، فهي تستمر في الخلفية. أُغلقت مهلة الإيداع. لا ترسل الأموال إلى عنوان الإيداع الآن. إذا كنت قد أرسلت بالفعل، ينبغي أن يُعيد المزوّد المبلغ إلى عنوان الاسترداد الخاص بك.';
 
   @override
   String get walletSwapDepositBackStay => 'البقاء';
@@ -2627,7 +2627,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'محفظتك تُحضّر هذا العنوان على جهازك — قد يستغرق هذا لحظة إذا كانت المحفظة مشغولة بعمل آخر.';
+      'محفظتك تُحضّر هذا العنوان على جهازك. قد يستغرق هذا لحظة إذا كانت المحفظة مشغولة بعمل آخر.';
 
   @override
   String get walletReceiveRetry => 'إعادة المحاولة';
@@ -2658,7 +2658,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'عنوان جديد — لا يمكن ربطه بعناوينك الأخرى. المدفوعات إليه لا تزال تصل إلى هذه المحفظة، وتستمر عناوينك السابقة في العمل. لن يُعرض هنا مرة أخرى — انسخه الآن.';
+      'عنوان جديد لا يمكن ربطه بعناوينك الأخرى. المدفوعات إليه لا تزال تصل إلى هذه المحفظة، وتستمر عناوينك السابقة في العمل. لن يُعرض هنا مرة أخرى، فانسخه الآن.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2678,7 +2678,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
   String get walletReceiveRequestAmountLabel => 'المبلغ (اختياري)';
 
   @override
-  String get walletReceiveFreshCopyNow => 'لن يُعرض هنا مرة أخرى — انسخه الآن.';
+  String get walletReceiveFreshCopyNow => 'لن يُعرض هنا مرة أخرى، فانسخه الآن.';
 
   @override
   String get walletSecurityMenuItem => 'الأمان…';
@@ -2735,18 +2735,18 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'احذف هذه المحفظة ومفتاحها من هذا الجهاز. لا تملك أي مفاتيح إنفاق، لذا لا يوجد شيء لنسخه احتياطيًا — يمكن إعادة إضافتها في أي وقت باستخدام مفتاح المشاهدة الخاص بها.';
+      'احذف هذه المحفظة ومفتاحها من هذا الجهاز. لا تملك أي مفاتيح إنفاق، لذا لا يوجد شيء لنسخه احتياطيًا، ويمكن إعادة إضافتها في أي وقت باستخدام مفتاح المشاهدة الخاص بها.';
 
   @override
   String get securityDeleteDialogTitle => 'حذف هذه المحفظة؟';
 
   @override
   String get securityDeleteDialogBody =>
-      'سيؤدي هذا إلى إزالة المحفظة ومفتاحها من هذا الجهاز. تأكّد من أنك نسخت عبارة الاسترداد احتياطيًا — فهي الوسيلة الوحيدة لاستعادة أموالك.';
+      'سيؤدي هذا إلى إزالة المحفظة ومفتاحها من هذا الجهاز. تأكّد من أنك نسخت عبارة الاسترداد احتياطيًا، فهي الوسيلة الوحيدة لاستعادة أموالك.';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'سيؤدي هذا إلى إزالة المحفظة ومفتاحها من هذا الجهاز. لا تملك أي مفاتيح إنفاق، لذا لا حاجة لنسخ أي شيء احتياطيًا — يمكنك إعادة إضافتها لاحقًا باستخدام مفتاح المشاهدة الخاص بها.';
+      'سيؤدي هذا إلى إزالة المحفظة ومفتاحها من هذا الجهاز. لا تملك أي مفاتيح إنفاق، لذا لا حاجة لنسخ أي شيء احتياطيًا، ويمكنك إعادة إضافتها لاحقًا باستخدام مفتاح المشاهدة الخاص بها.';
 
   @override
   String get securityDeleteDialogConfirm => 'حذف';
@@ -2756,11 +2756,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'تعذّر حذف المحفظة — محفظتك دون تغيير. أعد المحاولة.';
+      'تعذّر حذف المحفظة، ومحفظتك دون تغيير. أعد المحاولة.';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return 'أكمل تبديل الخادم أولًا — يكتمل أو يتوقف خلال $seconds ثانية. ثم حاول حذف المحفظة مرة أخرى.';
+    return 'أكمل تبديل الخادم أولًا، فهو يكتمل أو يتوقف خلال $seconds ثانية. ثم حاول حذف المحفظة مرة أخرى.';
   }
 
   @override
@@ -2772,14 +2772,14 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'هذه الدفعات لم تُرسل بعد. لا تزال مبالغها جزءًا من رصيدك — باستثناء أي دفعة تُرسلها محفظتك حاليًا، فقد يكون مبلغها مخصّصًا بالفعل.';
+      'هذه الدفعات لم تُرسل بعد. لا تزال مبالغها جزءًا من رصيدك، باستثناء أي دفعة تُرسلها محفظتك حاليًا، فقد يكون مبلغها مخصّصًا بالفعل.';
 
   @override
   String get walletParkedCancel => 'إلغاء';
 
   @override
   String get walletParkedPausedHint =>
-      'متوقفة مؤقتًا — لن تُرسل هذه الدفعة من تلقاء نفسها. أموالك آمنة. أرسلها الآن، أو ألغِها.';
+      'متوقفة مؤقتًا، ولن تُرسل هذه الدفعة من تلقاء نفسها. أموالك آمنة. أرسلها الآن، أو ألغِها.';
 
   @override
   String get walletParkedRetryStale =>
@@ -2787,11 +2787,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'هذه الدفعة لم تعد قيد الانتظار — قد تكون محفظتك بصدد إرسالها بالفعل. تحقّق من \"محفوظة وقيد الانتظار\" ونشاطك.';
+      'هذه الدفعة لم تعد قيد الانتظار، وقد تكون محفظتك بصدد إرسالها بالفعل. تحقّق من \"محفوظة وقيد الانتظار\" ونشاطك.';
 
   @override
   String get walletReclaimExplainer =>
-      'الإرسال عبر العناوين لمرة واحدة متوقف الآن. يمكنك إعادة فتحه — إذ ينقل ذلك مبلغًا صغيرًا بين عناوينك الخاصة ثم يعيده إليك.';
+      'الإرسال عبر العناوين لمرة واحدة متوقف الآن. يمكنك إعادة فتحه، إذ ينقل ذلك مبلغًا صغيرًا بين عناوينك الخاصة ثم يعيده إليك.';
 
   @override
   String get walletReclaimButton => 'إعادة فتح الإرسال';
@@ -2850,7 +2850,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      'سيؤدي هذا إلى التخلص من الدفعة المحفوظة. لم تُرسل بعد، لذا لن تُخصم أي أموال من محفظتك — لكن لا يمكن التراجع عن هذا الإجراء.';
+      'سيؤدي هذا إلى التخلص من الدفعة المحفوظة. لم تُرسل بعد، لذا لن تُخصم أي أموال من محفظتك، لكن لا يمكن التراجع عن هذا الإجراء.';
 
   @override
   String get walletParkedCancelConfirmKeep => 'الاحتفاظ بها';
@@ -2863,7 +2863,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'قد تكون هذه الدفعة في طريقها بالفعل — تحقّق من نشاطك.';
+      'قد تكون هذه الدفعة في طريقها بالفعل، فتحقّق من نشاطك.';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2895,16 +2895,16 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return 'جارٍ استرداد $amount — لا تزال بعض الأموال بحاجة إلى محاولة أخرى.';
+    return 'جارٍ استرداد $amount، ولا تزال بعض الأموال بحاجة إلى محاولة أخرى.';
   }
 
   @override
   String get walletRecoverRetry =>
-      'بعض الأموال بحاجة إلى محاولة أخرى — شغّل الاسترداد مرة أخرى.';
+      'بعض الأموال بحاجة إلى محاولة أخرى، فشغّل الاسترداد مرة أخرى.';
 
   @override
   String get walletRecoverTruncated =>
-      'لم يُتحقق من كل العناوين لمرة واحدة بعد — شغّله مرة أخرى للتحقق من الباقي.';
+      'لم يُتحقق من كل العناوين لمرة واحدة بعد، فشغّله مرة أخرى للتحقق من الباقي.';
 
   @override
   String get walletRecoverNothing => 'لا يوجد ما يمكن استرداده الآن.';
@@ -2935,11 +2935,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'محفظتك تُحضّر هذه الدفعة للإرسال — وقد يكون مبلغها مخصّصًا بالفعل. أموالك آمنة. إذا لم تكتمل، ستعود إلى القائمة من تلقاء نفسها.';
+      'محفظتك تُحضّر هذه الدفعة للإرسال، وقد يكون مبلغها مخصّصًا بالفعل. أموالك آمنة. إذا لم تكتمل، ستعود إلى القائمة من تلقاء نفسها.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'محفظتك تُحضّر هذه الدفعة للإرسال — وقد يكون مبلغها مخصّصًا بالفعل. أموالك آمنة، لكن لا يمكن إتمامها إلا بعد أن تتزامن محفظتك من جديد.';
+      'محفظتك تُحضّر هذه الدفعة للإرسال، وقد يكون مبلغها مخصّصًا بالفعل. أموالك آمنة، لكن لا يمكن إتمامها إلا بعد أن تتزامن محفظتك من جديد.';
 
   @override
   String get walletParkedSendNow => 'إرسال الآن';
@@ -2973,7 +2973,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'لم يحن وقت الإرسال بعد. دفعتك محفوظة ولم تعد متوقفة مؤقتًا — حاول \"إرسال الآن\" مرة أخرى لاحقًا، أو ألغِها.';
+      'لم يحن وقت الإرسال بعد. دفعتك محفوظة ولم تعد متوقفة مؤقتًا. حاول \"إرسال الآن\" مرة أخرى لاحقًا، أو ألغِها.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -2987,7 +2987,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsIntro =>
-      'الأموال العلنية مرئية علنًا على سلسلة الكتل — المبلغ والعناوين وتاريخ العملات.';
+      'الأموال العلنية مرئية علنًا على سلسلة الكتل: المبلغ والعناوين وتاريخ العملات.';
 
   @override
   String get walletExpertToggleLabel => 'متقدم: الأموال العلنية';
@@ -3013,15 +3013,15 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      'لم تكتمل الحماية التلقائية — لا تزال هذه الأموال مرئية علنًا. يمكنك حمايتها الآن.';
+      'لم تكتمل الحماية التلقائية، ولا تزال هذه الأموال مرئية علنًا. يمكنك حمايتها الآن.';
 
   @override
   String get walletSendPrivacyShielded =>
-      'دفعة محمية — يبقى المبلغ والمستلم خاصَّين على السلسلة.';
+      'دفعة محمية: يبقى المبلغ والمستلم خاصَّين على السلسلة.';
 
   @override
   String get walletSendPrivacyTransparent =>
-      'دفعة علنية — المبلغ والعناوين مرئية على سلسلة الكتل.';
+      'دفعة علنية: المبلغ والعناوين مرئية على سلسلة الكتل.';
 
   @override
   String get walletActivityPublicBadge => 'مرئية علنًا على السلسلة';
@@ -3037,7 +3037,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      'الحماية التلقائية متوقفة — تبقى الأموال العلنية مرئية علنًا إلى أن تحميها.';
+      'الحماية التلقائية متوقفة، وتبقى الأموال العلنية مرئية علنًا إلى أن تحميها.';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -3045,7 +3045,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String walletMoveBelowFloorNote(String amount, String floor) {
-    return 'بعد هذا النقل سيصبح رصيدك العلني $amount ZEC — أقل من $floor ZEC اللازمة لحمايته مرة أخرى. سيبقى علنيًا حتى تصل أموال إضافية.';
+    return 'بعد هذا النقل سيصبح رصيدك العلني $amount ZEC، أي أقل من $floor ZEC اللازمة لحمايته مرة أخرى. سيبقى علنيًا حتى تصل أموال إضافية.';
   }
 
   @override
@@ -3057,7 +3057,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      'الحماية التلقائية متوقفة مؤقتًا لهذه الجلسة — لم تتم الموافقة عليها. لا يزال بإمكانك حماية أموالك يدويًا.';
+      'الحماية التلقائية متوقفة مؤقتًا لهذه الجلسة لأنها لم تتم الموافقة عليها. لا يزال بإمكانك حماية أموالك يدويًا.';
 
   @override
   String get walletDeepScanMenuItem => 'تحقّق من عناوين المبادلة الأقدم…';
@@ -3070,7 +3070,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'إذا استعدت هذه المحفظة وكانت تستخدم المبادلة كثيرًا في السابق، فقد تحتاج الأموال من أقدم عمليات المبادلة فيها إلى خطوة إضافية للعثور عليها. هذا الفحص يتحقق من ذلك — وأي أموال يُعثر عليها تظهر في رصيدك أثناء مزامنة محفظتك.';
+      'إذا استعدت هذه المحفظة وكانت تستخدم المبادلة كثيرًا في السابق، فقد تحتاج الأموال من أقدم عمليات المبادلة فيها إلى خطوة إضافية للعثور عليها. هذا الفحص يتحقق من ذلك، وأي أموال يُعثر عليها تظهر في رصيدك أثناء مزامنة محفظتك.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3078,7 +3078,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'لا يزال التحقق من النطاق الحالي جاريًا — وأي أموال يُعثر عليها ستظهر في رصيدك. قد يستغرق ذلك بعض الوقت.';
+      'لا يزال التحقق من النطاق الحالي جاريًا، وأي أموال يُعثر عليها ستظهر في رصيدك. قد يستغرق ذلك بعض الوقت.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3106,15 +3106,15 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'جارٍ التحقق من عناوين المبادلة الأقدم — وأي أموال يُعثر عليها ستظهر في رصيدك.';
+      'جارٍ التحقق من عناوين المبادلة الأقدم، وأي أموال يُعثر عليها ستظهر في رصيدك.';
 
   @override
   String get walletDeepScanFailed =>
-      'تعذّر بدء التحقق. لم يتغير شيء — يُرجى المحاولة مرة أخرى.';
+      'تعذّر بدء التحقق. لم يتغير شيء، فيُرجى المحاولة مرة أخرى.';
 
   @override
   String get walletDeepScanSlow =>
-      'يستغرق هذا وقتًا أطول من المعتاد. إذا تم التحقق من عناوين المبادلة الأقدم لديك، فأي أموال يُعثر عليها ستظهر في رصيدك — تحقّق مرة أخرى بعد قليل.';
+      'يستغرق هذا وقتًا أطول من المعتاد. إذا تم التحقق من عناوين المبادلة الأقدم لديك، فأي أموال يُعثر عليها ستظهر في رصيدك. تحقّق مرة أخرى بعد قليل.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3122,7 +3122,7 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'لا يزال التحقق من النطاق الأخير جاريًا — قد يستغرق ذلك حتى يومين، لكن عادةً أقل من ذلك بكثير. ينتهي ذلك تلقائيًا؛ تحقّق مرة أخرى لاحقًا.';
+      'لا يزال التحقق من النطاق الأخير جاريًا، وقد يستغرق ذلك حتى يومين، لكن عادةً أقل من ذلك بكثير. ينتهي ذلك تلقائيًا؛ تحقّق مرة أخرى لاحقًا.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3130,11 +3130,11 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'لا يزال التحقق من عناوين المبادلة الأقدم جاريًا — وأي أموال يُعثر عليها ستظهر في رصيدك.';
+      'لا يزال التحقق من عناوين المبادلة الأقدم جاريًا، وأي أموال يُعثر عليها ستظهر في رصيدك.';
 
   @override
   String get walletRescanSwapPointer =>
-      'هل تبحث عن أموال من مبادلة قديمة؟ إعادة الفحص لن تجدها — استخدم ميزة “تحقّق من عناوين المبادلة الأقدم” بدلًا من ذلك.';
+      'هل تبحث عن أموال من مبادلة قديمة؟ إعادة الفحص لن تجدها، فاستخدم ميزة “تحقّق من عناوين المبادلة الأقدم” بدلًا من ذلك.';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3218,15 +3218,15 @@ class WalletLocalizationsAr extends WalletLocalizations {
   String get walletLoadingLabel => 'جارٍ التحميل';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'تحقّق قبل الإرسال مرة أخرى';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'تعذّر علينا تأكيد هذه الدفعة. راجع «النشاط» قبل إرسالها مرة أخرى.';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'تعذّر علينا تأكيد حفظ هذه الدفعة. تحقّق من دفعاتك قيد الانتظار قبل إرسالها مرة أخرى.';
 
   @override
   String get walletShieldUnknownTitle => 'تحقّق قبل الحماية مرة أخرى';
@@ -3244,5 +3244,5 @@ class WalletLocalizationsAr extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'انتهت صلاحية هذه المحاولة قبل أن تؤكدها الشبكة. ستُعيد محفظتك إرسال الدفعة من تلقاء نفسها، لذا لا تُرسلها مرة أخرى بنفسك.';
 }

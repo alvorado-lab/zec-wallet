@@ -953,8 +953,34 @@ impl<S> Gated<S> {
     }
 }
 
+/// The error inside the `io::Error` a stream answers once its client was shut
+/// down. The kind stays `NotConnected`; this marker lets a caller tell that
+/// local, expected end from a connection the network closed, which has the
+/// same kind. Test for it with [`is_client_shut_down`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct ClientShutDown;
+
+impl std::fmt::Display for ClientShutDown {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("the Tor client was shut down")
+    }
+}
+
+impl std::error::Error for ClientShutDown {}
+
+/// Whether `err` is a stream's answer after its client was shut down: kind
+/// `NotConnected` carrying [`ClientShutDown`]. It looks at `err` itself only;
+/// a caller that receives the error wrapped by another layer (an HTTP or RPC
+/// client) unwraps it first.
+pub fn is_client_shut_down(err: &io::Error) -> bool {
+    err.kind() == io::ErrorKind::NotConnected
+        && err
+            .get_ref()
+            .is_some_and(|inner| inner.is::<ClientShutDown>())
+}
+
 fn closed_stream() -> io::Error {
-    io::Error::new(io::ErrorKind::NotConnected, "the Tor client was shut down")
+    io::Error::new(io::ErrorKind::NotConnected, ClientShutDown)
 }
 
 impl<S> Drop for Gated<S> {

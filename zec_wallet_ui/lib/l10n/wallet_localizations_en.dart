@@ -19,14 +19,14 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      'Wallet setup arrives in a later build. Setup will walk you through writing down your recovery phrase before any funds can be received — so nothing is ever at risk without a backup.';
+      'Wallet setup arrives in a later build. Setup will walk you through writing down your recovery phrase before any funds can be received, so nothing is ever at risk without a backup.';
 
   @override
   String get walletStartupFailedTitle => 'The wallet couldn\'t start';
 
   @override
   String get walletStartupFailedBody =>
-      'Something stopped the wallet from loading on this device. If you already have a wallet, its funds are not affected — they live on the Zcash network and can be restored with your recovery phrase. Try again; if this keeps happening, close and reopen the app.';
+      'Something stopped the wallet from loading on this device. If you already have a wallet, its funds are not affected: they live on the Zcash network and can be restored with your recovery phrase. Try again; if this keeps happening, close and reopen the app.';
 
   @override
   String get walletBalanceLabel => 'Balance';
@@ -147,11 +147,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'Saved on this device, under Saved & pending — you can send it or cancel it there.';
+      'Saved on this device, under Saved & pending. You can send it or cancel it there.';
 
   @override
   String get walletTxExplainPending =>
-      'Sent to the Zcash network — waiting to be confirmed in a block.';
+      'Sent to the Zcash network. Waiting to be confirmed in a block.';
 
   @override
   String get walletTxExplainRetrying =>
@@ -197,7 +197,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletRescanRangeAll =>
-      'Scan your whole history — slowest, but recovers everything.';
+      'Scan your whole history. Slowest, but recovers everything.';
 
   @override
   String get walletRescanRangeDefault =>
@@ -230,11 +230,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      'This re-scans the blockchain. Recent dates take minutes; scanning far back can take hours. Sync runs in the background — you can keep using your wallet.';
+      'This re-scans the blockchain. Recent dates take minutes; scanning far back can take hours. Sync runs in the background, so you can keep using your wallet.';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'A payment from this wallet is still settling. The wallet usually declines to rescan until it completes — you can try, but expect it to be refused.';
+      'A payment from this wallet is still settling. The wallet usually declines to rescan until it completes. You can try, but expect it to be refused.';
 
   @override
   String get walletRescanConfirm => 'Start rescan';
@@ -247,40 +247,40 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      'Rebuilding your history — scanning your whole chain. Your balance and activity fill in as it catches up.';
+      'Rebuilding your history by scanning your whole chain. Your balance and activity fill in as it catches up.';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return 'Rebuilding your history from $date — your balance and activity fill in as it catches up.';
+    return 'Rebuilding your history from $date. Your balance and activity fill in as it catches up.';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      'Rebuilding your history from your wallet\'s start — your balance and activity fill in as it catches up.';
+      'Rebuilding your history from your wallet\'s start. Your balance and activity fill in as it catches up.';
 
   @override
   String get walletCatchUpBanner =>
-      'Catching up — your balance and activity fill in as the wallet syncs. Anything you\'ve received is safe.';
+      'Catching up. Your balance and activity fill in as the wallet syncs. Anything you\'ve received is safe.';
 
   @override
   String get walletCatchUpRescanBanner =>
-      'Rebuilding your history after a rescan — your balance and activity fill in as it catches up. Anything you\'ve received is safe.';
+      'Rebuilding your history after a rescan. Your balance and activity fill in as it catches up. Anything you\'ve received is safe.';
 
   @override
   String get walletRescanFailedNotice =>
-      'Couldn\'t rescan right now — your funds are safe, though your balance and history may need a little time to catch back up. Try again in a moment.';
+      'Couldn\'t rescan right now. Your funds are safe, though your balance and history may need a little time to catch back up. Try again in a moment.';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      'A payment is still settling, so rescanning is paused to protect your funds. Your wallet is unchanged — try again in a couple of hours and keep the app open and online.';
+      'A payment is still settling, so rescanning is paused to protect your funds. Your wallet is unchanged. Try again in a couple of hours and keep the app open and online.';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      'Rescanning rebuilds your history as your wallet syncs, and syncing isn\'t running right now. Your wallet is unchanged — try again once syncing is running.';
+      'Rescanning rebuilds your history as your wallet syncs, and syncing isn\'t running right now. Your wallet is unchanged. Try again once syncing is running.';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      'There isn\'t enough free space to rebuild your wallet history — your funds are safe, though your balance and history may need a little time to catch back up. Free up some space and try again.';
+      'There isn\'t enough free space to rebuild your wallet history. Your funds are safe, though your balance and history may need a little time to catch back up. Free up some space and try again.';
 
   @override
   String get walletRescanFailedDismiss => 'Dismiss';
@@ -290,7 +290,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletActivityCatchingUp =>
-      'Still catching up — anything you\'ve received will show up here.';
+      'Still catching up. Anything you\'ve received will show up here.';
 
   @override
   String get walletActivitySyncNotRunning =>
@@ -307,7 +307,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      'Not included in \"Spendable now\" — shield these funds to spend them. Until then they stay publicly visible on-chain.';
+      'Not included in \"Spendable now\". Shield these funds to spend them. Until then they stay publicly visible on-chain.';
 
   @override
   String get walletTransparentNoteWatchOnly =>
@@ -367,7 +367,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      'Couldn\'t check whether a payment is still completing. Retrying — until then, look for a pending payment in your activity before you send again.';
+      'Couldn\'t check whether a payment is still completing. Retrying. Until that works, look for a pending payment in your activity before you send again.';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -407,7 +407,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      'These funds are below the amount worth shielding right now — the network fee would outweigh the benefit. They\'ll be shieldable once a bit more arrives.';
+      'These funds are below the amount worth shielding right now: the network fee would outweigh the benefit. They\'ll be shieldable once a bit more arrives.';
 
   @override
   String get walletShieldDoneTitle => 'Shielding submitted';
@@ -417,7 +417,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
       'Your funds are moving into your shielded balance. It will confirm on-chain shortly.';
 
   @override
-  String get walletShieldSavedTitle => 'Saved — we\'ll finish shielding';
+  String get walletShieldSavedTitle => 'Saved, we\'ll finish shielding';
 
   @override
   String get walletShieldSavedBody =>
@@ -455,7 +455,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletMoveSheetSubtitle =>
-      'Send shielded ZEC to your own public address — useful for an exchange that won\'t accept a shielded deposit.';
+      'Send shielded ZEC to your own public address. Useful for an exchange that won\'t accept a shielded deposit.';
 
   @override
   String get walletMoveDestinationLabel => 'Your public address';
@@ -467,7 +467,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'Available to move: $amount ZEC — your balance is still catching up';
+    return 'Available to move: $amount ZEC (your balance is still catching up)';
   }
 
   @override
@@ -475,7 +475,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      'Moving to a public address takes these funds out of your shielded balance — the amount and your public address become publicly visible on the Zcash blockchain.';
+      'Moving to a public address takes these funds out of your shielded balance. The amount and your public address become publicly visible on the Zcash blockchain.';
 
   @override
   String get walletMoveWalletEnded =>
@@ -517,7 +517,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
       'Your funds are moving to your public address. They will confirm on-chain shortly.';
 
   @override
-  String get walletMoveSavedTitle => 'Saved — we\'ll finish the move';
+  String get walletMoveSavedTitle => 'Saved, we\'ll finish the move';
 
   @override
   String get walletMoveSavedBody =>
@@ -542,7 +542,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'Your wallet is still catching up — anything you\'ve received becomes available to move once syncing completes.';
+      'Your wallet is still catching up. Anything you\'ve received becomes available to move once syncing completes.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -560,7 +560,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletBalanceStale =>
-      'Couldn\'t refresh — showing your last-known balance.';
+      'Couldn\'t refresh. Showing your last-known balance.';
 
   @override
   String get walletSyncStartFailed =>
@@ -630,7 +630,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'Catching up with the network — a deep initial sync can take a while. You can keep using the app while it finishes';
+      'Catching up with the network. A deep initial sync can take a while. You can keep using the app while it finishes';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -655,7 +655,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      'Can\'t reach the Zcash network right now. We\'ll keep trying automatically — check your connection, or the server may be temporarily unavailable.';
+      'Can\'t reach the Zcash network right now. We\'ll keep trying automatically. Check your connection, or the server may be temporarily unavailable.';
 
   @override
   String get walletStallTor =>
@@ -675,7 +675,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      'This server sent data that can\'t be right, so sync stopped. It isn\'t a connection problem — switch to another server. If every server is refused, rescan your history: the wallet may be keeping a bad record from an earlier server.';
+      'This server sent data that can\'t be right, so sync stopped. It isn\'t a connection problem. Switch to another server. If every server is refused, rescan your history: the wallet may be keeping a bad record from an earlier server.';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -716,11 +716,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncExplainIdle =>
-      'Syncing hasn\'t started yet — it starts automatically. No action needed.';
+      'Syncing hasn\'t started yet. It starts automatically. No action needed.';
 
   @override
   String get walletSyncExplainStartFailed =>
-      'Syncing couldn\'t start. Your funds are safe — the wallet just isn\'t checking for new activity. Try again below, or reopen the app.';
+      'Syncing couldn\'t start. Your funds are safe; the wallet just isn\'t checking for new activity. Try again below, or reopen the app.';
 
   @override
   String get walletSyncExplainStarting =>
@@ -732,7 +732,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'The wallet is checking blockchain blocks for your funds. Your balance and activity update as new transactions are found — you can keep using the app while it finishes.';
+      'The wallet is checking blockchain blocks for your funds. Your balance and activity update as new transactions are found. You can keep using the app while it finishes.';
 
   @override
   String get walletSyncExplainUpToDate =>
@@ -744,11 +744,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'Can\'t reach the Zcash network — that\'s normal if you\'re offline, or the server may be temporarily unavailable. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending. The connection retries on its own.';
+      'Can\'t reach the Zcash network. That\'s normal if you\'re offline, or the server may be temporarily unavailable. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending. The connection retries on its own.';
 
   @override
   String get walletSyncExplainOffline =>
-      'No network connection. Your funds are safe — the balance shows the last synced state, and queued sends stay saved under Saved & pending.';
+      'No network connection. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending.';
 
   @override
   String get walletSyncExplainUnknown =>
@@ -776,40 +776,40 @@ class WalletLocalizationsEn extends WalletLocalizations {
       'Private path in use (privacy not verified)';
 
   @override
-  String get walletTorFellBack => 'Tor unavailable — using direct connection';
+  String get walletTorFellBack => 'Tor unavailable, using direct connection';
 
   @override
-  String get walletTorUnavailable => 'Private path unavailable — not connected';
+  String get walletTorUnavailable => 'Private path unavailable, not connected';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport unavailable — not connected';
+    return '$transport unavailable, not connected';
   }
 
   @override
   String get walletTorUnanswered =>
-      'Private path connected — nothing coming back';
+      'Private path connected, nothing coming back';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'Private path connected — nothing coming back (privacy not verified)';
+      'Private path connected, nothing coming back (privacy not verified)';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport connected — nothing coming back';
+    return '$transport connected, nothing coming back';
   }
 
   @override
   String get walletTorUnansweredDirect =>
-      'Not private (your app\'s direct connection) — nothing coming back';
+      'Not private (your app\'s direct connection), nothing coming back';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return 'Connected over $transport — nothing coming back; connections can be linked by the proxy';
+    return 'Connected over $transport, nothing coming back; connections can be linked by the proxy';
   }
 
   @override
-  String get walletTorUnknown => 'Tor status unknown — treat as not protected';
+  String get walletTorUnknown => 'Tor status unknown. Treat as not protected';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -913,7 +913,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'Couldn\'t reach this server. Check the address — and if it\'s right, either this server isn\'t answering or your app can\'t reach it right now. Try again, or pick another server.';
+      'Couldn\'t reach this server. Check the address. If it\'s right, either this server isn\'t answering or your app can\'t reach it right now. Try again, or pick another server.';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -947,7 +947,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return 'Couldn\'t switch — still using $host.';
+    return 'Couldn\'t switch. Still using $host.';
   }
 
   @override
@@ -982,24 +982,24 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      'The private path took the connection, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
+      'The private path took the connection, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport took the connection, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
+    return '$transport took the connection, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      'Wallet traffic connects directly to the server. The server can see your IP address. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
+      'Wallet traffic connects directly to the server. The server can see your IP address. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'The privacy of this connection can\'t be verified — treat it as not private. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
+      'The privacy of this connection can\'t be verified, so treat it as not private. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can\'t tell which. It keeps trying; if it doesn\'t clear, try another server or check your app\'s network settings.';
 
   @override
   String get walletTransportExplainUnverified =>
-      'The privacy of this connection can\'t be verified — treat it as not private.';
+      'The privacy of this connection can\'t be verified, so treat it as not private.';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1010,7 +1010,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      'Create a new wallet to receive and hold ZEC. We\'ll generate a recovery phrase and walk you through backing it up before any funds can arrive — so nothing is ever at risk without a backup.';
+      'Create a new wallet to receive and hold ZEC. We\'ll generate a recovery phrase and walk you through backing it up before any funds can arrive, so nothing is ever at risk without a backup.';
 
   @override
   String get walletCreateButton => 'Create a new wallet';
@@ -1063,7 +1063,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return 'Scanning from $date on — funds received before then won\'t appear. Older wallet? Pick an earlier date.';
+    return 'Scanning from $date on. Funds received before then won\'t appear. Older wallet? Pick an earlier date.';
   }
 
   @override
@@ -1099,7 +1099,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'Enter your recovery phrase to restore your wallet — type or paste the words in order, separated by spaces. Standard phrases only: if your wallet used an extra passphrase (a \"25th word\"), this app can\'t restore it yet — you\'d see an empty wallet, not an error.';
+      'Enter your recovery phrase to restore your wallet. Type or paste the words in order, separated by spaces. Standard phrases only: if your wallet used an extra passphrase (a \"25th word\"), this app can\'t restore it yet. You\'d see an empty wallet, not an error.';
 
   @override
   String get walletRestorePhraseHint => 'word one  word two  word three  …';
@@ -1125,8 +1125,8 @@ class WalletLocalizationsEn extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count words aren\'t recovery words — fix the highlighted ones',
-      one: '1 word isn\'t a recovery word — fix the highlighted one',
+      other: '$count words aren\'t recovery words. Fix the highlighted ones',
+      one: '1 word isn\'t a recovery word. Fix the highlighted one',
     );
     return '$_temp0';
   }
@@ -1157,11 +1157,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletRestoreBirthdayNone =>
-      'We\'ll scan your whole history — slower, but nothing is missed.';
+      'We\'ll scan your whole history. Slower, but nothing is missed.';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return 'Scanning from $date on — funds received before then won\'t appear. Older wallet? Pick an earlier date, or Scan all history.';
+    return 'Scanning from $date on. Funds received before then won\'t appear. Older wallet? Pick an earlier date, or Scan all history.';
   }
 
   @override
@@ -1205,7 +1205,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'These words are the ONLY way to recover your wallet and funds. Write them down in order and keep them somewhere safe and private. Never share them or store them online — anyone with these words can take your funds.';
+      'These words are the ONLY way to recover your wallet and funds. Write them down in order and keep them somewhere safe and private. Never share them or store them online: anyone with these words can take your funds.';
 
   @override
   String get walletBackupSecureNoteAndroid =>
@@ -1252,7 +1252,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      'This deletes this wallet from the device and returns you to the start. Nothing can be deposited through this app before setup is finished.\n\nIf this wallet ever held funds — or was restored from a recovery phrase — only that phrase can bring it back.';
+      'This deletes this wallet from the device and returns you to the start. Nothing can be deposited through this app before setup is finished.\n\nIf this wallet ever held funds, or was restored from a recovery phrase, only that phrase can bring it back.';
 
   @override
   String get walletBackupStartOverConfirm => 'Delete and start over';
@@ -1281,7 +1281,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'This wallet was set up using your account from the app that installed it, so it has no recovery phrase of its own. Your funds are recovered together with that account — use its backup to keep them safe.';
+      'This wallet was set up using your account from the app that installed it, so it has no recovery phrase of its own. Your funds are recovered together with that account. Use its backup to keep them safe.';
 
   @override
   String get walletExportViewingKeyTitle => 'Export viewing key';
@@ -1291,15 +1291,15 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      'Share a view-only copy of your wallet — it can see your history but cannot spend.';
+      'Share a view-only copy of your wallet. It can see your history but cannot spend.';
 
   @override
   String get walletExportViewingKeyWarning =>
-      'This key lets whoever holds it see everything this wallet has ever received and sent — and everything it will in the future. It cannot spend your funds and cannot recover your wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. The only way to un-share it later is to move your funds to a new wallet.';
+      'This key lets whoever holds it see everything this wallet has ever received and sent, and everything it will in the future. It cannot spend your funds and cannot recover your wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. The only way to un-share it later is to move your funds to a new wallet.';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'This key lets whoever holds it see everything this wallet has ever received and sent — and everything it will in the future. It cannot spend any funds and cannot recover the wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. Once shared, it cannot be un-shared.';
+      'This key lets whoever holds it see everything this wallet has ever received and sent, and everything it will in the future. It cannot spend any funds and cannot recover the wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. Once shared, it cannot be un-shared.';
 
   @override
   String get walletExportViewingKeyReveal => 'Show viewing key';
@@ -1339,7 +1339,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'This is a watch-only wallet. It was set up from a viewing key, so it can see your balance and history but holds no spending keys — there is nothing to back up here, and it cannot send funds.';
+      'This is a watch-only wallet. It was set up from a viewing key, so it can see your balance and history but holds no spending keys. There is nothing to back up here, and it cannot send funds.';
 
   @override
   String get walletWatchOnlyBadge => 'Watch-only';
@@ -1356,11 +1356,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedAlreadyOpen =>
-      'This wallet is open in another window or app, or is still finishing a previous operation. Close any other window using it — or wait a moment — then try again.';
+      'This wallet is open in another window or app, or is still finishing a previous operation. Close any other window using it (or wait a moment), then try again.';
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'This wallet\'s secure key is no longer available, so it can\'t be opened on this device. Your funds are safe — restore from your recovery phrase to recover them.';
+      'This wallet\'s secure key is no longer available, so it can\'t be opened on this device. Your funds are safe. Restore from your recovery phrase to recover them.';
 
   @override
   String get walletOnboardingFailedRestoreAction =>
@@ -1371,7 +1371,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      'Make sure you have your recovery phrase before continuing — you\'ll need it on the next screen to recover your funds. Your funds are safe on the blockchain and controlled by that phrase. This removes the unreadable wallet data from this device so it can be rebuilt.';
+      'Make sure you have your recovery phrase before continuing. You\'ll need it on the next screen to recover your funds. Your funds are safe on the blockchain and controlled by that phrase. This removes the unreadable wallet data from this device so it can be rebuilt.';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'Cancel';
@@ -1390,7 +1390,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'Wallet setup didn\'t finish. Try again to complete it — nothing was lost.';
+      'Wallet setup didn\'t finish. Try again to complete it; nothing was lost.';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1398,18 +1398,18 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      'This app\'s wallet setup is misconfigured, so the wallet can\'t start. Retrying won\'t help — please report this to the app\'s developer. Your funds are not affected.';
+      'This app\'s wallet setup is misconfigured, so the wallet can\'t start. Retrying won\'t help. Please report this to the app\'s developer. Your funds are not affected.';
 
   @override
   String get walletSendButton => 'Send';
 
   @override
   String get walletSendSyncNotRunning =>
-      'Syncing isn\'t running — your spendable balance can\'t update';
+      'Syncing isn\'t running, so your spendable balance can\'t update';
 
   @override
   String get walletSendWaitingForFunds =>
-      'Still syncing — you can send once you have a spendable balance';
+      'Still syncing. You can send once you have a spendable balance';
 
   @override
   String get walletSendNoSpendableYet => 'No spendable balance yet';
@@ -1426,7 +1426,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'This is a watch-only wallet. It can show balances and receive payments, but it holds no spending keys — so it can\'t send.';
+      'This is a watch-only wallet. It can show balances and receive payments, but it holds no spending keys, so it can\'t send.';
 
   @override
   String get walletSendExpiredTitle => 'This payment request expired';
@@ -1437,7 +1437,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'This is a watch-only wallet — it holds no spending keys, so it can\'t send.';
+      'This is a watch-only wallet. It holds no spending keys, so it can\'t send.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1446,7 +1446,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'Available to send: $amount ZEC — your balance is still catching up';
+    return 'Available to send: $amount ZEC (your balance is still catching up)';
   }
 
   @override
@@ -1571,7 +1571,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'This is a large payment — almost your entire balance. A sent payment can\'t be reversed.';
+      'This is a large payment: almost your entire balance. A sent payment can\'t be reversed.';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1589,7 +1589,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
       'Your payment has been broadcast to the network.';
 
   @override
-  String get walletSendSavedTitle => 'Saved — we\'ll finish sending';
+  String get walletSendSavedTitle => 'Saved, we\'ll finish sending';
 
   @override
   String get walletSendSavedBody =>
@@ -1618,7 +1618,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSendAlreadyBody =>
-      'This payment was already submitted — it won\'t be sent twice.';
+      'This payment was already submitted. It won\'t be sent twice.';
 
   @override
   String get walletSendFailedTitle => 'Couldn\'t complete payment';
@@ -1645,7 +1645,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return 'Not enough spendable balance — you have $available ZEC and this needs $required ZEC.';
+    return 'Not enough spendable balance. You have $available ZEC and this needs $required ZEC.';
   }
 
   @override
@@ -1666,7 +1666,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      'This server is refusing, withholding or misreporting one of Zcash\'s shielded pools. Funds received in that pool can\'t be spent through it, and the balance shown is a floor. Switch to another server to use them — this isn\'t a connection problem.';
+      'This server is refusing, withholding or misreporting one of Zcash\'s shielded pools. Funds received in that pool can\'t be spent through it, and the balance shown is a floor. Switch to another server to use them. This isn\'t a connection problem.';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1703,19 +1703,19 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      'This server\'s copy of the chain stops at a block the network passed before this version of the app was built, so your balance is only current as of that block. New payments to you may not show yet, and a payment sent from here may not go through. Switch to another server to catch up — this isn\'t a connection problem.';
+      'This server\'s copy of the chain stops at a block the network passed before this version of the app was built, so your balance is only current as of that block. New payments to you may not show yet, and a payment sent from here may not go through. Switch to another server to catch up. This isn\'t a connection problem.';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'Waiting for an app update — your funds are safe and nothing has been sent.';
+      'Waiting for an app update. Your funds are safe and nothing has been sent.';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'Waiting for a server that reports the network version — switch servers. Your funds are safe and nothing has been sent.';
+      'Waiting for a server that reports the network version. Switch servers. Your funds are safe and nothing has been sent.';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
-      'Waiting for a server that reports the network version. If this device\'s date and time are wrong, fix them first — then switch servers. Your funds are safe and nothing has been sent.';
+      'Waiting for a server that reports the network version. If this device\'s date and time are wrong, fix them first, then switch servers. Your funds are safe and nothing has been sent.';
 
   @override
   String get walletSyncUnverified =>
@@ -1727,16 +1727,16 @@ class WalletLocalizationsEn extends WalletLocalizations {
       hours,
       locale: localeName,
       other:
-          'Sending still works for about $hours more hours — then switch servers.',
-      one: 'Sending still works for about 1 more hour — then switch servers.',
-      zero: 'Sending still works for less than an hour — then switch servers.',
+          'Sending still works for about $hours more hours. Then switch servers.',
+      one: 'Sending still works for about 1 more hour. Then switch servers.',
+      zero: 'Sending still works for less than an hour. Then switch servers.',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return 'Sending still works for about $blocks more blocks — then switch servers.';
+    return 'Sending still works for about $blocks more blocks. Then switch servers.';
   }
 
   @override
@@ -1746,7 +1746,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncGraceEndedClock =>
-      'This server hasn\'t reported the network version for a day, so this app can\'t confirm it\'s safe to send. If this device\'s date and time are wrong, fix them first — then switch to a server that reports the network version.';
+      'This server hasn\'t reported the network version for a day, so this app can\'t confirm it\'s safe to send. If this device\'s date and time are wrong, fix them first, then switch to a server that reports the network version.';
 
   @override
   String get walletSyncGraceNeverConfirmed =>
@@ -1754,19 +1754,19 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. Your balance is current. Switch to another server — this isn\'t a connection problem.';
+      'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. Your balance is current. Switch to another server. This isn\'t a connection problem.';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. It has also kept serving blocks this wallet then had to undo, so your balance may not be current. Switch to another server — this isn\'t a connection problem.';
+      'This server isn\'t saying which version of the Zcash network it\'s on, so this app can\'t confirm that a payment it signs will be accepted. It has also kept serving blocks this wallet then had to undo, so your balance may not be current. Switch to another server. This isn\'t a connection problem.';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'This server also keeps serving blocks this wallet then has to undo — switch servers.';
+      'This server also keeps serving blocks this wallet then has to undo. Switch servers.';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'Your balance is still catching up — more may become available as the wallet syncs.';
+      'Your balance is still catching up. More may become available as the wallet syncs.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1815,7 +1815,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSendFaultMemoConflict =>
-      'Couldn\'t send this payment — the app attached two notes to it. Nothing was sent.';
+      'Couldn\'t send this payment: the app attached two notes to it. Nothing was sent.';
 
   @override
   String get walletSendFaultNetworkMismatch =>
@@ -1880,7 +1880,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'This wallet is view-only — it can\'t swap.';
+      'This wallet is view-only, so it can\'t swap.';
 
   @override
   String get walletSwapDone => 'Done';
@@ -1895,7 +1895,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'Available to swap: $amount ZEC — your balance is still catching up';
+    return 'Available to swap: $amount ZEC (your balance is still catching up)';
   }
 
   @override
@@ -1921,7 +1921,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return 'A $chain address — where your swapped asset is sent. Double-check the chain is right.';
+    return 'A $chain address, where your swapped asset is sent. Double-check the chain is right.';
   }
 
   @override
@@ -1942,7 +1942,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'Still working — the swap is starting. This can take up to a minute.';
+      'Still working: the swap is starting. This can take up to a minute.';
 
   @override
   String get walletSwapReviewTitle => 'Confirm swap';
@@ -1966,16 +1966,16 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'Quote valid for about $time — confirm before it expires.';
+    return 'Quote valid for about $time. Confirm before it expires.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'Quote valid for less than a minute — confirm before it expires.';
+      'Quote valid for less than a minute. Confirm before it expires.';
 
   @override
   String get walletSwapQuoteExpired =>
-      'This quote has expired. Go back and get a new one — its rate is no longer guaranteed, and sending now risks a refund.';
+      'This quote has expired. Go back and get a new one: its rate is no longer guaranteed, and sending now risks a refund.';
 
   @override
   String get walletCountdownUnderMinute => 'less than a minute';
@@ -2000,7 +2000,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'Swapping out de-shields your ZEC — the deposit is a public transaction, and the provider\'s side is public on its network.';
+      'Swapping out de-shields your ZEC: the deposit is a public transaction, and the provider\'s side is public on its network.';
 
   @override
   String get walletSwapDiscloseTitle => 'What the swap provider will see';
@@ -2047,7 +2047,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'Your wallet is sending the ZEC deposit to the provider. If you\'re briefly offline it\'s sent automatically when you\'re back — but the sending window is short, and if it closes first the swap simply ends and nothing is exchanged. Your ZEC stays yours, and it can take up to an hour to show as spendable again.';
+      'Your wallet is sending the ZEC deposit to the provider. If you\'re briefly offline it\'s sent automatically when you\'re back. But the sending window is short, and if it closes first the swap simply ends and nothing is exchanged. Your ZEC stays yours, and it can take up to an hour to show as spendable again.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2055,7 +2055,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'This swap is still waiting for its deposit. The deposit instructions aren\'t available on this device anymore — if you already sent the funds, they\'ll be detected; if you haven\'t, let this swap expire and start a new one.';
+      'This swap is still waiting for its deposit. The deposit instructions aren\'t available on this device anymore. If you already sent the funds, they\'ll be detected; if you haven\'t, let this swap expire and start a new one.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2068,7 +2068,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'The deposit window has passed. If you haven\'t sent your deposit, this swap simply ends — get a fresh quote when you\'re ready.';
+      'The deposit window has passed. If you haven\'t sent your deposit, this swap simply ends. Get a fresh quote when you\'re ready.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2094,15 +2094,15 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'The deposit window has passed — check this swap\'s status.';
+      'The deposit window has passed. Check this swap\'s status.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'This swap hasn\'t reached a confirmed outcome here yet — open it to check. Any ZEC coming back to this wallet shows up in your balance after a sync.';
+      'This swap hasn\'t reached a confirmed outcome here yet. Open it to check. Any ZEC coming back to this wallet shows up in your balance after a sync.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'This swap hasn\'t reached a confirmed outcome here yet — open it to check. Any ZEC it delivers to this wallet shows up in your balance after a sync.';
+      'This swap hasn\'t reached a confirmed outcome here yet. Open it to check. Any ZEC it delivers to this wallet shows up in your balance after a sync.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'Swap completed.';
@@ -2121,15 +2121,15 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'This only removes the swap from this list — it doesn\'t cancel the swap, and this wallet will stop watching for its refund. ZEC refunded later still belongs to this wallet; a full rescan can find it.';
+      'This only removes the swap from this list. It doesn\'t cancel the swap, and this wallet will stop watching for its refund. ZEC refunded later still belongs to this wallet; a full rescan can find it.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'This only removes the swap from this list — it doesn\'t cancel the swap, and this wallet will stop watching for its incoming ZEC. ZEC delivered later still belongs to this wallet; a full rescan can find it. If the swap is refunded instead, the refund goes back in the coin you sent, outside this wallet.';
+      'This only removes the swap from this list. It doesn\'t cancel the swap, and this wallet will stop watching for its incoming ZEC. ZEC delivered later still belongs to this wallet; a full rescan can find it. If the swap is refunded instead, the refund goes back in the coin you sent, outside this wallet.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'This only removes the swap from this list — it doesn\'t cancel the swap, and this wallet will stop watching for ZEC still arriving from it. ZEC that arrives later still belongs to this wallet; a full rescan can find it.';
+      'This only removes the swap from this list. It doesn\'t cancel the swap, and this wallet will stop watching for ZEC still arriving from it. ZEC that arrives later still belongs to this wallet; a full rescan can find it.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2211,7 +2211,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'The swap didn\'t complete, so the provider sent your ZEC back to this wallet. It arrives as unshielded funds and shows up in your balance after the wallet next syncs — this can take a little while.';
+      'The swap didn\'t complete, so the provider sent your ZEC back to this wallet. It arrives as unshielded funds and shows up in your balance after the wallet next syncs. This can take a little while.';
 
   @override
   String get walletSwapStatusFailedTitle => 'Swap failed';
@@ -2225,7 +2225,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'The provider no longer has a record of this swap — it most likely expired. If a deposit was made, the provider should refund it to the refund address. The swap stays in your list, and this wallet keeps watching for its ZEC in case it still arrives — you can remove it from the list anytime.';
+      'The provider no longer has a record of this swap. It most likely expired. If a deposit was made, the provider should refund it to the refund address. The swap stays in your list, and this wallet keeps watching for its ZEC in case it still arrives. You can remove it from the list anytime.';
 
   @override
   String get walletSwapStatusUnknownTitle => 'Status unavailable';
@@ -2243,14 +2243,14 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'Swap is turned off here, so this swap can\'t be tracked right now. If it was refunded, the ZEC comes back to this wallet — it shows up in your balance after swap is turned back on and the wallet syncs.';
+      'Swap is turned off here, so this swap can\'t be tracked right now. If it was refunded, the ZEC comes back to this wallet. It shows up in your balance after swap is turned back on and the wallet syncs.';
 
   @override
   String get walletSwapTrackingError => 'We couldn\'t track this swap.';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'We couldn\'t open tracking for this swap. The swap itself may still be going ahead — any deposited funds settle or refund on the provider\'s side.';
+      'We couldn\'t open tracking for this swap. The swap itself may still be going ahead: any deposited funds settle or refund on the provider\'s side.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2293,19 +2293,19 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      'A swap is already in progress. You can start a new one after it fully settles or its quote expires — this can take a while.';
+      'A swap is already in progress. You can start a new one after it fully settles or its quote expires. This can take a while.';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'This wallet can\'t set up a refund address yet — that usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.';
+      'This wallet can\'t set up a refund address yet. That usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'This wallet can\'t set up a receiving address for this swap yet — that usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.';
+      'This wallet can\'t set up a receiving address for this swap yet. That usually just means the first sync hasn\'t finished. Wait for the sync to complete, then try again.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'The swap couldn\'t start in time — the connection may be slow, or the wallet was busy. Get a new quote and try again.';
+      'The swap couldn\'t start in time. The connection may be slow, or the wallet was busy. Get a new quote and try again.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2330,7 +2330,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'This swap needs about $needed ZEC including the network fee, but only $spendable ZEC is spendable right now. Your balance is still catching up — more may become spendable soon.';
+    return 'This swap needs about $needed ZEC including the network fee, but only $spendable ZEC is spendable right now. Your balance is still catching up, so more may become spendable soon.';
   }
 
   @override
@@ -2364,7 +2364,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapRefundHelper =>
-      'On the chain you\'re sending from — not a Zcash address.';
+      'On the chain you\'re sending from. Not a Zcash address.';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2373,7 +2373,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return 'A $chain address — where your coins return if the swap fails. Not a Zcash address.';
+    return 'A $chain address, where your coins return if the swap fails. Not a Zcash address.';
   }
 
   @override
@@ -2381,7 +2381,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'If the swap can\'t complete, the provider sends your coins back to this address on the chain you paid from. Enter an address you control — the wallet can\'t check a foreign address for you, so verify it carefully.';
+      'If the swap can\'t complete, the provider sends your coins back to this address on the chain you paid from. Enter an address you control. The wallet can\'t check a foreign address for you, so verify it carefully.';
 
   @override
   String get walletSwapRefundScanTooltip => 'Scan a refund-address QR code';
@@ -2435,7 +2435,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapPickerStale =>
-      'Couldn\'t refresh the asset list — showing the last known list.';
+      'Couldn\'t refresh the asset list. Showing the last known list.';
 
   @override
   String get walletSwapPickerEmpty =>
@@ -2472,22 +2472,22 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapSlippageMayFail =>
-      'Very low — the swap may fail if the price moves.';
+      'Very low. The swap may fail if the price moves.';
 
   @override
   String get walletSwapSlippageNormal => 'A safe tolerance.';
 
   @override
   String get walletSwapSlippageRisky =>
-      'High — you could receive noticeably less than quoted.';
+      'High. You could receive noticeably less than quoted.';
 
   @override
   String get walletSwapSlippageTooHigh =>
-      'Too high — the swap will be rejected. Lower it to 10% or less.';
+      'Too high. The swap will be rejected. Lower it to 10% or less.';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return 'You\'ll receive at least $zec ZEC — your $slippage% slippage floor. The final amount won\'t drop below this.';
+    return 'You\'ll receive at least $zec ZEC, your $slippage% slippage floor. The final amount won\'t drop below this.';
   }
 
   @override
@@ -2496,14 +2496,14 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'Until you shield it — one tap, nudged on arrival — the received amount is briefly public and visible on-chain. A small delivery may stay public until it accumulates.';
+      'Until you shield it (one tap, nudged on arrival), the received amount is briefly public and visible on-chain. A small delivery may stay public until it accumulates.';
 
   @override
   String get walletSwapRefundVerifyTitle => 'Verify your refund address';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      'Check it character by character — this is where your coins return if the swap fails. The wallet can\'t verify a foreign address for you.';
+      'Check it character by character: this is where your coins return if the swap fails. The wallet can\'t verify a foreign address for you.';
 
   @override
   String get walletSwapRefundVerifyAck =>
@@ -2514,7 +2514,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return 'Check it character by character — this is where you\'ll receive $asset. The wallet can\'t verify a foreign address for you.';
+    return 'Check it character by character: this is where you\'ll receive $asset. The wallet can\'t verify a foreign address for you.';
   }
 
   @override
@@ -2556,7 +2556,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'This deposit window has closed. Don\'t send funds now — start a new swap. If you already sent, the provider should refund to your refund address.';
+      'This deposit window has closed. Don\'t send funds now. Start a new swap. If you already sent, the provider should refund to your refund address.';
 
   @override
   String get walletSwapDepositQrLabel => 'QR code of the deposit address';
@@ -2575,7 +2575,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapDepositMemoWarning =>
-      'You MUST include this exact memo with your deposit. Sending without it — or with the wrong memo — can permanently lose your funds.';
+      'You MUST include this exact memo with your deposit. Sending without it, or with the wrong memo, can permanently lose your funds.';
 
   @override
   String get walletSwapDepositMemoLabel => 'Deposit memo / tag';
@@ -2594,11 +2594,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'This won\'t cancel your swap — it continues in the background. But you\'ll need the deposit address to pay, so copy it first if you haven\'t.';
+      'This won\'t cancel your swap; it continues in the background. But you\'ll need the deposit address to pay, so copy it first if you haven\'t.';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'This won\'t cancel your swap — it continues in the background. The deposit window has closed, so don\'t send funds to the deposit address now. If you already sent, the provider should refund to your refund address.';
+      'This won\'t cancel your swap; it continues in the background. The deposit window has closed, so don\'t send funds to the deposit address now. If you already sent, the provider should refund to your refund address.';
 
   @override
   String get walletSwapDepositBackStay => 'Stay';
@@ -2631,7 +2631,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'Your wallet prepares this address on your device — it can take a moment if the wallet is busy with other work.';
+      'Your wallet prepares this address on your device. It can take a moment if the wallet is busy with other work.';
 
   @override
   String get walletReceiveRetry => 'Try again';
@@ -2662,7 +2662,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'Fresh address — can\'t be linked to your other addresses. Payments to it arrive in this wallet, and your earlier addresses keep working. It won\'t be shown here again — copy it now.';
+      'Fresh address: can\'t be linked to your other addresses. Payments to it arrive in this wallet, and your earlier addresses keep working. It won\'t be shown here again, so copy it now.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2683,7 +2683,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCopyNow =>
-      'It won\'t be shown here again — copy it now.';
+      'It won\'t be shown here again, so copy it now.';
 
   @override
   String get walletSecurityMenuItem => 'Security…';
@@ -2740,18 +2740,18 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'Delete this wallet and its key from this device. It holds no spending keys, so there is nothing to back up — re-add it anytime with its viewing key.';
+      'Delete this wallet and its key from this device. It holds no spending keys, so there is nothing to back up. Re-add it anytime with its viewing key.';
 
   @override
   String get securityDeleteDialogTitle => 'Delete this wallet?';
 
   @override
   String get securityDeleteDialogBody =>
-      'This removes the wallet and its key from this device. Make sure you\'ve backed up your recovery phrase — it is the ONLY way to restore your funds.';
+      'This removes the wallet and its key from this device. Make sure you\'ve backed up your recovery phrase: it is the ONLY way to restore your funds.';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'This removes the wallet and its key from this device. It holds no spending keys, so nothing needs backing up — you can re-add it later with its viewing key.';
+      'This removes the wallet and its key from this device. It holds no spending keys, so nothing needs backing up. You can re-add it later with its viewing key.';
 
   @override
   String get securityDeleteDialogConfirm => 'Delete';
@@ -2761,11 +2761,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'Couldn\'t delete the wallet — your wallet is unchanged. Try again.';
+      'Couldn\'t delete the wallet. Your wallet is unchanged. Try again.';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return 'Finish the server switch first — it completes or stops within $seconds seconds. Then try deleting the wallet again.';
+    return 'Finish the server switch first. It completes or stops within $seconds seconds. Then try deleting the wallet again.';
   }
 
   @override
@@ -2777,14 +2777,14 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'These payments haven\'t been sent yet. Their amounts are still part of your balance — except any your wallet is currently sending, which may already be set aside.';
+      'These payments haven\'t been sent yet. Their amounts are still part of your balance, except any your wallet is currently sending, which may already be set aside.';
 
   @override
   String get walletParkedCancel => 'Cancel';
 
   @override
   String get walletParkedPausedHint =>
-      'Paused — this payment won\'t send on its own. Your funds are safe. Send it now, or cancel it.';
+      'Paused. This payment won\'t send on its own. Your funds are safe. Send it now, or cancel it.';
 
   @override
   String get walletParkedRetryStale =>
@@ -2792,11 +2792,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'This payment is no longer waiting — your wallet may already be sending it. Check Saved & pending and your activity.';
+      'This payment is no longer waiting; your wallet may already be sending it. Check Saved & pending and your activity.';
 
   @override
   String get walletReclaimExplainer =>
-      'One-time-address sends are stuck. You can reopen them — it moves a small amount between your own addresses and returns it.';
+      'One-time-address sends are stuck. You can reopen them: it moves a small amount between your own addresses and returns it.';
 
   @override
   String get walletReclaimButton => 'Reopen sending';
@@ -2826,7 +2826,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletReclaimNotBroadcast =>
-      'Couldn\'t confirm it reached the network. It may still go through — wait a moment before trying again.';
+      'Couldn\'t confirm it reached the network. It may still go through, so wait a moment before trying again.';
 
   @override
   String get walletReclaimNeedsFunds =>
@@ -2855,7 +2855,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      'This discards the saved payment. It hasn\'t been sent, so nothing leaves your wallet — but this can\'t be undone.';
+      'This discards the saved payment. It hasn\'t been sent, so nothing leaves your wallet, but this can\'t be undone.';
 
   @override
   String get walletParkedCancelConfirmKeep => 'Keep it';
@@ -2868,7 +2868,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'This payment may already be on its way — check your activity.';
+      'This payment may already be on its way. Check your activity.';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2900,16 +2900,16 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return 'Recovering $amount — some funds still need another try.';
+    return 'Recovering $amount. Some funds still need another try.';
   }
 
   @override
   String get walletRecoverRetry =>
-      'Some funds need another try — run recovery again.';
+      'Some funds need another try. Run recovery again.';
 
   @override
   String get walletRecoverTruncated =>
-      'Not every one-time address was checked yet — run it again to check the rest.';
+      'Not every one-time address was checked yet. Run it again to check the rest.';
 
   @override
   String get walletRecoverNothing => 'Nothing to recover right now.';
@@ -2940,11 +2940,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'Your wallet is getting this payment ready — its amount may already be set aside. Your funds are safe. If it doesn\'t finish, it returns to the list on its own.';
+      'Your wallet is getting this payment ready, and its amount may already be set aside. Your funds are safe. If it doesn\'t finish, it returns to the list on its own.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'Your wallet is getting this payment ready — its amount may already be set aside. Your funds are safe, but it can only finish once your wallet is syncing again.';
+      'Your wallet is getting this payment ready, and its amount may already be set aside. Your funds are safe, but it can only finish once your wallet is syncing again.';
 
   @override
   String get walletParkedSendNow => 'Send now';
@@ -2978,7 +2978,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'Not ready to send yet. Your payment is saved and no longer paused — try Send now again later, or cancel it.';
+      'Not ready to send yet. Your payment is saved and no longer paused. Try Send now again later, or cancel it.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -2992,7 +2992,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsIntro =>
-      'Public funds are publicly visible on the blockchain — the amount, the addresses, and the history of the coins.';
+      'Public funds are publicly visible on the blockchain: the amount, the addresses, and the history of the coins.';
 
   @override
   String get walletExpertToggleLabel => 'Advanced: public funds';
@@ -3019,15 +3019,15 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      'Automatic shielding didn’t complete — these funds are still publicly visible. You can shield them now.';
+      'Automatic shielding didn’t complete, so these funds are still publicly visible. You can shield them now.';
 
   @override
   String get walletSendPrivacyShielded =>
-      'Shielded payment — the amount and recipient stay private on-chain.';
+      'Shielded payment. The amount and recipient stay private on-chain.';
 
   @override
   String get walletSendPrivacyTransparent =>
-      'Public payment — the amount and addresses are visible on the blockchain.';
+      'Public payment. The amount and addresses are visible on the blockchain.';
 
   @override
   String get walletActivityPublicBadge => 'Publicly visible on-chain';
@@ -3043,7 +3043,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      'Automatic shielding is off — public funds stay publicly visible until you shield them.';
+      'Automatic shielding is off. Public funds stay publicly visible until you shield them.';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -3051,7 +3051,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletMoveBelowFloorNote(String amount, String floor) {
-    return 'After this move your public balance will be $amount ZEC — under the $floor ZEC needed to shield it back. It stays public until more arrives.';
+    return 'After this move your public balance will be $amount ZEC, under the $floor ZEC needed to shield it back. It stays public until more arrives.';
   }
 
   @override
@@ -3063,7 +3063,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      'Automatic shielding is paused for this session — it wasn’t approved. You can still shield manually.';
+      'Automatic shielding is paused for this session because it wasn’t approved. You can still shield manually.';
 
   @override
   String get walletDeepScanMenuItem => 'Check older swap addresses…';
@@ -3077,7 +3077,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'If you restored this wallet and it once used swaps a lot, money from its oldest swaps can take an extra step to find. This checks for it — anything found appears in your balance as your wallet syncs.';
+      'If you restored this wallet and it once used swaps a lot, money from its oldest swaps can take an extra step to find. This checks for it. Anything found appears in your balance as your wallet syncs.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3085,7 +3085,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'Still checking the current range — anything found appears in your balance. This can take a little while.';
+      'Still checking the current range. Anything found appears in your balance. This can take a little while.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3113,15 +3113,15 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'Checking older swap addresses — anything found will appear in your balance.';
+      'Checking older swap addresses. Anything found will appear in your balance.';
 
   @override
   String get walletDeepScanFailed =>
-      'Couldn’t start the check. Nothing changed — try again.';
+      'Couldn’t start the check. Nothing changed. Try again.';
 
   @override
   String get walletDeepScanSlow =>
-      'This is taking longer than usual. If your older swap addresses were checked, anything found appears in your balance — check back shortly.';
+      'This is taking longer than usual. If your older swap addresses were checked, anything found appears in your balance. Check back shortly.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3129,7 +3129,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'Still checking the last range — this can take up to a couple of days, but usually much less. It finishes on its own; check again later.';
+      'Still checking the last range. This can take up to a couple of days, but usually much less. It finishes on its own; check again later.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3137,11 +3137,11 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'Still checking your older swap addresses — anything found appears in your balance.';
+      'Still checking your older swap addresses. Anything found appears in your balance.';
 
   @override
   String get walletRescanSwapPointer =>
-      'Looking for money from an old swap? A rescan won’t find that — use “Check older swap addresses” instead.';
+      'Looking for money from an old swap? A rescan won’t find that. Use “Check older swap addresses” instead.';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3176,7 +3176,7 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String walletSyncServerFallbackRefusedByTransport(String host) {
-    return 'Your saved server uses an unencrypted address, which your app\'s private path cannot carry — using $host.';
+    return 'Your saved server uses an unencrypted address, which your app\'s private path cannot carry. Using $host.';
   }
 
   @override
@@ -3252,5 +3252,5 @@ class WalletLocalizationsEn extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself, so don\'t send it again yourself.';
 }

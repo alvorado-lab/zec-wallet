@@ -17,7 +17,10 @@
 //! connections by host and would silently REUSE a circuit across distinct
 //! `isolation_key`s — exactly the linkage the dialer contract forbids. The
 //! cost (a TLS handshake per call) is noise against Tor latency and the
-//! §7 poll cadence.
+//! §7 poll cadence. NO TLS SESSION RESUMPTION, for the same reason one layer
+//! down: rustls's default client store keeps sessions per server name, so a
+//! ticket from one swap's connection would be offered on another swap's
+//! circuit and the provider could link the two.
 //!
 //! Redirects are never followed: on a funds path, "the provider moved" is a
 //! typed protocol violation to surface, not a hop to take silently.
@@ -66,7 +69,8 @@ pub(crate) trait StreamSecurer: Send + Sync {
 
 /// rustls over the dialed stream: WebPKI roots (Mozilla bundle — no
 /// platform cert-store assumption on mobile), `ring` provider (the
-/// workspace's pinned TLS stack), ALPN locked to http/1.1.
+/// workspace's pinned TLS stack), ALPN locked to http/1.1, no session
+/// resumption.
 pub(crate) struct RustlsSecurer {
     connector: TlsConnector,
 }
@@ -86,6 +90,9 @@ impl RustlsSecurer {
             .with_no_client_auth();
         // deterministic protocol choice — we speak http/1.1, never h2
         config.alpn_protocols = vec![b"http/1.1".to_vec()];
+        // one securer serves every isolation key: a stored session would link
+        // swaps across circuits (the module doc; arti disables it likewise)
+        config.resumption = rustls::client::Resumption::disabled();
         Self {
             connector: TlsConnector::from(Arc::new(config)),
         }
@@ -294,7 +301,7 @@ async fn classify_response(
 
 #[cfg(test)]
 mod tests {
-    use super::RustlsSecurer;
+    use super::{RustlsSecurer, StreamSecurer};
 
     /// FR-5 spec §8 **P28, the swap half** — the twin of
     /// `zec-wallet-core`'s `net::grpc` test of the same name; the source half
@@ -354,5 +361,93 @@ mod tests {
             "P28: the swap TLS config was not built from the explicit `ring` provider — its \
              suites are the process default's"
         );
+    }
+
+    /// No TLS session is ever kept or offered (the module doc: one securer
+    /// serves every isolation key, so a resumed session would link two swaps'
+    /// circuits for the provider). Two halves, because a first handshake alone
+    /// cannot show the TLS 1.3 store:
+    ///   * on the wire, the ClientHello asks for no TLS 1.2 session ticket
+    ///     (extension 35), which rustls's default asks for on every hello;
+    ///   * the configured store is rustls's no-op one, so no TLS 1.3 ticket is
+    ///     kept to be offered on a later connection. Read through `Debug`:
+    ///     rustls keeps the store private, and its pin is exact, so a rename
+    ///     fails here loudly rather than passing.
+    ///
+    /// Watched red: the `Resumption::disabled()` line removed (the wire half
+    /// fails first); and `Resumption::in_memory_sessions(256)
+    /// .tls12_resumption(Tls12Resumption::Disabled)` in its place, which the
+    /// wire half cannot see and the store half refuses.
+    #[tokio::test]
+    async fn the_swap_tls_never_resumes_a_session() {
+        use tokio::io::AsyncReadExt;
+
+        let securer = RustlsSecurer::new();
+        let store = format!("{:?}", securer.connector.config().resumption);
+
+        let (client, mut server) = tokio::io::duplex(64 * 1024);
+        let handshake =
+            tokio::spawn(async move { securer.secure("swap.test", Box::new(client)).await });
+        let mut header = [0u8; 5];
+        server
+            .read_exact(&mut header)
+            .await
+            .expect("the client wrote a TLS record header");
+        assert_eq!(header[0], 22, "the first record is not a handshake record");
+        let mut hello = vec![0u8; usize::from(u16::from_be_bytes([header[3], header[4]]))];
+        server
+            .read_exact(&mut hello)
+            .await
+            .expect("the client wrote its whole first record");
+        drop(server);
+        assert!(
+            handshake.await.expect("the handshake task ran").is_err(),
+            "with no server the handshake cannot succeed"
+        );
+
+        let extensions = client_hello_extensions(&hello);
+        assert!(
+            extensions.contains(&43),
+            "anti-vacuity: no supported_versions extension (43) in {extensions:?}, so the parse \
+             is not reading a rustls ClientHello"
+        );
+        assert!(
+            !extensions.contains(&35),
+            "the swap ClientHello asks for a TLS 1.2 session ticket (extension 35 in \
+             {extensions:?}): a session from one swap could resume on another swap's circuit"
+        );
+        assert!(
+            store.contains("NoClientSessionStorage"),
+            "the swap TLS config keeps a session store ({store}): a TLS 1.3 ticket from one \
+             swap would be offered on another swap's circuit"
+        );
+    }
+
+    /// The extension types of one ClientHello handshake message, in order.
+    fn client_hello_extensions(msg: &[u8]) -> Vec<u16> {
+        let u16_at = |at: usize| u16::from_be_bytes([msg[at], msg[at + 1]]);
+        assert_eq!(
+            msg[0], 1,
+            "the first handshake message is not a ClientHello"
+        );
+        // type (1), length (3), legacy_version (2), random (32)
+        let mut at = 1 + 3 + 2 + 32;
+        at += 1 + usize::from(msg[at]); // legacy_session_id
+        at += 2 + usize::from(u16_at(at)); // cipher_suites
+        at += 1 + usize::from(msg[at]); // legacy_compression_methods
+        let end = at + 2 + usize::from(u16_at(at));
+        at += 2;
+        assert_eq!(
+            end,
+            msg.len(),
+            "the extensions do not end where the record ends"
+        );
+        let mut types = Vec::new();
+        while at < end {
+            types.push(u16_at(at));
+            at += 4 + usize::from(u16_at(at + 2));
+        }
+        assert_eq!(at, end, "the last extension overruns the ClientHello");
+        types
     }
 }

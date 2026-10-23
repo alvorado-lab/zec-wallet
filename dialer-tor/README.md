@@ -7,7 +7,7 @@ about the products that use it. Its first consumer is the Zcash wallet SDK's
 optional Tor plugin, `zec_wallet_tor`.
 
 **Where it lives, and why here.** `dialer-tor/` in the zec-wallet
-repository, as its own cargo workspace — it cannot join the SDK's workspace,
+repository, as its own cargo workspace. It cannot join the SDK's workspace,
 because arti's RustCrypto line (`crypto-common ^0.2.2`) and the Zcash stack's
 pre-release pins (`=0.2.0-rc.1`) cannot share one lock. Its lock and
 `deny.toml` are its own.
@@ -37,12 +37,12 @@ assert_eq!(dialer.dormant_mode(), DormantMode::Soft);
 
 - **`TorDialer::unbootstrapped` / `with_bridges` / `from_config`** build a
   client with `BootstrapBehavior::Manual`: until `bootstrap()` succeeds, every
-  dial returns `TorDialError::NotBootstrapped` — the crate has NO clearnet
+  dial returns `TorDialError::NotBootstrapped`. The crate has NO clearnet
   path and never connects some other way.
-- **`bootstrap()`** — slow, fallible, idempotent. On failure the dialer stays
+- **`bootstrap()`** is slow, fallible and idempotent. On failure the dialer stays
   refusing; `readiness()` reports arti's blockage (`Offline`, `Filtering`,
   `CantReachTor`, `ClockSkewed`, `CantBootstrap`, `Disabled`).
-- **`readiness()`** — `Ready` iff arti's `ready_for_traffic()`; otherwise
+- **`readiness()`** is `Ready` iff arti's `ready_for_traffic()`; otherwise
   `Bootstrapping { progress, blockage }`. A query; no traffic.
 - **`connect(host, port, isolation_key)`** → `TorStream`, or
   **`dial(...)`** → `Box<dyn AsyncByteStream>` (the shape the wallet SDK's
@@ -53,7 +53,7 @@ assert_eq!(dialer.dormant_mode(), DormantMode::Soft);
   direction (fresh isolation, never a shared circuit). **A bad exit is left,
   not reused:** when a dial fails at or near the exit (it could not resolve
   or reach the destination, timed out, refused, was busy), that key's group
-  — the unkeyed one too — gets a fresh token, so the next dial cannot join
+  (the unkeyed one too) gets a fresh token, so the next dial cannot join
   the circuit that failed (arti alone would reuse it for up to 600 s). At
   most once per key per `EXIT_ROTATION_INTERVAL` (60 s), doubling to
   `EXIT_ROTATION_INTERVAL_MAX` (600 s) while failures continue; the failed
@@ -61,9 +61,9 @@ assert_eq!(dialer.dormant_mode(), DormantMode::Soft);
   keeps arti's behaviour; `ExitRotation::every(d)` sets the base wait (10 s
   floor). Targets are checked
   before a circuit is spent: an empty or over-long host, port 0, a `.onion`
-  name (refused — see the licence carve-out), a local address (arti's own
+  name (refused; see the licence carve-out), a local address (arti's own
   refusal, `ForbiddenTarget`).
-- **`set_dormant(DormantMode)` / `dormant_mode()`** — see "Dormancy".
+- **`set_dormant(DormantMode)` / `dormant_mode()`**: see "Dormancy".
 - **Bridges.** `BridgeLines::parse(&str)` takes pasted bridge lines, bounded
   and classified BEFORE arti sees them: at most `MAX_BRIDGE_LINES` (8) lines
   of `MAX_BRIDGE_LINE_BYTES` (256) each, `MAX_BRIDGE_CONFIG_BYTES` (2048) in
@@ -71,7 +71,7 @@ assert_eq!(dialer.dormant_mode(), DormantMode::Soft);
   `bridge-too-many-lines`, `bridge-line-too-long`,
   `bridge-pluggable-transport-unsupported`, `bridge-line-unusable`;
   `bridge_class(&err)` maps arti's own parse error to the last two) and
-  NEVER echoes the line — `BridgeLines` is deliberately not `Debug`,
+  NEVER echoes the line: `BridgeLines` is deliberately not `Debug`,
   `Display` or `Clone`; `len()` / `is_empty()` are its only readers.
   `tor_config(state, cache, lines)` builds the arti config a caller (or a
   test) can inspect.
@@ -95,10 +95,10 @@ target). The set is closed; a variant added upstream arrives as
 | `RefusedByExitPolicy` | `refused-by-exit-policy` | the exit |
 | `RefusedByHost` | `refused-by-host` | the destination |
 | `HostNotFound` | `host-not-found` | DNS at the exit |
-| `TorNetworkTimeout` | `tor-network-timeout` | a circuit BUILD timed out — a relay on the path; a stalling exit contributes; the destination cannot |
+| `TorNetworkTimeout` | `tor-network-timeout` | a circuit BUILD timed out: a relay on the path; a stalling exit contributes; the destination cannot |
 | `ExitTimeout` | `exit-timeout` | the exit waited too long for the destination |
 | `RemoteNetworkTimeout` | `remote-network-timeout` | our timeout waiting on the far end |
-| `LocalNetworkError` | `local-network-error` | an IO error on the open GUARD channel — the device's network, the guard, or an on-path reset; **not** "the device has no route" (that is `TorAccessFailed`) |
+| `LocalNetworkError` | `local-network-error` | an IO error on the open GUARD channel: the device's network, the guard, or an on-path reset; **not** "the device has no route" (that is `TorAccessFailed`) |
 | `TorAccessFailed` | `tor-access-failed` | Tor could not be reached: the local network, or the chosen relay or bridge, is not working |
 | `Setup { kind }` | `setup` | the configuration or the client could not be built; for an owned client also two TEMPORARY causes: no thread for its runtime (`kind` `LocalResourceExhausted`) or a task that panicked on it (`Internal`). Classify `Setup` by its `kind`, never as permanent as a whole |
 | `Tor { kind }` | `tor` | anything arti reports that is not listed above |
@@ -106,11 +106,11 @@ target). The set is closed; a variant added upstream arrives as
 | `RestartRequired` | `restart-required` | `spawn_owned` refused: an earlier client never finished shutting down (while `ledger.stuck()` is 0 it may still finish, so a later attempt can succeed; once it is not, only a restart helps) |
 
 **The rule for a consumer with a clearnet fallback** (the wallet SDK's
-`Preferred` policy follows exactly two codes to clearnet — *unreachable* and
-*timeout* — plus a registered dialer declaring its health `FAILED` for a
+`Preferred` policy follows exactly two codes to clearnet, *unreachable* and
+*timeout*, plus a registered dialer declaring its health `FAILED` for a
 patience minute): a failure the DESTINATION or an EXIT can cause at will must never
 reach those codes, and in arti 0.45.0 `LocalNetworkError` is produced by a
-guard-channel reset — an on-path adversary — while a device with no route
+guard-channel reset (an on-path adversary), while a device with no route
 produces `TorAccessFailed`. So the SDK's plugin maps ONLY `TorNetworkTimeout`
 to its timeout code, maps `LocalNetworkError`, `TorAccessFailed`,
 `ExitTimeout`, `RemoteNetworkTimeout` and every refusal to REFUSED (no
@@ -128,7 +128,7 @@ expressible.
 guard maintenance) stops; channels and sockets stay as they are. Two things
 to know: arti flips `Soft` back to `Normal` by itself on ANY use of the
 client, so a consumer that dials or even reads `readiness()` while "dormant"
-has woken it — `dormant_mode()` reports what was last ASKED, not arti's live
+has woken it: `dormant_mode()` reports what was last ASKED, not arti's live
 state; and `Soft` switches channel padding off, which the guard can observe.
 A consumer that needs "no dials while paused" gates that itself (the SDK's
 plugin pushes readiness 0 on pause); dormancy is the battery half.
@@ -173,8 +173,10 @@ match dialer.shutdown(RECOMMENDED_SHUTDOWN_BUDGET).await {
   `dial`, `readiness`, `set_dormant`, `dormant_mode`) answer
   `TorDialError::Closed`, a call in flight ends with `Closed`, and an
   `OwnedStream` answers `NotConnected` without touching Tor, including a read
-  or write that was already waiting. Treat `Closed` as a local, retryable
-  state: it says nothing about any relay.
+  or write that was already waiting. That error carries the marker
+  `ClientShutDown`, so `is_client_shut_down(&err)` tells it apart from a
+  connection the network closed. Treat `Closed` and that stream error as a
+  local, retryable state: they say nothing about any relay.
 - **`Overran`** means the shutdown did not finish within the budget: the
   client may still write its state, and may still be talking to the Tor
   network, until the process exits. It stays counted in `ledger.stuck()`, and
@@ -207,7 +209,7 @@ match dialer.shutdown(RECOMMENDED_SHUTDOWN_BUDGET).await {
 `tracing` only. Targets: the crate's module paths, plus `dialer_tor::censor`
 for a refused bridge line (class only). Never logged: bridge lines, hosts,
 isolation keys, paths, arti's `Display` on the bridge-line path. Every log
-site carries a closed value (`class`, `kind`, a mode) — see `error.rs` and
+site carries a closed value (`class`, `kind`, a mode); see `error.rs` and
 `dialer.rs`. A rotation off a suspect circuit logs one `debug` line with the
 `kind` only, never the key. Each owned client's shutdown logs one line with
 no fields: `info` when it stopped, `warn` when it overran.
@@ -234,10 +236,10 @@ no fields: `info` when it stopped, `warn` when it overran.
 `deny.toml` in this directory is the policy over this crate's lock: ring-only
 TLS (`aws-lc-*` banned), the rustls advisory floor, the LGPL bans, and three
 named advisory ignores with their arguments and expiry conditions (`rsa`
-0.9.10's Marvin attack — no RSA private-key operation is reachable from a Tor
-client; two unmaintained transitive helpers). `cargo audit --ignore
+0.9.10's Marvin attack, since no RSA private-key operation is reachable from
+a Tor client; two unmaintained transitive helpers). `cargo audit --ignore
 RUSTSEC-2023-0071` and `cargo deny check` run over it in CI.
 
 ## Licence
 
-MIT, like the rest of the SDK — see `LICENSE`.
+MIT, like the rest of the SDK. See `LICENSE`.

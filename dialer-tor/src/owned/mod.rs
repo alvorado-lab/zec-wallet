@@ -23,7 +23,7 @@ use std::time::Duration;
 
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
-pub use self::core::{ClientLedger, LedgerEntry, Shutdown};
+pub use self::core::{ClientLedger, ClientShutDown, LedgerEntry, Shutdown, is_client_shut_down};
 use self::core::{Gated, Host, Owned, OwnedRuntime, Spawner, thread_spawner};
 use crate::constants::RECOMMENDED_SHUTDOWN_BUDGET;
 use crate::{
@@ -224,8 +224,9 @@ impl OwnedDialer {
 }
 
 /// A stream from an [`OwnedDialer`]: a [`TorStream`] behind the poll gate.
-/// After a shutdown every poll answers `NotConnected` without reaching arti,
-/// and a poll parked before it is woken to do so.
+/// After a shutdown every poll answers `NotConnected` carrying
+/// [`ClientShutDown`] without reaching arti, and a poll parked before it is
+/// woken to do so.
 pub struct OwnedStream(Gated<TorStream>);
 
 impl std::fmt::Debug for OwnedStream {

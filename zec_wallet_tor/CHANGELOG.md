@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.3
+
+- Built on `dialer-tor` 0.1.3. The plugin's lock moves to `rustls` 0.23.46
+  and `rustls-webpki` 0.103.16, the versions `zec_wallet` 0.0.4 uses.
+  Nothing changes for the plugin's API or behaviour.
+- The plugin's own connections to Tor relays were not exposed to the advisories
+  `zec_wallet` 0.0.4 fixes: arti checks a relay by its Tor identity key, not by
+  web certificate roots, and turns TLS session resumption off. The wallet's
+  traffic over Tor still runs its own TLS inside `zec_wallet`, so update that
+  package too.
+- Version 0.0.2 was prepared on `dialer-tor` 0.1.2 and never published.
+
 ## 0.0.1
 
 Initial release. An arti-based Tor client (the shared `dialer-tor` crate) in

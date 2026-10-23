@@ -16,7 +16,7 @@ Part of the `zec_wallet` family: [`zec_wallet`](https://pub.dev/packages/zec_wal
 (optional native screen protection for these screens), and
 [`zec_wallet_tor`](https://pub.dev/packages/zec_wallet_tor) (optional Tor).
 
-**Status: pre-release (0.0.1), not yet independently audited.** It moves real
+**Status: pre-release, not yet independently audited.** It moves real
 funds through `zec_wallet`; see [`SECURITY.md`](SECURITY.md). The SDK example
 app (`zec_wallet/example`) is the reference consumer: its `main.dart` is the
 canonical "page of glue", and its thin test suite pins what a consumer relies

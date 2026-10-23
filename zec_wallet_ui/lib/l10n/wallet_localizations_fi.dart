@@ -19,14 +19,14 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      'Lompakon käyttöönotto tulee myöhemmässä versiossa. Käyttöönotto opastaa sinut kirjoittamaan palautuslauseesi muistiin, ennen kuin varoja voidaan vastaanottaa — näin mitään ei koskaan vaarannu ilman varmuuskopiota.';
+      'Lompakon käyttöönotto tulee myöhemmässä versiossa. Käyttöönotto opastaa sinut kirjoittamaan palautuslauseesi muistiin, ennen kuin varoja voidaan vastaanottaa. Näin mitään ei koskaan vaarannu ilman varmuuskopiota.';
 
   @override
   String get walletStartupFailedTitle => 'Lompakko ei käynnistynyt';
 
   @override
   String get walletStartupFailedBody =>
-      'Jokin esti lompakkoa latautumasta tällä laitteella. Jos sinulla on jo lompakko, sen varat eivät ole vaarassa — ne ovat Zcash-verkossa ja ne voidaan palauttaa palautuslauseesi avulla. Yritä uudelleen; jos tämä toistuu, sulje sovellus ja avaa se uudelleen.';
+      'Jokin esti lompakkoa latautumasta tällä laitteella. Jos sinulla on jo lompakko, sen varat eivät ole vaarassa: ne ovat Zcash-verkossa ja ne voidaan palauttaa palautuslauseesi avulla. Yritä uudelleen; jos tämä toistuu, sulje sovellus ja avaa se uudelleen.';
 
   @override
   String get walletBalanceLabel => 'Saldo';
@@ -147,11 +147,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'Tallennettu tälle laitteelle, kohtaan Tallennettu ja vireillä — voit lähettää tai peruuttaa sen siellä.';
+      'Tallennettu tälle laitteelle, kohtaan Tallennettu ja vireillä. Voit lähettää tai peruuttaa sen siellä.';
 
   @override
   String get walletTxExplainPending =>
-      'Lähetetty Zcash-verkkoon — odottaa vahvistusta lohkossa.';
+      'Lähetetty Zcash-verkkoon. Odottaa vahvistusta lohkossa.';
 
   @override
   String get walletTxExplainRetrying =>
@@ -198,7 +198,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletRescanRangeAll =>
-      'Skannaa koko historiasi — hitain vaihtoehto, mutta palauttaa kaiken.';
+      'Skannaa koko historiasi. Hitain vaihtoehto, mutta palauttaa kaiken.';
 
   @override
   String get walletRescanRangeDefault =>
@@ -232,11 +232,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      'Tämä skannaa lohkoketjun uudelleen. Lähiaikojen skannaus kestää minuutteja; kauas taaksepäin skannaaminen voi kestää tunteja. Synkronointi toimii taustalla — voit käyttää lompakkoa sillä aikaa.';
+      'Tämä skannaa lohkoketjun uudelleen. Lähiaikojen skannaus kestää minuutteja; kauas taaksepäin skannaaminen voi kestää tunteja. Synkronointi toimii taustalla, joten voit käyttää lompakkoa sillä aikaa.';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'Tästä lompakosta lähtevä maksu on vielä vahvistumassa. Lompakko yleensä kieltäytyy uudelleenskannauksesta, kunnes se on valmis — voit yrittää, mutta odota, että pyyntö hylätään.';
+      'Tästä lompakosta lähtevä maksu on vielä vahvistumassa. Lompakko yleensä kieltäytyy uudelleenskannauksesta, kunnes se on valmis. Voit yrittää, mutta odota, että pyyntö hylätään.';
 
   @override
   String get walletRescanConfirm => 'Aloita uudelleenskannaus';
@@ -249,40 +249,40 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      'Historiaasi rakennetaan uudelleen — koko ketjua skannataan. Saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee.';
+      'Historiaasi rakennetaan uudelleen, ja koko ketjua skannataan. Saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee.';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return 'Historiaasi rakennetaan uudelleen alkaen $date — saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee.';
+    return 'Historiaasi rakennetaan uudelleen alkaen $date. Saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee.';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      'Historiaasi rakennetaan uudelleen lompakkosi alusta alkaen — saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee.';
+      'Historiaasi rakennetaan uudelleen lompakkosi alusta alkaen. Saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee.';
 
   @override
   String get walletCatchUpBanner =>
-      'Kurotaan kiinni — saldosi ja tapahtumasi täydentyvät lompakon synkronoituessa. Kaikki vastaanottamasi on turvassa.';
+      'Kurotaan kiinni. Saldosi ja tapahtumasi täydentyvät lompakon synkronoituessa. Kaikki vastaanottamasi on turvassa.';
 
   @override
   String get walletCatchUpRescanBanner =>
-      'Historiaasi rakennetaan uudelleen uudelleenskannauksen jälkeen — saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee. Kaikki vastaanottamasi on turvassa.';
+      'Historiaasi rakennetaan uudelleen uudelleenskannauksen jälkeen. Saldosi ja tapahtumasi täydentyvät sitä mukaa kuin skannaus etenee. Kaikki vastaanottamasi on turvassa.';
 
   @override
   String get walletRescanFailedNotice =>
-      'Uudelleenskannaus ei onnistunut juuri nyt — varasi ovat turvassa, vaikka saldosi ja historiasi voivat tarvita hetken aikaa kiriäkseen kiinni. Yritä hetken kuluttua uudelleen.';
+      'Uudelleenskannaus ei onnistunut juuri nyt. Varasi ovat turvassa, vaikka saldosi ja historiasi voivat tarvita hetken aikaa kiriäkseen kiinni. Yritä hetken kuluttua uudelleen.';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      'Maksu on vielä vahvistumassa, joten uudelleenskannaus on keskeytetty varojesi suojaamiseksi. Lompakkosi on ennallaan — yritä uudelleen parin tunnin kuluttua ja pidä sovellus auki ja verkossa sillä aikaa.';
+      'Maksu on vielä vahvistumassa, joten uudelleenskannaus on keskeytetty varojesi suojaamiseksi. Lompakkosi on ennallaan. Yritä uudelleen parin tunnin kuluttua ja pidä sovellus auki ja verkossa sillä aikaa.';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      'Uudelleenskannaus rakentaa historiasi uudelleen sitä mukaa kun lompakkosi synkronoituu, eikä synkronointi ole juuri nyt käynnissä. Lompakkosi on ennallaan — yritä uudelleen, kun synkronointi on käynnissä.';
+      'Uudelleenskannaus rakentaa historiasi uudelleen sitä mukaa kun lompakkosi synkronoituu, eikä synkronointi ole juuri nyt käynnissä. Lompakkosi on ennallaan. Yritä uudelleen, kun synkronointi on käynnissä.';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      'Vapaata tilaa ei ole tarpeeksi lompakon historian uudelleenrakentamiseen — varasi ovat turvassa, vaikka saldosi ja historiasi voivat tarvita hetken aikaa kiriäkseen kiinni. Vapauta tilaa ja yritä uudelleen.';
+      'Vapaata tilaa ei ole tarpeeksi lompakon historian uudelleenrakentamiseen. Varasi ovat turvassa, vaikka saldosi ja historiasi voivat tarvita hetken aikaa kiriäkseen kiinni. Vapauta tilaa ja yritä uudelleen.';
 
   @override
   String get walletRescanFailedDismiss => 'Hylkää';
@@ -292,7 +292,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletActivityCatchingUp =>
-      'Kurotaan yhä kiinni — kaikki vastaanottamasi näkyy täällä.';
+      'Kurotaan yhä kiinni. Kaikki vastaanottamasi näkyy täällä.';
 
   @override
   String get walletActivitySyncNotRunning =>
@@ -309,7 +309,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      'Ei sisälly kohtaan \"Käytettävissä nyt\" — suojaa nämä varat, jotta voit käyttää niitä. Siihen asti ne näkyvät julkisesti lohkoketjussa.';
+      'Ei sisälly kohtaan \"Käytettävissä nyt\". Suojaa nämä varat, jotta voit käyttää niitä. Siihen asti ne näkyvät julkisesti lohkoketjussa.';
 
   @override
   String get walletTransparentNoteWatchOnly =>
@@ -369,7 +369,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      'Ei voitu tarkistaa, onko maksu vielä kesken. Yritetään uudelleen – tarkista sillä välin toiminnastasi, onko siellä odottava maksu, ennen kuin lähetät uudelleen.';
+      'Ei voitu tarkistaa, onko maksu vielä kesken. Yritetään uudelleen. Tarkista sillä välin toiminnastasi, onko siellä odottava maksu, ennen kuin lähetät uudelleen.';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -409,7 +409,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      'Nämä varat alittavat tällä hetkellä suojaamisen kannalta järkevän summan — verkkomaksu söisi hyödyn. Ne voi suojata, kun lisää varoja saapuu.';
+      'Nämä varat alittavat tällä hetkellä suojaamisen kannalta järkevän summan, sillä verkkomaksu söisi hyödyn. Ne voi suojata, kun lisää varoja saapuu.';
 
   @override
   String get walletShieldDoneTitle => 'Suojaus lähetetty';
@@ -419,8 +419,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
       'Varasi siirtyvät suojattuun saldoosi. Vahvistus lohkoketjussa tapahtuu pian.';
 
   @override
-  String get walletShieldSavedTitle =>
-      'Tallennettu — viimeistelemme suojauksen';
+  String get walletShieldSavedTitle => 'Tallennettu, viimeistelemme suojauksen';
 
   @override
   String get walletShieldSavedBody =>
@@ -458,7 +457,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletMoveSheetSubtitle =>
-      'Lähetä suojattua ZEC:iä omalle julkiselle osoitteellesi — hyödyllistä, jos pörssi ei hyväksy suojattua talletusta.';
+      'Lähetä suojattua ZEC:iä omalle julkiselle osoitteellesi. Hyödyllistä, jos pörssi ei hyväksy suojattua talletusta.';
 
   @override
   String get walletMoveDestinationLabel => 'Julkinen osoitteesi';
@@ -470,7 +469,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'Siirrettävissä: $amount ZEC — saldosi kurottaa yhä kiinni';
+    return 'Siirrettävissä: $amount ZEC (saldosi kurottaa yhä kiinni)';
   }
 
   @override
@@ -478,7 +477,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      'Siirto julkiseen osoitteeseen ottaa nämä varat pois suojatusta saldostasi — summa ja julkinen osoitteesi tulevat julkisesti näkyviin Zcash-lohkoketjussa.';
+      'Siirto julkiseen osoitteeseen ottaa nämä varat pois suojatusta saldostasi. Summa ja julkinen osoitteesi tulevat julkisesti näkyviin Zcash-lohkoketjussa.';
 
   @override
   String get walletMoveWalletEnded =>
@@ -520,7 +519,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
       'Varasi siirtyvät julkiselle osoitteellesi. Vahvistus lohkoketjussa tapahtuu pian.';
 
   @override
-  String get walletMoveSavedTitle => 'Tallennettu — viimeistelemme siirron';
+  String get walletMoveSavedTitle => 'Tallennettu, viimeistelemme siirron';
 
   @override
   String get walletMoveSavedBody =>
@@ -545,7 +544,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'Lompakkosi kurottaa yhä kiinni — kaikki vastaanottamasi tulee siirrettäväksi, kun synkronointi on valmis.';
+      'Lompakkosi kurottaa yhä kiinni. Kaikki vastaanottamasi tulee siirrettäväksi, kun synkronointi on valmis.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -563,7 +562,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletBalanceStale =>
-      'Päivitys ei onnistunut — näytetään viimeisin tunnettu saldo.';
+      'Päivitys ei onnistunut. Näytetään viimeisin tunnettu saldo.';
 
   @override
   String get walletSyncStartFailed =>
@@ -633,7 +632,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'Kurotaan kiinni verkkoa — perusteellinen alkusynkronointi voi kestää tovin. Voit käyttää sovellusta sillä aikaa';
+      'Kurotaan kiinni verkkoa. Perusteellinen alkusynkronointi voi kestää tovin. Voit käyttää sovellusta sillä aikaa';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -658,7 +657,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      'Zcash-verkkoa ei tavoiteta juuri nyt. Yritämme edelleen automaattisesti — tarkista internetyhteytesi, tai palvelin saattaa olla tilapäisesti pois käytöstä.';
+      'Zcash-verkkoa ei tavoiteta juuri nyt. Yritämme edelleen automaattisesti. Tarkista internetyhteytesi, tai palvelin saattaa olla tilapäisesti pois käytöstä.';
 
   @override
   String get walletStallTor =>
@@ -678,7 +677,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      'Tämä palvelin lähetti tietoja, jotka eivät voi pitää paikkaansa, joten synkronointi pysähtyi. Kyse ei ole yhteysongelmasta – vaihda toiseen palvelimeen. Jos jokainen palvelin hylätään, skannaa historia uudelleen: lompakko saattaa säilyttää virheellisen tietueen aiemmalta palvelimelta.';
+      'Tämä palvelin lähetti tietoja, jotka eivät voi pitää paikkaansa, joten synkronointi pysähtyi. Kyse ei ole yhteysongelmasta, joten vaihda toiseen palvelimeen. Jos jokainen palvelin hylätään, skannaa historia uudelleen: lompakko saattaa säilyttää virheellisen tietueen aiemmalta palvelimelta.';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -720,11 +719,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncExplainIdle =>
-      'Synkronointi ei ole vielä alkanut — se käynnistyy automaattisesti. Sinun ei tarvitse tehdä mitään.';
+      'Synkronointi ei ole vielä alkanut. Se käynnistyy automaattisesti. Sinun ei tarvitse tehdä mitään.';
 
   @override
   String get walletSyncExplainStartFailed =>
-      'Synkronointi ei käynnistynyt. Varasi ovat turvassa — lompakko ei vain tarkista uutta toimintaa juuri nyt. Yritä uudelleen alla, tai avaa sovellus uudelleen.';
+      'Synkronointi ei käynnistynyt. Varasi ovat turvassa; lompakko ei vain tarkista uutta toimintaa juuri nyt. Yritä uudelleen alla, tai avaa sovellus uudelleen.';
 
   @override
   String get walletSyncExplainStarting =>
@@ -736,7 +735,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'Lompakko tarkistaa lohkoketjun lohkoja varojesi varalta. Saldosi ja tapahtumasi päivittyvät sitä mukaa kuin uusia tapahtumia löytyy — voit käyttää sovellusta sillä aikaa.';
+      'Lompakko tarkistaa lohkoketjun lohkoja varojesi varalta. Saldosi ja tapahtumasi päivittyvät sitä mukaa kuin uusia tapahtumia löytyy, ja voit käyttää sovellusta sillä aikaa.';
 
   @override
   String get walletSyncExplainUpToDate =>
@@ -748,11 +747,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'Zcash-verkkoa ei tavoiteta — se on normaalia, jos olet offline-tilassa, tai palvelin saattaa olla tilapäisesti pois käytöstä. Varasi ovat turvassa: saldo näyttää viimeisimmän synkronoidun tilan, ja jonossa olevat lähetykset pysyvät tallennettuina kohdassa Tallennettu ja vireillä. Yhteys yrittää uudelleen itsestään.';
+      'Zcash-verkkoa ei tavoiteta. Se on normaalia, jos olet offline-tilassa, tai palvelin saattaa olla tilapäisesti pois käytöstä. Varasi ovat turvassa: saldo näyttää viimeisimmän synkronoidun tilan, ja jonossa olevat lähetykset pysyvät tallennettuina kohdassa Tallennettu ja vireillä. Yhteys yrittää uudelleen itsestään.';
 
   @override
   String get walletSyncExplainOffline =>
-      'Ei verkkoyhteyttä. Varasi ovat turvassa — saldo näyttää viimeisimmän synkronoidun tilan, ja jonossa olevat lähetykset pysyvät tallennettuina kohdassa Tallennettu ja vireillä.';
+      'Ei verkkoyhteyttä. Varasi ovat turvassa: saldo näyttää viimeisimmän synkronoidun tilan, ja jonossa olevat lähetykset pysyvät tallennettuina kohdassa Tallennettu ja vireillä.';
 
   @override
   String get walletSyncExplainUnknown =>
@@ -782,42 +781,42 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTorFellBack =>
-      'Tor ei käytettävissä — käytetään suoraa yhteyttä';
+      'Tor ei käytettävissä, käytetään suoraa yhteyttä';
 
   @override
   String get walletTorUnavailable =>
-      'Yksityinen reitti ei käytettävissä — ei yhteyttä';
+      'Yksityinen reitti ei käytettävissä, ei yhteyttä';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport ei käytettävissä — ei yhteyttä';
+    return '$transport ei käytettävissä, ei yhteyttä';
   }
 
   @override
   String get walletTorUnanswered =>
-      'Yksityinen reitti yhdistetty — mitään ei tule takaisin';
+      'Yksityinen reitti yhdistetty, mutta mitään ei tule takaisin';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'Yksityinen reitti yhdistetty — mitään ei tule takaisin (yksityisyyttä ei vahvistettu)';
+      'Yksityinen reitti yhdistetty, mutta mitään ei tule takaisin (yksityisyyttä ei vahvistettu)';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport yhdistetty — mitään ei tule takaisin';
+    return '$transport yhdistetty, mutta mitään ei tule takaisin';
   }
 
   @override
   String get walletTorUnansweredDirect =>
-      'Ei yksityinen (sovelluksesi suora yhteys) — mitään ei tule takaisin';
+      'Ei yksityinen (sovelluksesi suora yhteys), eikä mitään tule takaisin';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return 'Yhdistetty reitillä $transport — mitään ei tule takaisin; välityspalvelin voi yhdistää yhteydet toisiinsa';
+    return 'Yhdistetty reitillä $transport, mutta mitään ei tule takaisin; välityspalvelin voi yhdistää yhteydet toisiinsa';
   }
 
   @override
   String get walletTorUnknown =>
-      'Torin tila tuntematon — käsittele suojaamattomana';
+      'Torin tila tuntematon: käsittele suojaamattomana';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -922,7 +921,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'Palvelimeen ei saatu yhteyttä. Tarkista osoite — ja jos se on oikein, joko tämä palvelin ei vastaa tai sovelluksesi ei juuri nyt tavoita sitä. Yritä uudelleen tai valitse toinen palvelin.';
+      'Palvelimeen ei saatu yhteyttä. Tarkista osoite. Jos se on oikein, joko tämä palvelin ei vastaa tai sovelluksesi ei juuri nyt tavoita sitä. Yritä uudelleen tai valitse toinen palvelin.';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -956,7 +955,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return 'Vaihto ei onnistunut – käytössä on edelleen $host.';
+    return 'Vaihto ei onnistunut. Käytössä on edelleen $host.';
   }
 
   @override
@@ -991,24 +990,24 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      'Yksityinen reitti otti yhteyden vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin — lompakko ei pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
+      'Yksityinen reitti otti yhteyden vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin, eikä lompakko pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport otti yhteyden vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin — lompakko ei pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
+    return '$transport otti yhteyden vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin, eikä lompakko pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      'Lompakon liikenne yhdistää suoraan palvelimeen. Palvelin näkee IP-osoitteesi. Yhteys otettiin vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin — lompakko ei pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
+      'Lompakon liikenne yhdistää suoraan palvelimeen. Palvelin näkee IP-osoitteesi. Yhteys otettiin vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin, eikä lompakko pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'Tämän yhteyden yksityisyyttä ei voida vahvistaa — käsittele sitä ei-yksityisenä. Yhteys otettiin vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin — lompakko ei pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
+      'Tämän yhteyden yksityisyyttä ei voida vahvistaa, joten käsittele sitä ei-yksityisenä. Yhteys otettiin vastaan, mutta minuuttiin ei ole tullut mitään takaisin. Syynä voi olla reitti tai lompakkopalvelin, eikä lompakko pysty erottamaan näitä. Se jatkaa yrittämistä; jos tilanne ei korjaannu, kokeile toista palvelinta tai tarkista sovelluksesi verkkoasetukset.';
 
   @override
   String get walletTransportExplainUnverified =>
-      'Tämän yhteyden yksityisyyttä ei voida vahvistaa — käsittele sitä ei-yksityisenä.';
+      'Tämän yhteyden yksityisyyttä ei voida vahvistaa, joten käsittele sitä ei-yksityisenä.';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1019,7 +1018,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      'Luo uusi lompakko ZEC:in vastaanottamista ja säilyttämistä varten. Luomme palautuslauseen ja opastamme sinut sen varmuuskopiointiin, ennen kuin varoja voi saapua — näin mitään ei koskaan vaarannu ilman varmuuskopiota.';
+      'Luo uusi lompakko ZEC:in vastaanottamista ja säilyttämistä varten. Luomme palautuslauseen ja opastamme sinut sen varmuuskopiointiin, ennen kuin varoja voi saapua. Näin mitään ei koskaan vaarannu ilman varmuuskopiota.';
 
   @override
   String get walletCreateButton => 'Luo uusi lompakko';
@@ -1072,7 +1071,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return 'Skannataan alkaen $date — sitä ennen vastaanotetut varat eivät näy. Onko lompakkosi vanhempi? Valitse aiempi päivämäärä.';
+    return 'Skannataan alkaen $date. Sitä ennen vastaanotetut varat eivät näy. Onko lompakkosi vanhempi? Valitse aiempi päivämäärä.';
   }
 
   @override
@@ -1108,7 +1107,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'Syötä palautuslauseesi palauttaaksesi lompakkosi — kirjoita tai liitä sanat järjestyksessä välilyönnein erotettuna. Vain tavalliset lauseet: jos lompakossasi käytettiin ylimääräistä salasanaa (\"25. sana\"), tämä sovellus ei voi vielä palauttaa sitä — näkyviin tulisi tyhjä lompakko, ei virheilmoitus.';
+      'Syötä palautuslauseesi palauttaaksesi lompakkosi: kirjoita tai liitä sanat järjestyksessä välilyönnein erotettuna. Vain tavalliset lauseet: jos lompakossasi käytettiin ylimääräistä salasanaa (\"25. sana\"), tämä sovellus ei voi vielä palauttaa sitä. Näkyviin tulisi tyhjä lompakko, ei virheilmoitus.';
 
   @override
   String get walletRestorePhraseHint => 'sana yksi  sana kaksi  sana kolme  …';
@@ -1134,8 +1133,8 @@ class WalletLocalizationsFi extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sanaa ei ole palautussanoja — korjaa korostetut sanat',
-      one: '1 sana ei ole palautussana — korjaa korostettu sana',
+      other: '$count sanaa ei ole palautussanoja. Korjaa korostetut sanat',
+      one: '1 sana ei ole palautussana. Korjaa korostettu sana',
     );
     return '$_temp0';
   }
@@ -1166,11 +1165,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletRestoreBirthdayNone =>
-      'Skannaamme koko historiasi — hitaampaa, mutta mikään ei jää huomaamatta.';
+      'Skannaamme koko historiasi. Hitaampaa, mutta mikään ei jää huomaamatta.';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return 'Skannataan alkaen $date — sitä ennen vastaanotetut varat eivät näy. Onko lompakkosi vanhempi? Valitse aiempi päivämäärä tai skannaa koko historia.';
+    return 'Skannataan alkaen $date. Sitä ennen vastaanotetut varat eivät näy. Onko lompakkosi vanhempi? Valitse aiempi päivämäärä tai skannaa koko historia.';
   }
 
   @override
@@ -1214,7 +1213,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'Nämä sanat ovat AINOA tapa palauttaa lompakkosi ja varasi. Kirjoita ne muistiin järjestyksessä ja säilytä niitä turvallisessa ja yksityisessä paikassa. Älä koskaan jaa niitä tai tallenna verkkoon — kuka tahansa, jolla on nämä sanat, voi viedä varasi.';
+      'Nämä sanat ovat AINOA tapa palauttaa lompakkosi ja varasi. Kirjoita ne muistiin järjestyksessä ja säilytä niitä turvallisessa ja yksityisessä paikassa. Älä koskaan jaa niitä tai tallenna verkkoon: kuka tahansa, jolla on nämä sanat, voi viedä varasi.';
 
   @override
   String get walletBackupSecureNoteAndroid =>
@@ -1261,7 +1260,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      'Tämä poistaa tämän lompakon laitteelta ja palauttaa sinut alkuun. Mitään ei voi tallettaa tämän sovelluksen kautta ennen kuin käyttöönotto on valmis.\n\nJos tässä lompakossa on joskus ollut varoja — tai se palautettiin palautuslauseesta — vain kyseinen lause voi palauttaa sen.';
+      'Tämä poistaa tämän lompakon laitteelta ja palauttaa sinut alkuun. Mitään ei voi tallettaa tämän sovelluksen kautta ennen kuin käyttöönotto on valmis.\n\nJos tässä lompakossa on joskus ollut varoja (tai se palautettiin palautuslauseesta), vain kyseinen lause voi palauttaa sen.';
 
   @override
   String get walletBackupStartOverConfirm => 'Poista ja aloita alusta';
@@ -1290,7 +1289,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'Tämä lompakko otettiin käyttöön sen sovelluksen tilillä, joka asensi sen, joten sillä ei ole omaa palautuslausetta. Varasi palautuvat yhdessä kyseisen tilin kanssa — käytä sen varmuuskopiota pitääksesi ne turvassa.';
+      'Tämä lompakko otettiin käyttöön sen sovelluksen tilillä, joka asensi sen, joten sillä ei ole omaa palautuslausetta. Varasi palautuvat yhdessä kyseisen tilin kanssa. Käytä sen varmuuskopiota pitääksesi ne turvassa.';
 
   @override
   String get walletExportViewingKeyTitle => 'Vie katseluavain';
@@ -1300,15 +1299,15 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      'Jaa lompakostasi katselukopio — se näkee historiasi, mutta ei voi käyttää varoja.';
+      'Jaa lompakostasi katselukopio. Se näkee historiasi, mutta ei voi käyttää varoja.';
 
   @override
   String get walletExportViewingKeyWarning =>
-      'Tämä avain antaa kenelle tahansa, jolla se on, mahdollisuuden nähdä kaiken, mitä tämä lompakko on koskaan vastaanottanut ja lähettänyt — sekä kaiken, mitä se vastaanottaa ja lähettää tulevaisuudessa. Se ei voi käyttää varojasi eikä palauttaa lompakkoasi. Jaa se vain jollekulle, johon luotat näkemään koko historiasi, esimerkiksi kirjanpitäjällesi tai omalle toiselle laitteellesi. Ainoa tapa perua jakaminen myöhemmin on siirtää varasi uuteen lompakkoon.';
+      'Tämä avain antaa kenelle tahansa, jolla se on, mahdollisuuden nähdä kaiken, mitä tämä lompakko on koskaan vastaanottanut ja lähettänyt, sekä kaiken, mitä se vastaanottaa ja lähettää tulevaisuudessa. Se ei voi käyttää varojasi eikä palauttaa lompakkoasi. Jaa se vain jollekulle, johon luotat näkemään koko historiasi, esimerkiksi kirjanpitäjällesi tai omalle toiselle laitteellesi. Ainoa tapa perua jakaminen myöhemmin on siirtää varasi uuteen lompakkoon.';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'Tämä avain antaa kenelle tahansa, jolla se on, mahdollisuuden nähdä kaiken, mitä tämä lompakko on koskaan vastaanottanut ja lähettänyt — sekä kaiken, mitä se vastaanottaa ja lähettää tulevaisuudessa. Se ei voi käyttää varojasi eikä palauttaa lompakkoasi. Jaa se vain jollekulle, johon luotat näkemään koko historiasi, esimerkiksi kirjanpitäjällesi tai omalle toiselle laitteellesi. Kun se on jaettu, jakamista ei voi enää perua.';
+      'Tämä avain antaa kenelle tahansa, jolla se on, mahdollisuuden nähdä kaiken, mitä tämä lompakko on koskaan vastaanottanut ja lähettänyt, sekä kaiken, mitä se vastaanottaa ja lähettää tulevaisuudessa. Se ei voi käyttää varojasi eikä palauttaa lompakkoasi. Jaa se vain jollekulle, johon luotat näkemään koko historiasi, esimerkiksi kirjanpitäjällesi tai omalle toiselle laitteellesi. Kun se on jaettu, jakamista ei voi enää perua.';
 
   @override
   String get walletExportViewingKeyReveal => 'Näytä katseluavain';
@@ -1349,7 +1348,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'Tämä on katselulompakko. Se on otettu käyttöön katseluavaimella, joten se näkee saldosi ja historiasi, mutta sillä ei ole kulutusavaimia — täällä ei ole mitään varmuuskopioitavaa, eikä se voi lähettää varoja.';
+      'Tämä on katselulompakko. Se on otettu käyttöön katseluavaimella, joten se näkee saldosi ja historiasi, mutta sillä ei ole kulutusavaimia. Täällä ei ole mitään varmuuskopioitavaa, eikä se voi lähettää varoja.';
 
   @override
   String get walletWatchOnlyBadge => 'Vain katselu';
@@ -1367,11 +1366,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedAlreadyOpen =>
-      'Tämä lompakko on avoinna toisessa ikkunassa tai sovelluksessa, tai se viimeistelee vielä edellistä toimintoa. Sulje muut sitä käyttävät ikkunat — tai odota hetki — ja yritä sitten uudelleen.';
+      'Tämä lompakko on avoinna toisessa ikkunassa tai sovelluksessa, tai se viimeistelee vielä edellistä toimintoa. Sulje muut sitä käyttävät ikkunat (tai odota hetki) ja yritä sitten uudelleen.';
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'Tämän lompakon suojattu avain ei ole enää käytettävissä, joten sitä ei voida avata tällä laitteella. Varasi ovat turvassa — palauta lompakko palautuslauseestasi saadaksesi ne takaisin.';
+      'Tämän lompakon suojattu avain ei ole enää käytettävissä, joten sitä ei voida avata tällä laitteella. Varasi ovat turvassa. Palauta lompakko palautuslauseestasi saadaksesi ne takaisin.';
 
   @override
   String get walletOnboardingFailedRestoreAction => 'Palauta palautuslauseesta';
@@ -1382,7 +1381,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      'Varmista, että sinulla on palautuslauseesi käsillä ennen jatkamista — tarvitset sitä seuraavalla näytöllä varojesi palauttamiseen. Varasi ovat turvassa lohkoketjussa ja kyseisen lauseen hallinnassa. Tämä poistaa lukukelvottoman lompakkodatan tältä laitteelta, jotta se voidaan rakentaa uudelleen.';
+      'Varmista, että sinulla on palautuslauseesi käsillä ennen jatkamista. Tarvitset sitä seuraavalla näytöllä varojesi palauttamiseen. Varasi ovat turvassa lohkoketjussa ja kyseisen lauseen hallinnassa. Tämä poistaa lukukelvottoman lompakkodatan tältä laitteelta, jotta se voidaan rakentaa uudelleen.';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'Peruuta';
@@ -1401,7 +1400,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'Lompakon käyttöönotto ei valmistunut. Yritä uudelleen saattaaksesi sen loppuun — mitään ei menetetty.';
+      'Lompakon käyttöönotto ei valmistunut. Yritä uudelleen saattaaksesi sen loppuun. Mitään ei menetetty.';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1409,18 +1408,18 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      'Tämän sovelluksen lompakon määritykset ovat virheelliset, joten lompakko ei voi käynnistyä. Uudelleenyrittäminen ei auta — ilmoita tästä sovelluksen kehittäjälle. Varasi eivät ole vaarassa.';
+      'Tämän sovelluksen lompakon määritykset ovat virheelliset, joten lompakko ei voi käynnistyä. Uudelleenyrittäminen ei auta, joten ilmoita tästä sovelluksen kehittäjälle. Varasi eivät ole vaarassa.';
 
   @override
   String get walletSendButton => 'Lähetä';
 
   @override
   String get walletSendSyncNotRunning =>
-      'Synkronointi ei ole käynnissä — käytettävissä oleva saldosi ei voi päivittyä';
+      'Synkronointi ei ole käynnissä, joten käytettävissä oleva saldosi ei voi päivittyä';
 
   @override
   String get walletSendWaitingForFunds =>
-      'Synkronointi on vielä kesken — voit lähettää, kun sinulla on käytettävissä olevaa saldoa';
+      'Synkronointi on vielä kesken. Voit lähettää, kun sinulla on käytettävissä olevaa saldoa';
 
   @override
   String get walletSendNoSpendableYet => 'Ei vielä käytettävissä olevaa saldoa';
@@ -1438,7 +1437,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'Tämä lompakko on vain katselua varten. Se voi näyttää saldon ja vastaanottaa maksuja, mutta sillä ei ole kulutusavaimia — joten se ei voi lähettää.';
+      'Tämä lompakko on vain katselua varten. Se voi näyttää saldon ja vastaanottaa maksuja, mutta sillä ei ole kulutusavaimia, joten se ei voi lähettää.';
 
   @override
   String get walletSendExpiredTitle => 'Tämä maksupyyntö vanheni';
@@ -1449,7 +1448,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'Tämä lompakko on vain katselua varten — sillä ei ole kulutusavaimia, joten se ei voi lähettää.';
+      'Tämä lompakko on vain katselua varten. Sillä ei ole kulutusavaimia, joten se ei voi lähettää.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1458,7 +1457,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'Lähetettävissä: $amount ZEC — saldosi kurottaa yhä kiinni';
+    return 'Lähetettävissä: $amount ZEC (saldosi kurottaa yhä kiinni)';
   }
 
   @override
@@ -1584,7 +1583,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'Tämä on suuri maksu — lähes koko saldosi. Lähetettyä maksua ei voi peruuttaa.';
+      'Tämä on suuri maksu: lähes koko saldosi. Lähetettyä maksua ei voi peruuttaa.';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1601,11 +1600,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
   String get walletSendSentBody => 'Maksusi on lähetetty verkkoon.';
 
   @override
-  String get walletSendSavedTitle => 'Tallennettu — viimeistelemme lähetyksen';
+  String get walletSendSavedTitle => 'Tallennettu, viimeistelemme lähetyksen';
 
   @override
   String get walletSendSavedBody =>
-      'Maksusi ei lähtenyt juuri nyt, joten se on tallennettu — lompakkosi lähettää sen myöhemmässä synkronoinnissa. Mitään ei ole menetetty.';
+      'Maksusi ei lähtenyt juuri nyt, joten se on tallennettu. Lompakkosi lähettää sen myöhemmässä synkronoinnissa. Mitään ei ole menetetty.';
 
   @override
   String get walletSendKeptTitle => 'Tallennettu';
@@ -1630,7 +1629,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSendAlreadyBody =>
-      'Tämä maksu on jo lähetetty — sitä ei lähetetä kahdesti.';
+      'Tämä maksu on jo lähetetty. Sitä ei lähetetä kahdesti.';
 
   @override
   String get walletSendFailedTitle => 'Maksua ei voitu viedä loppuun';
@@ -1657,7 +1656,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return 'Käytettävissä oleva saldo ei riitä — sinulla on $available ZEC ja tämä vaatii $required ZEC.';
+    return 'Käytettävissä oleva saldo ei riitä: sinulla on $available ZEC ja tämä vaatii $required ZEC.';
   }
 
   @override
@@ -1678,7 +1677,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      'Tämä palvelin kieltäytyy palvelemasta, pidättää tai raportoi väärin yhden Zcashin suojatuista pooleista. Siihen pooliin vastaanotettuja varoja ei voi käyttää tämän palvelimen kautta, ja näytetty saldo on alaraja. Vaihda toiseen palvelimeen käyttääksesi niitä – kyse ei ole yhteysongelmasta.';
+      'Tämä palvelin kieltäytyy palvelemasta, pidättää tai raportoi väärin yhden Zcashin suojatuista pooleista. Siihen pooliin vastaanotettuja varoja ei voi käyttää tämän palvelimen kautta, ja näytetty saldo on alaraja. Vaihda toiseen palvelimeen käyttääksesi niitä. Kyse ei ole yhteysongelmasta.';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1715,19 +1714,19 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      'Tämän palvelimen ketju päättyy lohkoon, jonka verkko oli ohittanut jo ennen tämän sovellusversion kääntämistä, joten saldosi on ajan tasalla vain siihen lohkoon asti. Uudet sinulle tulleet maksut eivät ehkä vielä näy, eikä täältä lähetetty maksu välttämättä mene perille. Vaihda toiseen palvelimeen päästäksesi ajan tasalle – kyse ei ole yhteysongelmasta.';
+      'Tämän palvelimen ketju päättyy lohkoon, jonka verkko oli ohittanut jo ennen tämän sovellusversion kääntämistä, joten saldosi on ajan tasalla vain siihen lohkoon asti. Uudet sinulle tulleet maksut eivät ehkä vielä näy, eikä täältä lähetetty maksu välttämättä mene perille. Vaihda toiseen palvelimeen päästäksesi ajan tasalle. Kyse ei ole yhteysongelmasta.';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'Odotetaan sovelluspäivitystä — varasi ovat turvassa eikä mitään ole lähetetty.';
+      'Odotetaan sovelluspäivitystä. Varasi ovat turvassa eikä mitään ole lähetetty.';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'Odotetaan palvelinta, joka ilmoittaa verkkoversion — vaihda palvelinta. Varasi ovat turvassa eikä mitään ole lähetetty.';
+      'Odotetaan palvelinta, joka ilmoittaa verkkoversion, joten vaihda palvelinta. Varasi ovat turvassa eikä mitään ole lähetetty.';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
-      'Odotetaan palvelinta, joka ilmoittaa verkkoversion. Jos tämän laitteen päivämäärä ja kellonaika ovat väärin, korjaa ne ensin – ja vaihda sitten palvelinta. Varasi ovat turvassa eikä mitään ole lähetetty.';
+      'Odotetaan palvelinta, joka ilmoittaa verkkoversion. Jos tämän laitteen päivämäärä ja kellonaika ovat väärin, korjaa ne ensin ja vaihda sitten palvelinta. Varasi ovat turvassa eikä mitään ole lähetetty.';
 
   @override
   String get walletSyncUnverified =>
@@ -1739,18 +1738,18 @@ class WalletLocalizationsFi extends WalletLocalizations {
       hours,
       locale: localeName,
       other:
-          'Lähettäminen toimii vielä noin $hours tuntia — vaihda sen jälkeen palvelinta.',
+          'Lähettäminen toimii vielä noin $hours tuntia. Vaihda sen jälkeen palvelinta.',
       one:
-          'Lähettäminen toimii vielä noin 1 tunnin — vaihda sen jälkeen palvelinta.',
+          'Lähettäminen toimii vielä noin 1 tunnin. Vaihda sen jälkeen palvelinta.',
       zero:
-          'Lähettäminen toimii vielä alle tunnin — vaihda sen jälkeen palvelinta.',
+          'Lähettäminen toimii vielä alle tunnin. Vaihda sen jälkeen palvelinta.',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return 'Lähettäminen toimii vielä noin $blocks lohkon ajan — vaihda sen jälkeen palvelinta.';
+    return 'Lähettäminen toimii vielä noin $blocks lohkon ajan. Vaihda sen jälkeen palvelinta.';
   }
 
   @override
@@ -1760,7 +1759,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncGraceEndedClock =>
-      'Tämä palvelin ei ole ilmoittanut verkkoversiota päivään, joten sovellus ei voi varmistaa, että lähettäminen on turvallista. Jos tämän laitteen päivämäärä ja kellonaika ovat väärin, korjaa ne ensin – ja vaihda sitten palvelimeen, joka ilmoittaa verkkoversion.';
+      'Tämä palvelin ei ole ilmoittanut verkkoversiota päivään, joten sovellus ei voi varmistaa, että lähettäminen on turvallista. Jos tämän laitteen päivämäärä ja kellonaika ovat väärin, korjaa ne ensin ja vaihda sitten palvelimeen, joka ilmoittaa verkkoversion.';
 
   @override
   String get walletSyncGraceNeverConfirmed =>
@@ -1768,19 +1767,19 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'Tämä palvelin ei kerro, missä Zcash-verkon versiossa se on, joten sovellus ei voi varmistaa, että sen allekirjoittama maksu hyväksytään. Saldosi on ajan tasalla. Vaihda toiseen palvelimeen – tämä ei ole yhteysongelma.';
+      'Tämä palvelin ei kerro, missä Zcash-verkon versiossa se on, joten sovellus ei voi varmistaa, että sen allekirjoittama maksu hyväksytään. Saldosi on ajan tasalla. Vaihda toiseen palvelimeen. Tämä ei ole yhteysongelma.';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'Tämä palvelin ei kerro, missä Zcash-verkon versiossa se on, joten sovellus ei voi varmistaa, että sen allekirjoittama maksu hyväksytään. Se on myös toistuvasti tarjonnut lohkoja, jotka tämä lompakko joutui sitten perumaan, joten saldosi ei ehkä ole ajan tasalla. Vaihda toiseen palvelimeen – tämä ei ole yhteysongelma.';
+      'Tämä palvelin ei kerro, missä Zcash-verkon versiossa se on, joten sovellus ei voi varmistaa, että sen allekirjoittama maksu hyväksytään. Se on myös toistuvasti tarjonnut lohkoja, jotka tämä lompakko joutui sitten perumaan, joten saldosi ei ehkä ole ajan tasalla. Vaihda toiseen palvelimeen. Tämä ei ole yhteysongelma.';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'Tämä palvelin tarjoaa myös toistuvasti lohkoja, jotka lompakko joutuu perumaan – vaihda palvelinta.';
+      'Tämä palvelin tarjoaa myös toistuvasti lohkoja, jotka lompakko joutuu perumaan. Vaihda palvelinta.';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'Saldosi kurottaa yhä kiinni — lisää saattaa tulla käytettäväksi lompakon synkronoituessa.';
+      'Saldosi kurottaa yhä kiinni. Lisää saattaa tulla käytettäväksi lompakon synkronoituessa.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1828,7 +1827,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSendFaultMemoConflict =>
-      'Tätä maksua ei voitu lähettää – sovellus liitti siihen kaksi viestiä. Mitään ei lähetetty.';
+      'Tätä maksua ei voitu lähettää, koska sovellus liitti siihen kaksi viestiä. Mitään ei lähetetty.';
 
   @override
   String get walletSendFaultNetworkMismatch =>
@@ -1894,7 +1893,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'Tämä lompakko on vain katselua varten — se ei voi vaihtaa.';
+      'Tämä lompakko on vain katselua varten, joten se ei voi vaihtaa.';
 
   @override
   String get walletSwapDone => 'Valmis';
@@ -1909,7 +1908,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'Vaihdettavissa: $amount ZEC — saldosi kurottaa yhä kiinni';
+    return 'Vaihdettavissa: $amount ZEC (saldosi kurottaa yhä kiinni)';
   }
 
   @override
@@ -1935,7 +1934,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return 'Osoite verkossa $chain — tähän vaihdettu omaisuuserä lähetetään. Tarkista, että verkko on oikea.';
+    return 'Osoite verkossa $chain. Tähän vaihdettu omaisuuserä lähetetään. Tarkista, että verkko on oikea.';
   }
 
   @override
@@ -1956,7 +1955,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'Vielä kesken — vaihto on käynnistymässä. Tämä voi kestää jopa minuutin.';
+      'Vielä kesken: vaihto on käynnistymässä. Tämä voi kestää jopa minuutin.';
 
   @override
   String get walletSwapReviewTitle => 'Vahvista vaihto';
@@ -1980,16 +1979,16 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'Tarjous on voimassa vielä noin $time — vahvista ennen sen vanhenemista.';
+    return 'Tarjous on voimassa vielä noin $time. Vahvista ennen sen vanhenemista.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'Tarjous on voimassa vielä alle minuutin — vahvista ennen sen vanhenemista.';
+      'Tarjous on voimassa vielä alle minuutin. Vahvista ennen sen vanhenemista.';
 
   @override
   String get walletSwapQuoteExpired =>
-      'Tämä tarjous on vanhentunut. Palaa takaisin ja hae uusi — sen kurssi ei ole enää voimassa, ja lähettäminen nyt voi johtaa palautukseen.';
+      'Tämä tarjous on vanhentunut. Palaa takaisin ja hae uusi: sen kurssi ei ole enää voimassa, ja lähettäminen nyt voi johtaa palautukseen.';
 
   @override
   String get walletCountdownUnderMinute => 'alle minuutin';
@@ -2014,7 +2013,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'ZEC:in vaihtaminen ulos poistaa sen suojauksen — talletus on julkinen tapahtuma, ja palveluntarjoajan puoli on julkinen sen omassa verkossa.';
+      'ZEC:in vaihtaminen ulos poistaa sen suojauksen: talletus on julkinen tapahtuma, ja palveluntarjoajan puoli on julkinen sen omassa verkossa.';
 
   @override
   String get walletSwapDiscloseTitle => 'Mitä vaihdon palveluntarjoaja näkee';
@@ -2061,7 +2060,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'Lompakkosi lähettää ZEC-talletusta palveluntarjoajalle. Jos olet hetken offline-tilassa, se lähetetään automaattisesti, kun olet taas verkossa — mutta lähetysikkuna on lyhyt, ja jos se sulkeutuu ensin, vaihto yksinkertaisesti päättyy eikä mitään vaihdeta. ZECisi pysyy sinun omanasi, ja sen näkyminen taas käytettävissä olevana voi kestää jopa tunnin.';
+      'Lompakkosi lähettää ZEC-talletusta palveluntarjoajalle. Jos olet hetken offline-tilassa, se lähetetään automaattisesti, kun olet taas verkossa. Lähetysikkuna on kuitenkin lyhyt, ja jos se sulkeutuu ensin, vaihto yksinkertaisesti päättyy eikä mitään vaihdeta. ZECisi pysyy sinun omanasi, ja sen näkyminen taas käytettävissä olevana voi kestää jopa tunnin.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2069,7 +2068,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'Tämä vaihto odottaa yhä talletustaan. Talletusohjeet eivät ole enää saatavilla tällä laitteella — jos olet jo lähettänyt varat, ne havaitaan; jos et ole, anna tämän vaihdon vanheta ja aloita uusi.';
+      'Tämä vaihto odottaa yhä talletustaan. Talletusohjeet eivät ole enää saatavilla tällä laitteella. Jos olet jo lähettänyt varat, ne havaitaan; jos et ole, anna tämän vaihdon vanheta ja aloita uusi.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2082,7 +2081,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'Talletusikkuna on päättynyt. Jos et ole vielä lähettänyt talletustasi, vaihto päättyy yksinkertaisesti — hae uusi tarjous, kun olet valmis.';
+      'Talletusikkuna on päättynyt. Jos et ole vielä lähettänyt talletustasi, vaihto päättyy yksinkertaisesti. Hae uusi tarjous, kun olet valmis.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2108,15 +2107,15 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'Talletusikkuna on päättynyt — tarkista tämän vaihdon tila.';
+      'Talletusikkuna on päättynyt. Tarkista tämän vaihdon tila.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'Tämä vaihto ei ole vielä saavuttanut vahvistettua lopputulosta täällä — avaa se ja tarkista. Tälle lompakolle palautuva ZEC näkyy saldossasi synkronoinnin jälkeen.';
+      'Tämä vaihto ei ole vielä saavuttanut vahvistettua lopputulosta täällä. Avaa se ja tarkista. Tälle lompakolle palautuva ZEC näkyy saldossasi synkronoinnin jälkeen.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'Tämä vaihto ei ole vielä saavuttanut vahvistettua lopputulosta täällä — avaa se ja tarkista. Tämän vaihdon tälle lompakolle toimittama ZEC näkyy saldossasi synkronoinnin jälkeen.';
+      'Tämä vaihto ei ole vielä saavuttanut vahvistettua lopputulosta täällä. Avaa se ja tarkista. Tämän vaihdon tälle lompakolle toimittama ZEC näkyy saldossasi synkronoinnin jälkeen.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'Vaihto valmistui.';
@@ -2135,15 +2134,15 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'Tämä vain poistaa vaihdon listalta — se ei peruuta vaihtoa, ja tämä lompakko lopettaa sen palautuksen seuraamisen. Myöhemmin palautettu ZEC kuuluu silti tälle lompakolle; täydellinen uudelleenskannaus voi löytää sen.';
+      'Tämä vain poistaa vaihdon listalta. Se ei peruuta vaihtoa, ja tämä lompakko lopettaa sen palautuksen seuraamisen. Myöhemmin palautettu ZEC kuuluu silti tälle lompakolle; täydellinen uudelleenskannaus voi löytää sen.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'Tämä vain poistaa vaihdon listalta — se ei peruuta vaihtoa, ja tämä lompakko lopettaa saapuvan ZECin seuraamisen. Myöhemmin saapuva ZEC kuuluu silti tälle lompakolle; täydellinen uudelleenskannaus voi löytää sen. Jos vaihto sen sijaan palautetaan, palautus tulee takaisin lähettämässäsi omaisuuserässä, tämän lompakon ulkopuolelle.';
+      'Tämä vain poistaa vaihdon listalta. Se ei peruuta vaihtoa, ja tämä lompakko lopettaa saapuvan ZECin seuraamisen. Myöhemmin saapuva ZEC kuuluu silti tälle lompakolle; täydellinen uudelleenskannaus voi löytää sen. Jos vaihto sen sijaan palautetaan, palautus tulee takaisin lähettämässäsi omaisuuserässä, tämän lompakon ulkopuolelle.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'Tämä vain poistaa vaihdon listalta — se ei peruuta vaihtoa, ja tämä lompakko lopettaa siitä yhä saapuvan ZECin seuraamisen. Myöhemmin saapuva ZEC kuuluu silti tälle lompakolle; täydellinen uudelleenskannaus voi löytää sen.';
+      'Tämä vain poistaa vaihdon listalta. Se ei peruuta vaihtoa, ja tämä lompakko lopettaa siitä yhä saapuvan ZECin seuraamisen. Myöhemmin saapuva ZEC kuuluu silti tälle lompakolle; täydellinen uudelleenskannaus voi löytää sen.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2225,7 +2224,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'Vaihto ei valmistunut, joten palveluntarjoaja lähetti ZECisi takaisin tähän lompakkoon. Se saapuu suojaamattomina varoina ja näkyy saldossasi, kun lompakko synkronoituu seuraavan kerran — tämä voi kestää hetken.';
+      'Vaihto ei valmistunut, joten palveluntarjoaja lähetti ZECisi takaisin tähän lompakkoon. Se saapuu suojaamattomina varoina ja näkyy saldossasi, kun lompakko synkronoituu seuraavan kerran. Tämä voi kestää hetken.';
 
   @override
   String get walletSwapStatusFailedTitle => 'Vaihto epäonnistui';
@@ -2239,7 +2238,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'Palveluntarjoajalla ei ole enää tietoa tästä vaihdosta — se on todennäköisesti vanhentunut. Jos talletus tehtiin, palveluntarjoajan pitäisi palauttaa se palautusosoitteeseen. Vaihto pysyy listallasi, ja tämä lompakko jatkaa sen ZECin seuraamista sen varalta, että se vielä saapuu; voit poistaa sen listalta milloin tahansa.';
+      'Palveluntarjoajalla ei ole enää tietoa tästä vaihdosta, joten se on todennäköisesti vanhentunut. Jos talletus tehtiin, palveluntarjoajan pitäisi palauttaa se palautusosoitteeseen. Vaihto pysyy listallasi, ja tämä lompakko jatkaa sen ZECin seuraamista sen varalta, että se vielä saapuu; voit poistaa sen listalta milloin tahansa.';
 
   @override
   String get walletSwapStatusUnknownTitle => 'Tila ei ole saatavilla';
@@ -2257,14 +2256,14 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'Vaihto on täällä pois päältä, joten tätä vaihtoa ei voida seurata juuri nyt. Jos se palautettiin, ZEC palautuu tälle lompakolle — se näkyy saldossasi, kun vaihto kytketään takaisin päälle ja lompakko synkronoituu.';
+      'Vaihto on täällä pois päältä, joten tätä vaihtoa ei voida seurata juuri nyt. Jos se palautettiin, ZEC palautuu tälle lompakolle. Se näkyy saldossasi, kun vaihto kytketään takaisin päälle ja lompakko synkronoituu.';
 
   @override
   String get walletSwapTrackingError => 'Tätä vaihtoa ei voitu seurata.';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'Tämän vaihdon seurantaa ei voitu avata. Vaihto itse saattaa silti olla yhä käynnissä — talletetut varat selvitetään tai palautetaan palveluntarjoajan puolella.';
+      'Tämän vaihdon seurantaa ei voitu avata. Vaihto itse saattaa silti olla yhä käynnissä: talletetut varat selvitetään tai palautetaan palveluntarjoajan puolella.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2307,19 +2306,19 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      'Vaihto on jo käynnissä. Voit aloittaa uuden, kun se on kokonaan selvitetty tai sen tarjous vanhenee — tämä voi kestää jonkin aikaa.';
+      'Vaihto on jo käynnissä. Voit aloittaa uuden, kun se on kokonaan selvitetty tai sen tarjous vanhenee. Tämä voi kestää jonkin aikaa.';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'Tämä lompakko ei voi vielä määrittää palautusosoitetta — tämä tarkoittaa yleensä vain, että ensimmäinen synkronointi ei ole valmis. Odota, kunnes synkronointi on valmis, ja yritä sitten uudelleen.';
+      'Tämä lompakko ei voi vielä määrittää palautusosoitetta. Tämä tarkoittaa yleensä vain, että ensimmäinen synkronointi ei ole valmis. Odota, kunnes synkronointi on valmis, ja yritä sitten uudelleen.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'Tämä lompakko ei voi vielä määrittää vastaanotto-osoitetta tälle vaihdolle — tämä tarkoittaa yleensä vain, että ensimmäinen synkronointi ei ole valmis. Odota, kunnes synkronointi on valmis, ja yritä sitten uudelleen.';
+      'Tämä lompakko ei voi vielä määrittää vastaanotto-osoitetta tälle vaihdolle. Tämä tarkoittaa yleensä vain, että ensimmäinen synkronointi ei ole valmis. Odota, kunnes synkronointi on valmis, ja yritä sitten uudelleen.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'Vaihto ei käynnistynyt ajoissa — yhteys saattoi olla hidas, tai lompakko oli varattu. Hae uusi tarjous ja yritä uudelleen.';
+      'Vaihto ei käynnistynyt ajoissa. Yhteys saattoi olla hidas, tai lompakko oli varattu. Hae uusi tarjous ja yritä uudelleen.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2344,7 +2343,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'Tämä vaihto vaatii noin $needed ZEC verkkomaksuineen, mutta vain $spendable ZEC on juuri nyt käytettävissä. Saldosi kurottaa yhä kiinni — lisää saattaa tulla käytettäväksi pian.';
+    return 'Tämä vaihto vaatii noin $needed ZEC verkkomaksuineen, mutta vain $spendable ZEC on juuri nyt käytettävissä. Saldosi kurottaa yhä kiinni, joten lisää saattaa tulla käytettäväksi pian.';
   }
 
   @override
@@ -2378,7 +2377,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapRefundHelper =>
-      'Verkossa, josta lähetät — ei Zcash-osoite.';
+      'Verkossa, josta lähetät. Ei Zcash-osoite.';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2387,7 +2386,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return 'Osoite verkossa $chain — tähän kolikkosi palautuvat, jos vaihto epäonnistuu. Ei Zcash-osoite.';
+    return 'Osoite verkossa $chain. Tähän kolikkosi palautuvat, jos vaihto epäonnistuu. Ei Zcash-osoite.';
   }
 
   @override
@@ -2395,7 +2394,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'Jos vaihtoa ei voida viedä loppuun, palveluntarjoaja lähettää kolikkosi takaisin tähän osoitteeseen sillä ketjulla, josta maksoit. Anna osoite, jota hallitset itse — lompakko ei voi tarkistaa vierasta osoitetta puolestasi, joten tarkista se huolellisesti.';
+      'Jos vaihtoa ei voida viedä loppuun, palveluntarjoaja lähettää kolikkosi takaisin tähän osoitteeseen sillä ketjulla, josta maksoit. Anna osoite, jota hallitset itse. Lompakko ei voi tarkistaa vierasta osoitetta puolestasi, joten tarkista se huolellisesti.';
 
   @override
   String get walletSwapRefundScanTooltip =>
@@ -2451,7 +2450,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapPickerStale =>
-      'Omaisuuserälistan päivitys epäonnistui — näytetään viimeisin tunnettu lista.';
+      'Omaisuuserälistan päivitys epäonnistui. Näytetään viimeisin tunnettu lista.';
 
   @override
   String get walletSwapPickerEmpty =>
@@ -2488,22 +2487,22 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapSlippageMayFail =>
-      'Hyvin matala — vaihto voi epäonnistua, jos hinta muuttuu.';
+      'Hyvin matala: vaihto voi epäonnistua, jos hinta muuttuu.';
 
   @override
   String get walletSwapSlippageNormal => 'Turvallinen toleranssi.';
 
   @override
   String get walletSwapSlippageRisky =>
-      'Korkea — saatat saada huomattavasti vähemmän kuin tarjottu määrä.';
+      'Korkea: saatat saada huomattavasti vähemmän kuin tarjottu määrä.';
 
   @override
   String get walletSwapSlippageTooHigh =>
-      'Liian korkea — vaihto hylätään. Laske se 10 %:iin tai alle.';
+      'Liian korkea, joten vaihto hylätään. Laske se 10 %:iin tai alle.';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return 'Saat vähintään $zec ZEC — $slippage %:n liukumarajasi. Lopullinen summa ei laske tämän alle.';
+    return 'Saat vähintään $zec ZEC, mikä on $slippage %:n liukumarajasi. Lopullinen summa ei laske tämän alle.';
   }
 
   @override
@@ -2512,14 +2511,14 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'Kunnes suojaat sen — yksi napautus, josta muistutetaan saapumisen yhteydessä — vastaanotettu summa on hetken julkinen ja näkyvissä lohkoketjussa. Pieni erä voi pysyä julkisena, kunnes sitä kertyy lisää.';
+      'Kunnes suojaat sen (yksi napautus, josta muistutetaan saapumisen yhteydessä), vastaanotettu summa on hetken julkinen ja näkyvissä lohkoketjussa. Pieni erä voi pysyä julkisena, kunnes sitä kertyy lisää.';
 
   @override
   String get walletSwapRefundVerifyTitle => 'Vahvista palautusosoitteesi';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      'Tarkista se merkki merkiltä — tähän kolikkosi palautuvat, jos vaihto epäonnistuu. Lompakko ei voi vahvistaa vierasta osoitetta puolestasi.';
+      'Tarkista se merkki merkiltä, sillä tähän kolikkosi palautuvat, jos vaihto epäonnistuu. Lompakko ei voi vahvistaa vierasta osoitetta puolestasi.';
 
   @override
   String get walletSwapRefundVerifyAck =>
@@ -2530,7 +2529,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return 'Tarkista se merkki merkiltä — tähän saat $asset. Lompakko ei voi vahvistaa vierasta osoitetta puolestasi.';
+    return 'Tarkista se merkki merkiltä, sillä tähän saat $asset. Lompakko ei voi vahvistaa vierasta osoitetta puolestasi.';
   }
 
   @override
@@ -2571,7 +2570,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'Tämä talletusikkuna on sulkeutunut. Älä lähetä varoja nyt — aloita uusi vaihto. Jos lähetit jo, palveluntarjoajan pitäisi palauttaa varat palautusosoitteeseesi.';
+      'Tämä talletusikkuna on sulkeutunut. Älä lähetä varoja nyt, vaan aloita uusi vaihto. Jos lähetit jo, palveluntarjoajan pitäisi palauttaa varat palautusosoitteeseesi.';
 
   @override
   String get walletSwapDepositQrLabel => 'Talletusosoitteen QR-koodi';
@@ -2591,7 +2590,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapDepositMemoWarning =>
-      'Sinun TÄYTYY liittää tämä täsmällinen muistio talletukseesi. Lähettäminen ilman sitä — tai väärällä muistiolla — voi johtaa varojesi pysyvään menetykseen.';
+      'Sinun TÄYTYY liittää tämä täsmällinen muistio talletukseesi. Lähettäminen ilman sitä tai väärällä muistiolla voi johtaa varojesi pysyvään menetykseen.';
 
   @override
   String get walletSwapDepositMemoLabel => 'Talletuksen muistio / tunniste';
@@ -2610,11 +2609,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'Tämä ei peruuta vaihtoasi — se jatkuu taustalla. Tarvitset kuitenkin talletusosoitteen maksamiseen, joten kopioi se ensin, jos et ole vielä tehnyt niin.';
+      'Tämä ei peruuta vaihtoasi, vaan se jatkuu taustalla. Tarvitset kuitenkin talletusosoitteen maksamiseen, joten kopioi se ensin, jos et ole vielä tehnyt niin.';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'Tämä ei peruuta vaihtoasi — se jatkuu taustalla. Talletusikkuna on sulkeutunut. Älä lähetä varoja talletusosoitteeseen nyt. Jos lähetit jo, palveluntarjoajan pitäisi palauttaa varat palautusosoitteeseesi.';
+      'Tämä ei peruuta vaihtoasi, vaan se jatkuu taustalla. Talletusikkuna on sulkeutunut. Älä lähetä varoja talletusosoitteeseen nyt. Jos lähetit jo, palveluntarjoajan pitäisi palauttaa varat palautusosoitteeseesi.';
 
   @override
   String get walletSwapDepositBackStay => 'Jää';
@@ -2647,7 +2646,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'Lompakkosi valmistelee tämän osoitteen laitteellasi — tässä voi kestää hetki, jos lompakko on varattu muuhun työhön.';
+      'Lompakkosi valmistelee tämän osoitteen laitteellasi. Tässä voi kestää hetki, jos lompakko on varattu muuhun työhön.';
 
   @override
   String get walletReceiveRetry => 'Yritä uudelleen';
@@ -2678,7 +2677,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'Uusi osoite — sitä ei voi yhdistää muihin osoitteisiisi. Maksut siihen saapuvat silti tähän lompakkoon, ja aiemmat osoitteesi toimivat edelleen. Sitä ei näytetä täällä enää uudelleen — kopioi se nyt.';
+      'Uusi osoite, jota ei voi yhdistää muihin osoitteisiisi. Maksut siihen saapuvat silti tähän lompakkoon, ja aiemmat osoitteesi toimivat edelleen. Sitä ei näytetä täällä enää uudelleen, joten kopioi se nyt.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2699,7 +2698,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCopyNow =>
-      'Sitä ei näytetä täällä enää uudelleen — kopioi se nyt.';
+      'Sitä ei näytetä täällä enää uudelleen, joten kopioi se nyt.';
 
   @override
   String get walletSecurityMenuItem => 'Tietoturva…';
@@ -2756,18 +2755,18 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'Poista tämä lompakko ja sen avain tältä laitteelta. Sillä ei ole kulutusavaimia, joten siinä ei ole mitään varmuuskopioitavaa — lisää se takaisin milloin tahansa sen katseluavaimella.';
+      'Poista tämä lompakko ja sen avain tältä laitteelta. Sillä ei ole kulutusavaimia, joten siinä ei ole mitään varmuuskopioitavaa. Lisää se takaisin milloin tahansa sen katseluavaimella.';
 
   @override
   String get securityDeleteDialogTitle => 'Poistetaanko tämä lompakko?';
 
   @override
   String get securityDeleteDialogBody =>
-      'Tämä poistaa lompakon ja sen avaimen tältä laitteelta. Varmista, että olet varmuuskopioinut palautuslauseesi — se on AINOA tapa palauttaa varasi.';
+      'Tämä poistaa lompakon ja sen avaimen tältä laitteelta. Varmista, että olet varmuuskopioinut palautuslauseesi: se on AINOA tapa palauttaa varasi.';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'Tämä poistaa lompakon ja sen avaimen tältä laitteelta. Sillä ei ole kulutusavaimia, joten mitään ei tarvitse varmuuskopioida — voit lisätä sen takaisin myöhemmin sen katseluavaimella.';
+      'Tämä poistaa lompakon ja sen avaimen tältä laitteelta. Sillä ei ole kulutusavaimia, joten mitään ei tarvitse varmuuskopioida. Voit lisätä sen takaisin myöhemmin sen katseluavaimella.';
 
   @override
   String get securityDeleteDialogConfirm => 'Poista';
@@ -2777,11 +2776,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'Lompakon poistaminen epäonnistui — lompakkosi on ennallaan. Yritä uudelleen.';
+      'Lompakon poistaminen epäonnistui. Lompakkosi on ennallaan. Yritä uudelleen.';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return 'Viimeistele ensin palvelimen vaihto — se valmistuu tai pysähtyy $seconds sekunnin kuluessa. Yritä sitten poistaa lompakko uudelleen.';
+    return 'Viimeistele ensin palvelimen vaihto. Se valmistuu tai pysähtyy $seconds sekunnin kuluessa. Yritä sitten poistaa lompakko uudelleen.';
   }
 
   @override
@@ -2793,14 +2792,14 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'Näitä maksuja ei ole vielä lähetetty. Niiden summat ovat yhä osa saldoasi — paitsi niiden, joita lompakkosi parhaillaan lähettää: niiden summa saattaa jo olla varattuna.';
+      'Näitä maksuja ei ole vielä lähetetty. Niiden summat ovat yhä osa saldoasi, paitsi niiden, joita lompakkosi parhaillaan lähettää: niiden summa saattaa jo olla varattuna.';
 
   @override
   String get walletParkedCancel => 'Peruuta';
 
   @override
   String get walletParkedPausedHint =>
-      'Keskeytetty — tämä maksu ei lähde itsestään. Varasi ovat turvassa. Lähetä se nyt, tai peruuta se.';
+      'Keskeytetty: tämä maksu ei lähde itsestään. Varasi ovat turvassa. Lähetä se nyt, tai peruuta se.';
 
   @override
   String get walletParkedRetryStale =>
@@ -2808,11 +2807,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'Tämä maksu ei ole enää vireillä — lompakkosi saattaa jo lähettää sitä. Tarkista Tallennettu ja vireillä sekä tapahtumasi.';
+      'Tämä maksu ei ole enää vireillä, ja lompakkosi saattaa jo lähettää sitä. Tarkista Tallennettu ja vireillä sekä tapahtumasi.';
 
   @override
   String get walletReclaimExplainer =>
-      'Kertakäyttöisten osoitteiden lähetykset ovat jumissa. Voit avata ne uudelleen — se siirtää pienen summan omien osoitteidesi välillä ja palauttaa sen.';
+      'Kertakäyttöisten osoitteiden lähetykset ovat jumissa. Voit avata ne uudelleen: se siirtää pienen summan omien osoitteidesi välillä ja palauttaa sen.';
 
   @override
   String get walletReclaimButton => 'Avaa lähetys uudelleen';
@@ -2873,7 +2872,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      'Tämä hylkää tallennetun maksun. Sitä ei ole lähetetty, joten mitään ei lähde lompakostasi — mutta tätä ei voi peruuttaa.';
+      'Tämä hylkää tallennetun maksun. Sitä ei ole lähetetty, joten mitään ei lähde lompakostasi. Tätä ei kuitenkaan voi peruuttaa.';
 
   @override
   String get walletParkedCancelConfirmKeep => 'Säilytä';
@@ -2886,7 +2885,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'Tämä maksu saattaa jo olla matkalla — tarkista tapahtumasi.';
+      'Tämä maksu saattaa jo olla matkalla. Tarkista tapahtumasi.';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2918,16 +2917,16 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return 'Palautetaan $amount — osa varoista tarvitsee vielä uuden yrityksen.';
+    return 'Palautetaan $amount. Osa varoista tarvitsee vielä uuden yrityksen.';
   }
 
   @override
   String get walletRecoverRetry =>
-      'Osa varoista tarvitsee vielä uuden yrityksen — suorita palautus uudelleen.';
+      'Osa varoista tarvitsee vielä uuden yrityksen. Suorita palautus uudelleen.';
 
   @override
   String get walletRecoverTruncated =>
-      'Kaikkia kertakäyttöisiä osoitteita ei vielä tarkistettu — suorita se uudelleen tarkistaaksesi loput.';
+      'Kaikkia kertakäyttöisiä osoitteita ei vielä tarkistettu. Suorita se uudelleen tarkistaaksesi loput.';
 
   @override
   String get walletRecoverNothing => 'Ei mitään palautettavaa juuri nyt.';
@@ -2958,11 +2957,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'Lompakkosi valmistelee tätä maksua — sen summa saattaa jo olla varattuna. Varasi ovat turvassa. Jos se ei valmistu, se palaa listalle itsestään.';
+      'Lompakkosi valmistelee tätä maksua, ja sen summa saattaa jo olla varattuna. Varasi ovat turvassa. Jos se ei valmistu, se palaa listalle itsestään.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'Lompakkosi valmistelee tätä maksua — sen summa saattaa jo olla varattuna. Varasi ovat turvassa, mutta maksu voi valmistua vasta, kun lompakkosi synkronoi taas.';
+      'Lompakkosi valmistelee tätä maksua, ja sen summa saattaa jo olla varattuna. Varasi ovat turvassa, mutta maksu voi valmistua vasta, kun lompakkosi synkronoi taas.';
 
   @override
   String get walletParkedSendNow => 'Lähetä nyt';
@@ -2996,7 +2995,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'Ei vielä valmis lähetettäväksi. Maksusi on tallennettu eikä se ole enää keskeytetty — yritä Lähetä nyt -painiketta myöhemmin uudelleen tai peruuta se.';
+      'Ei vielä valmis lähetettäväksi. Maksusi on tallennettu eikä se ole enää keskeytetty. Yritä Lähetä nyt -painiketta myöhemmin uudelleen tai peruuta se.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -3010,7 +3009,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsIntro =>
-      'Julkiset varat näkyvät julkisesti lohkoketjussa — summa, osoitteet ja kolikoiden historia.';
+      'Julkiset varat näkyvät julkisesti lohkoketjussa: summa, osoitteet ja kolikoiden historia.';
 
   @override
   String get walletExpertToggleLabel => 'Lisäasetukset: julkiset varat';
@@ -3037,15 +3036,15 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      'Automaattinen suojaus ei valmistunut — nämä varat näkyvät yhä julkisesti. Voit suojata ne nyt.';
+      'Automaattinen suojaus ei valmistunut, joten nämä varat näkyvät yhä julkisesti. Voit suojata ne nyt.';
 
   @override
   String get walletSendPrivacyShielded =>
-      'Suojattu maksu — summa ja vastaanottaja pysyvät yksityisinä lohkoketjussa.';
+      'Suojattu maksu: summa ja vastaanottaja pysyvät yksityisinä lohkoketjussa.';
 
   @override
   String get walletSendPrivacyTransparent =>
-      'Julkinen maksu — summa ja osoitteet näkyvät lohkoketjussa.';
+      'Julkinen maksu: summa ja osoitteet näkyvät lohkoketjussa.';
 
   @override
   String get walletActivityPublicBadge => 'Julkisesti näkyvä lohkoketjussa';
@@ -3061,7 +3060,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      'Automaattinen suojaus on pois päältä — julkiset varat pysyvät julkisesti näkyvinä, kunnes suojaat ne.';
+      'Automaattinen suojaus on pois päältä. Julkiset varat pysyvät julkisesti näkyvinä, kunnes suojaat ne.';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -3069,7 +3068,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String walletMoveBelowFloorNote(String amount, String floor) {
-    return 'Tämän siirron jälkeen julkinen saldosi on $amount ZEC — alle $floor ZEC, joka tarvitaan sen suojaamiseen uudelleen. Se pysyy julkisena, kunnes varoja tulee lisää.';
+    return 'Tämän siirron jälkeen julkinen saldosi on $amount ZEC, mikä on alle $floor ZEC, joka tarvitaan sen suojaamiseen uudelleen. Se pysyy julkisena, kunnes varoja tulee lisää.';
   }
 
   @override
@@ -3081,7 +3080,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      'Automaattinen suojaus on keskeytetty tätä istuntoa varten — sitä ei hyväksytty. Voit silti suojata manuaalisesti.';
+      'Automaattinen suojaus on keskeytetty tätä istuntoa varten, koska sitä ei hyväksytty. Voit silti suojata manuaalisesti.';
 
   @override
   String get walletDeepScanMenuItem => 'Tarkista vanhemmat vaihto-osoitteet…';
@@ -3095,7 +3094,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'Jos palautit tämän lompakon ja se käytti aiemmin paljon vaihtoja, sen vanhimpien vaihtojen varat voivat vaatia ylimääräisen vaiheen löytyäkseen. Tämä tarkistaa asian — kaikki löytynyt näkyy saldossasi, kun lompakkosi synkronoituu.';
+      'Jos palautit tämän lompakon ja se käytti aiemmin paljon vaihtoja, sen vanhimpien vaihtojen varat voivat vaatia ylimääräisen vaiheen löytyäkseen. Tämä tarkistaa asian, ja kaikki löytynyt näkyy saldossasi, kun lompakkosi synkronoituu.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3103,7 +3102,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'Nykyistä väliä tarkistetaan vielä — kaikki löytynyt näkyy saldossasi. Tämä voi kestää hetken.';
+      'Nykyistä väliä tarkistetaan vielä, ja kaikki löytynyt näkyy saldossasi. Tämä voi kestää hetken.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3132,15 +3131,15 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'Vanhempia vaihto-osoitteita tarkistetaan — kaikki löytynyt näkyy saldossasi.';
+      'Vanhempia vaihto-osoitteita tarkistetaan. Kaikki löytynyt näkyy saldossasi.';
 
   @override
   String get walletDeepScanFailed =>
-      'Tarkistusta ei voitu käynnistää. Mikään ei muuttunut — yritä uudelleen.';
+      'Tarkistusta ei voitu käynnistää. Mikään ei muuttunut. Yritä uudelleen.';
 
   @override
   String get walletDeepScanSlow =>
-      'Tämä kestää tavallista kauemmin. Jos vanhemmat vaihto-osoitteesi tarkistettiin, kaikki löytynyt näkyy saldossasi — tarkista pian uudelleen.';
+      'Tämä kestää tavallista kauemmin. Jos vanhemmat vaihto-osoitteesi tarkistettiin, kaikki löytynyt näkyy saldossasi. Tarkista pian uudelleen.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3148,7 +3147,7 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'Viimeistä väliä tarkistetaan vielä — tämä voi kestää jopa pari päivää, mutta yleensä paljon vähemmän. Se valmistuu itsestään. Tarkista uudelleen myöhemmin.';
+      'Viimeistä väliä tarkistetaan vielä. Tämä voi kestää jopa pari päivää, mutta yleensä paljon vähemmän. Se valmistuu itsestään. Tarkista uudelleen myöhemmin.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3156,11 +3155,11 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'Vanhempia vaihto-osoitteita tarkistetaan vielä — kaikki löytynyt näkyy saldossasi.';
+      'Vanhempia vaihto-osoitteita tarkistetaan vielä. Kaikki löytynyt näkyy saldossasi.';
 
   @override
   String get walletRescanSwapPointer =>
-      'Etsitkö varoja vanhasta vaihdosta? Uudelleenskannaus ei löydä sitä — käytä sen sijaan “Tarkista vanhemmat vaihto-osoitteet”.';
+      'Etsitkö varoja vanhasta vaihdosta? Uudelleenskannaus ei löydä sitä. Käytä sen sijaan “Tarkista vanhemmat vaihto-osoitteet”.';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3244,15 +3243,15 @@ class WalletLocalizationsFi extends WalletLocalizations {
   String get walletLoadingLabel => 'Ladataan';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'Tarkista ennen kuin lähetät uudelleen';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'Emme voineet vahvistaa tätä maksua. Tarkista Tapahtumat ennen kuin lähetät sen uudelleen.';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'Emme voineet vahvistaa, että tämä maksu tallentui. Tarkista vireillä olevat maksusi ennen kuin lähetät sen uudelleen.';
 
   @override
   String get walletShieldUnknownTitle =>
@@ -3271,5 +3270,5 @@ class WalletLocalizationsFi extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'Tämä yritys vanheni ennen kuin verkko vahvisti sen. Lompakkosi lähettää maksun uudelleen automaattisesti, joten älä lähetä sitä itse uudelleen.';
 }

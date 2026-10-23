@@ -109,8 +109,10 @@ deny = [
   # `ring` itself (`dialer.rs::ensure_crypto_provider`).
   { name = "aws-lc-rs" },
   { name = "aws-lc-sys" },
-  { name = "rustls", version = "<0.23.45" }, # RUSTSEC-2026-0285 (mirrors sdk/)
-  { name = "rustls-webpki", version = "<0.103.13" },
+  { name = "rustls", version = "<0.23.46" }, # RUSTSEC-2026-0285, -0346 to -0349 (mirrors sdk/)
+  { name = "rustls-webpki", version = "<0.103.16" }, # RUSTSEC-2026-0382 (mirrors sdk/)
+  { name = "webpki-roots", version = "<1.0.10" }, # RUSTSEC-2026-0381 (mirrors sdk/)
+  { name = "webpki-root-certs", version = "<1.0.10" }, # RUSTSEC-2026-0383 (mirrors sdk/)
   # LGPL-3.0-only, and they must never enter a graph that ships inside a
   # third-party product — which this crate exists to be consumed from.
   # Reachable from arti only through `tor-hscrypto/hs-pow-full`, i.e. arti's

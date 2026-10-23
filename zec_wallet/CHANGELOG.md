@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.0.4
+
+A security release. Update: every wallet reaches its light server through
+the TLS stack fixed here.
+
+- `webpki-roots` 1.0.10 and `rustls-webpki` 0.103.16 (RUSTSEC-2026-0381 and
+  -0382). The private keys of the emSign intermediates are public,
+  and the old roots accepted chains through them, so an attacker on the
+  network path could present a certificate the wallet trusted. Two
+  connections verify against these roots: the light server, and the swap
+  API, whose quote carries the deposit address.
+- `rustls` 0.23.46 (RUSTSEC-2026-0346 to -0349). Only -0349 is reached, and
+  it has no effect here: the `ring` provider offers no post-quantum group to
+  downgrade from. The update clears the four advisories from your audit.
+- The swap client no longer resumes TLS sessions. A session ticket from one
+  swap's connection could be offered on the next swap's, so the swap provider
+  could link two swaps meant to be unlinkable.
+- The example app's README reads more plainly, and the README's
+  known-limitation note names no version. Version 0.0.3 was prepared with
+  these changes and never published.
+- Released together with `zec_wallet_ui` 0.0.3, `zec_wallet_ui_platform`
+  0.0.3, `zec_wallet_tor` 0.0.3 and `dialer-tor` 0.1.3. `zec_wallet_ui` pins
+  `zec_wallet` exactly (`^0.0.x` accepts only that 0.0.x), so use the
+  versions from one release together.
+
 ## 0.0.2
 
 Documentation only; the code is the same as 0.0.1.

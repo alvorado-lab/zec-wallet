@@ -19,14 +19,14 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      'La configuration du portefeuille arrivera dans une version ultérieure. Elle vous guidera pour noter votre phrase de récupération avant de pouvoir recevoir des fonds — ainsi rien n\'est jamais exposé sans sauvegarde.';
+      'La configuration du portefeuille arrivera dans une version ultérieure. Elle vous guidera pour noter votre phrase de récupération avant de pouvoir recevoir des fonds : ainsi, rien n\'est jamais exposé sans sauvegarde.';
 
   @override
   String get walletStartupFailedTitle => 'Le portefeuille n\'a pas pu démarrer';
 
   @override
   String get walletStartupFailedBody =>
-      'Quelque chose a empêché le portefeuille de se charger sur cet appareil. Si vous avez déjà un portefeuille, ses fonds ne sont pas affectés — ils se trouvent sur le réseau Zcash et peuvent être restaurés avec votre phrase de récupération. Réessayez ; si cela continue, fermez puis rouvrez l\'application.';
+      'Quelque chose a empêché le portefeuille de se charger sur cet appareil. Si vous avez déjà un portefeuille, ses fonds ne sont pas affectés : ils se trouvent sur le réseau Zcash et peuvent être restaurés avec votre phrase de récupération. Réessayez ; si cela continue, fermez puis rouvrez l\'application.';
 
   @override
   String get walletBalanceLabel => 'Solde';
@@ -147,11 +147,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'Enregistré sur cet appareil, dans « Enregistré et en attente » — vous pouvez l\'envoyer ou l\'annuler à cet endroit.';
+      'Enregistré sur cet appareil, dans « Enregistré et en attente ». Vous pouvez l\'envoyer ou l\'annuler à cet endroit.';
 
   @override
   String get walletTxExplainPending =>
-      'Envoyé au réseau Zcash — en attente de confirmation dans un bloc.';
+      'Envoyé au réseau Zcash, en attente de confirmation dans un bloc.';
 
   @override
   String get walletTxExplainRetrying =>
@@ -198,7 +198,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletRescanRangeAll =>
-      'Analyser tout votre historique — le plus lent, mais récupère tout.';
+      'Analyser tout votre historique : le plus lent, mais récupère tout.';
 
   @override
   String get walletRescanRangeDefault =>
@@ -232,11 +232,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      'Cela réanalyse la blockchain. Les dates récentes prennent quelques minutes ; remonter loin peut prendre des heures. La synchronisation s\'exécute en arrière-plan — vous pouvez continuer à utiliser votre portefeuille.';
+      'Cela réanalyse la blockchain. Les dates récentes prennent quelques minutes ; remonter loin peut prendre des heures. La synchronisation s\'exécute en arrière-plan : vous pouvez continuer à utiliser votre portefeuille.';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'Un paiement de ce portefeuille est encore en cours de confirmation. Le portefeuille refuse généralement la réanalyse tant que ce paiement n\'est pas terminé — vous pouvez essayer, mais attendez-vous à un refus.';
+      'Un paiement de ce portefeuille est encore en cours de confirmation. Le portefeuille refuse généralement la réanalyse tant que ce paiement n\'est pas terminé. Vous pouvez essayer, mais attendez-vous à un refus.';
 
   @override
   String get walletRescanConfirm => 'Démarrer la réanalyse';
@@ -249,40 +249,40 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      'Reconstruction de votre historique — analyse de toute la chaîne. Votre solde et votre activité se complètent au fur et à mesure.';
+      'Reconstruction de votre historique : analyse de toute la chaîne. Votre solde et votre activité se complètent au fur et à mesure.';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return 'Reconstruction de votre historique depuis le $date — votre solde et votre activité se complètent au fur et à mesure.';
+    return 'Reconstruction de votre historique depuis le $date. Votre solde et votre activité se complètent au fur et à mesure.';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      'Reconstruction de votre historique depuis le début de votre portefeuille — votre solde et votre activité se complètent au fur et à mesure.';
+      'Reconstruction de votre historique depuis le début de votre portefeuille. Votre solde et votre activité se complètent au fur et à mesure.';
 
   @override
   String get walletCatchUpBanner =>
-      'Rattrapage en cours — votre solde et votre activité se complètent à mesure que le portefeuille se synchronise. Tout ce que vous avez reçu est en sécurité.';
+      'Rattrapage en cours. Votre solde et votre activité se complètent à mesure que le portefeuille se synchronise. Tout ce que vous avez reçu est en sécurité.';
 
   @override
   String get walletCatchUpRescanBanner =>
-      'Reconstruction de votre historique après une réanalyse — votre solde et votre activité se complètent au fur et à mesure. Tout ce que vous avez reçu est en sécurité.';
+      'Reconstruction de votre historique après une réanalyse. Votre solde et votre activité se complètent au fur et à mesure. Tout ce que vous avez reçu est en sécurité.';
 
   @override
   String get walletRescanFailedNotice =>
-      'Impossible de réanalyser pour le moment — vos fonds sont en sécurité, même si votre solde et votre historique peuvent mettre un peu de temps à se remettre à jour. Réessayez dans un instant.';
+      'Impossible de réanalyser pour le moment. Vos fonds sont en sécurité, même si votre solde et votre historique peuvent mettre un peu de temps à se remettre à jour. Réessayez dans un instant.';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      'Un paiement est encore en cours de confirmation, la réanalyse est donc suspendue pour protéger vos fonds. Votre portefeuille est inchangé — réessayez dans quelques heures et laissez l\'application ouverte et connectée pendant ce temps.';
+      'Un paiement est encore en cours de confirmation, la réanalyse est donc suspendue pour protéger vos fonds. Votre portefeuille est inchangé. Réessayez dans quelques heures et laissez l\'application ouverte et connectée pendant ce temps.';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      'La réanalyse reconstruit votre historique à mesure que votre portefeuille se synchronise, et la synchronisation n\'est pas en cours pour le moment. Votre portefeuille est inchangé — réessayez une fois que la synchronisation sera en cours.';
+      'La réanalyse reconstruit votre historique à mesure que votre portefeuille se synchronise, et la synchronisation n\'est pas en cours pour le moment. Votre portefeuille est inchangé. Réessayez une fois que la synchronisation sera en cours.';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      'Il n\'y a pas assez d\'espace libre pour reconstruire l\'historique de votre portefeuille — vos fonds sont en sécurité, même si votre solde et votre historique peuvent mettre un peu de temps à se remettre à jour. Libérez de l\'espace et réessayez.';
+      'Il n\'y a pas assez d\'espace libre pour reconstruire l\'historique de votre portefeuille. Vos fonds sont en sécurité, même si votre solde et votre historique peuvent mettre un peu de temps à se remettre à jour. Libérez de l\'espace et réessayez.';
 
   @override
   String get walletRescanFailedDismiss => 'Ignorer';
@@ -292,7 +292,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletActivityCatchingUp =>
-      'Rattrapage toujours en cours — tout ce que vous avez reçu s’affichera ici.';
+      'Rattrapage toujours en cours. Tout ce que vous avez reçu s’affichera ici.';
 
   @override
   String get walletActivitySyncNotRunning =>
@@ -309,7 +309,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      'Non inclus dans « Disponible maintenant » — protégez ces fonds pour pouvoir les dépenser. Jusque-là, ils restent visibles publiquement sur la chaîne.';
+      'Non inclus dans « Disponible maintenant ». Protégez ces fonds pour pouvoir les dépenser. Jusque-là, ils restent visibles publiquement sur la chaîne.';
 
   @override
   String get walletTransparentNoteWatchOnly =>
@@ -369,7 +369,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      'Impossible de vérifier si un paiement est encore en cours. Nouvel essai en cours — d\'ici là, cherchez un paiement en attente dans votre activité avant d\'envoyer à nouveau.';
+      'Impossible de vérifier si un paiement est encore en cours. Nouvel essai en cours. D\'ici là, cherchez un paiement en attente dans votre activité avant d\'envoyer à nouveau.';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -409,7 +409,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      'Ces fonds sont actuellement inférieurs au montant qu\'il vaut la peine de protéger — les frais de réseau dépasseraient le bénéfice. Ils pourront être protégés une fois qu\'un peu plus sera arrivé.';
+      'Ces fonds sont actuellement inférieurs au montant qu\'il vaut la peine de protéger : les frais de réseau dépasseraient le bénéfice. Ils pourront être protégés une fois qu\'un peu plus sera arrivé.';
 
   @override
   String get walletShieldDoneTitle => 'Protection soumise';
@@ -420,7 +420,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletShieldSavedTitle =>
-      'Enregistré — la protection sera finalisée';
+      'Enregistré : la protection sera finalisée';
 
   @override
   String get walletShieldSavedBody =>
@@ -458,7 +458,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletMoveSheetSubtitle =>
-      'Envoyez du ZEC protégé vers votre propre adresse publique — utile pour une plateforme d\'échange qui n\'accepte pas les dépôts protégés.';
+      'Envoyez du ZEC protégé vers votre propre adresse publique. Utile pour une plateforme d\'échange qui n\'accepte pas les dépôts protégés.';
 
   @override
   String get walletMoveDestinationLabel => 'Votre adresse publique';
@@ -470,7 +470,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'Disponible à déplacer : $amount ZEC — votre solde rattrape encore son retard';
+    return 'Disponible à déplacer : $amount ZEC (votre solde rattrape encore son retard)';
   }
 
   @override
@@ -478,7 +478,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      'Déplacer ces fonds vers une adresse publique les retire de votre solde protégé — le montant et votre adresse publique deviennent visibles publiquement sur la blockchain Zcash.';
+      'Déplacer ces fonds vers une adresse publique les retire de votre solde protégé : le montant et votre adresse publique deviennent visibles publiquement sur la blockchain Zcash.';
 
   @override
   String get walletMoveWalletEnded =>
@@ -521,7 +521,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletMoveSavedTitle =>
-      'Enregistré — le déplacement sera finalisé';
+      'Enregistré : le déplacement sera finalisé';
 
   @override
   String get walletMoveSavedBody =>
@@ -546,7 +546,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'Votre portefeuille rattrape encore son retard — tout ce que vous avez reçu deviendra disponible à déplacer une fois la synchronisation terminée.';
+      'Votre portefeuille rattrape encore son retard. Tout ce que vous avez reçu deviendra disponible à déplacer une fois la synchronisation terminée.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -564,7 +564,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletBalanceStale =>
-      'Impossible d\'actualiser — affichage de votre dernier solde connu.';
+      'Impossible d\'actualiser. Affichage de votre dernier solde connu.';
 
   @override
   String get walletSyncStartFailed =>
@@ -636,7 +636,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'Rattrapage du réseau en cours — une synchronisation initiale complète peut prendre du temps. Vous pouvez continuer à utiliser l\'application en attendant';
+      'Rattrapage du réseau en cours. Une synchronisation initiale complète peut prendre du temps. Vous pouvez continuer à utiliser l\'application en attendant';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -661,7 +661,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      'Impossible de joindre le réseau Zcash pour le moment. Nous continuons d\'essayer automatiquement — vérifiez votre connexion internet, ou le serveur est peut-être temporairement indisponible.';
+      'Impossible de joindre le réseau Zcash pour le moment. Nous continuons d\'essayer automatiquement. Vérifiez votre connexion internet, ou le serveur est peut-être temporairement indisponible.';
 
   @override
   String get walletStallTor =>
@@ -681,7 +681,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      'Ce serveur a envoyé des données qui ne peuvent pas être correctes, la synchronisation s\'est donc arrêtée. Ce n\'est pas un problème de connexion — passez à un autre serveur. Si tous les serveurs sont refusés, réanalysez l\'historique : le portefeuille conserve peut-être un enregistrement erroné d\'un serveur précédent.';
+      'Ce serveur a envoyé des données qui ne peuvent pas être correctes, la synchronisation s\'est donc arrêtée. Ce n\'est pas un problème de connexion : passez à un autre serveur. Si tous les serveurs sont refusés, réanalysez l\'historique : le portefeuille conserve peut-être un enregistrement erroné d\'un serveur précédent.';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -724,11 +724,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainIdle =>
-      'La synchronisation n\'a pas encore démarré — elle démarre automatiquement. Aucune action requise.';
+      'La synchronisation n\'a pas encore démarré. Elle démarre automatiquement. Aucune action requise.';
 
   @override
   String get walletSyncExplainStartFailed =>
-      'La synchronisation n\'a pas pu démarrer. Vos fonds sont en sécurité — le portefeuille ne vérifie simplement pas les nouvelles activités. Réessayez ci-dessous, ou rouvrez l\'application.';
+      'La synchronisation n\'a pas pu démarrer. Vos fonds sont en sécurité : le portefeuille ne vérifie simplement pas les nouvelles activités. Réessayez ci-dessous, ou rouvrez l\'application.';
 
   @override
   String get walletSyncExplainStarting =>
@@ -740,7 +740,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'Le portefeuille examine les blocs de la blockchain à la recherche de vos fonds. Votre solde et votre activité se mettent à jour au fur et à mesure que de nouvelles transactions sont trouvées — vous pouvez continuer à utiliser l\'application en attendant la fin de l\'opération.';
+      'Le portefeuille examine les blocs de la blockchain à la recherche de vos fonds. Votre solde et votre activité se mettent à jour au fur et à mesure que de nouvelles transactions sont trouvées. Vous pouvez continuer à utiliser l\'application en attendant la fin de l\'opération.';
 
   @override
   String get walletSyncExplainUpToDate =>
@@ -752,11 +752,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'Impossible de joindre le réseau Zcash — c\'est normal si vous êtes hors ligne, ou le serveur est peut-être temporairement indisponible. Vos fonds sont en sécurité : le solde affiché correspond au dernier état synchronisé, et les envois en file d\'attente restent enregistrés dans « Enregistré et en attente ». La connexion réessaie automatiquement.';
+      'Impossible de joindre le réseau Zcash. C\'est normal si vous êtes hors ligne, ou le serveur est peut-être temporairement indisponible. Vos fonds sont en sécurité : le solde affiché correspond au dernier état synchronisé, et les envois en file d\'attente restent enregistrés dans « Enregistré et en attente ». La connexion réessaie automatiquement.';
 
   @override
   String get walletSyncExplainOffline =>
-      'Aucune connexion réseau. Vos fonds sont en sécurité — le solde affiché correspond au dernier état synchronisé, et les envois en file d\'attente restent enregistrés dans « Enregistré et en attente ».';
+      'Aucune connexion réseau. Vos fonds sont en sécurité : le solde affiché correspond au dernier état synchronisé, et les envois en file d\'attente restent enregistrés dans « Enregistré et en attente ».';
 
   @override
   String get walletSyncExplainUnknown =>
@@ -786,40 +786,41 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTorFellBack =>
-      'Tor indisponible — utilisation d\'une connexion directe';
+      'Tor indisponible : utilisation d\'une connexion directe';
 
   @override
-  String get walletTorUnavailable => 'Chemin privé indisponible — non connecté';
+  String get walletTorUnavailable => 'Chemin privé indisponible, non connecté';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport indisponible — non connecté';
+    return '$transport indisponible, non connecté';
   }
 
   @override
-  String get walletTorUnanswered => 'Chemin privé connecté — rien ne revient';
+  String get walletTorUnanswered =>
+      'Chemin privé connecté, mais rien ne revient';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'Chemin privé connecté — rien ne revient (confidentialité non vérifiée)';
+      'Chemin privé connecté, mais rien ne revient (confidentialité non vérifiée)';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport connecté — rien ne revient';
+    return '$transport connecté, mais rien ne revient';
   }
 
   @override
   String get walletTorUnansweredDirect =>
-      'Non privé (connexion directe de votre application) — rien ne revient';
+      'Non privé (connexion directe de votre application). Rien ne revient';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return 'Connecté via $transport — rien ne revient ; le proxy peut relier les connexions';
+    return 'Connecté via $transport, mais rien ne revient ; le proxy peut relier les connexions';
   }
 
   @override
   String get walletTorUnknown =>
-      'Statut de Tor inconnu — à considérer comme non protégé';
+      'Statut de Tor inconnu : à considérer comme non protégé';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -924,7 +925,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'Impossible de joindre ce serveur. Vérifiez l\'adresse — et si elle est correcte, soit ce serveur ne répond pas, soit votre application n\'arrive pas à l\'atteindre en ce moment. Réessayez, ou choisissez un autre serveur.';
+      'Impossible de joindre ce serveur. Vérifiez l\'adresse. Si elle est correcte, soit ce serveur ne répond pas, soit votre application n\'arrive pas à l\'atteindre en ce moment. Réessayez, ou choisissez un autre serveur.';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -958,7 +959,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return 'Changement impossible — $host reste utilisé.';
+    return 'Changement impossible : $host reste utilisé.';
   }
 
   @override
@@ -993,24 +994,24 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      'Le chemin privé a accepté la connexion, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille — le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
+      'Le chemin privé a accepté la connexion, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille, et le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport a accepté la connexion, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille — le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
+    return '$transport a accepté la connexion, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille, et le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      'Le trafic du portefeuille se connecte directement au serveur. Le serveur peut voir votre adresse IP. La connexion a été acceptée, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille — le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
+      'Le trafic du portefeuille se connecte directement au serveur. Le serveur peut voir votre adresse IP. La connexion a été acceptée, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille, et le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'La confidentialité de cette connexion ne peut pas être vérifiée — considérez-la comme non privée. La connexion a été acceptée, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille — le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
+      'La confidentialité de cette connexion ne peut pas être vérifiée : considérez-la comme non privée. La connexion a été acceptée, mais rien n\'est revenu depuis une minute. Cela peut venir du chemin ou du serveur du portefeuille, et le portefeuille ne peut pas le savoir. Il continue d\'essayer ; si cela persiste, essayez un autre serveur ou vérifiez les paramètres réseau de votre application.';
 
   @override
   String get walletTransportExplainUnverified =>
-      'La confidentialité de cette connexion ne peut pas être vérifiée — considérez-la comme non privée.';
+      'La confidentialité de cette connexion ne peut pas être vérifiée : considérez-la comme non privée.';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1021,7 +1022,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      'Créez un nouveau portefeuille pour recevoir et conserver du ZEC. Nous générerons une phrase de récupération et vous guiderons pour la sauvegarder avant l\'arrivée de tout fonds — ainsi rien n\'est jamais exposé sans sauvegarde.';
+      'Créez un nouveau portefeuille pour recevoir et conserver du ZEC. Nous générerons une phrase de récupération et vous guiderons pour la sauvegarder avant l\'arrivée de tout fonds : ainsi, rien n\'est jamais exposé sans sauvegarde.';
 
   @override
   String get walletCreateButton => 'Créer un nouveau portefeuille';
@@ -1077,7 +1078,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return 'Analyse à partir du $date — les fonds reçus avant cette date n\'apparaîtront pas. Portefeuille plus ancien ? Choisissez une date antérieure.';
+    return 'Analyse à partir du $date. Les fonds reçus avant cette date n\'apparaîtront pas. Portefeuille plus ancien ? Choisissez une date antérieure.';
   }
 
   @override
@@ -1114,7 +1115,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'Saisissez votre phrase de récupération pour restaurer votre portefeuille — tapez ou collez les mots dans l\'ordre, séparés par des espaces. Phrases standard uniquement : si votre portefeuille utilisait une phrase secrète supplémentaire (un « 25e mot »), cette application ne peut pas encore la restaurer — vous verriez un portefeuille vide, et non une erreur.';
+      'Saisissez votre phrase de récupération pour restaurer votre portefeuille : tapez ou collez les mots dans l\'ordre, séparés par des espaces. Phrases standard uniquement. Si votre portefeuille utilisait une phrase secrète supplémentaire (un « 25e mot »), cette application ne peut pas encore la restaurer : vous verriez un portefeuille vide, et non une erreur.';
 
   @override
   String get walletRestorePhraseHint => 'mot un  mot deux  mot trois  …';
@@ -1141,9 +1142,9 @@ class WalletLocalizationsFr extends WalletLocalizations {
       count,
       locale: localeName,
       other:
-          '$count mots ne sont pas des mots de récupération — corrigez ceux en surbrillance',
+          '$count mots ne sont pas des mots de récupération. Corrigez ceux en surbrillance',
       one:
-          '1 mot n\'est pas un mot de récupération — corrigez celui en surbrillance',
+          '1 mot n\'est pas un mot de récupération. Corrigez celui en surbrillance',
     );
     return '$_temp0';
   }
@@ -1174,11 +1175,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletRestoreBirthdayNone =>
-      'Nous analyserons tout votre historique — plus lent, mais rien n\'est manqué.';
+      'Nous analyserons tout votre historique : plus lent, mais rien n\'est manqué.';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return 'Analyse à partir du $date — les fonds reçus avant cette date n\'apparaîtront pas. Portefeuille plus ancien ? Choisissez une date antérieure, ou analysez tout l\'historique.';
+    return 'Analyse à partir du $date. Les fonds reçus avant cette date n\'apparaîtront pas. Portefeuille plus ancien ? Choisissez une date antérieure, ou analysez tout l\'historique.';
   }
 
   @override
@@ -1222,7 +1223,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'Ces mots constituent le SEUL moyen de récupérer votre portefeuille et vos fonds. Notez-les dans l\'ordre et conservez-les dans un endroit sûr et privé. Ne les partagez jamais et ne les stockez jamais en ligne — toute personne disposant de ces mots peut s\'emparer de vos fonds.';
+      'Ces mots constituent le SEUL moyen de récupérer votre portefeuille et vos fonds. Notez-les dans l\'ordre et conservez-les dans un endroit sûr et privé. Ne les partagez jamais et ne les stockez jamais en ligne : toute personne disposant de ces mots peut s\'emparer de vos fonds.';
 
   @override
   String get walletBackupSecureNoteAndroid =>
@@ -1270,7 +1271,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      'Cette action supprime ce portefeuille de l\'appareil et vous ramène au début. Rien ne peut être déposé via cette application avant la fin de la configuration.\n\nSi ce portefeuille a un jour contenu des fonds — ou s\'il a été restauré à partir d\'une phrase de récupération — seule cette phrase peut le restaurer.';
+      'Cette action supprime ce portefeuille de l\'appareil et vous ramène au début. Rien ne peut être déposé via cette application avant la fin de la configuration.\n\nSi ce portefeuille a un jour contenu des fonds (ou s\'il a été restauré à partir d\'une phrase de récupération), seule cette phrase peut le restaurer.';
 
   @override
   String get walletBackupStartOverConfirm => 'Supprimer et recommencer';
@@ -1301,7 +1302,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'Ce portefeuille a été configuré à partir de votre compte dans l\'application qui l\'a installé, il n\'a donc pas de phrase de récupération qui lui soit propre. Vos fonds sont récupérés en même temps que ce compte — utilisez sa sauvegarde pour les protéger.';
+      'Ce portefeuille a été configuré à partir de votre compte dans l\'application qui l\'a installé, il n\'a donc pas de phrase de récupération qui lui soit propre. Vos fonds sont récupérés en même temps que ce compte : utilisez sa sauvegarde pour les protéger.';
 
   @override
   String get walletExportViewingKeyTitle => 'Exporter la clé de consultation';
@@ -1316,11 +1317,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyWarning =>
-      'Cette clé permet à quiconque la détient de voir tout ce que ce portefeuille a déjà reçu et envoyé — ainsi que tout ce qu\'il recevra et enverra à l\'avenir. Elle ne permet pas de dépenser vos fonds et ne permet pas de récupérer votre portefeuille. Ne la partagez qu\'avec une personne de confiance à qui vous souhaitez montrer l\'intégralité de votre historique, comme un comptable ou votre propre second appareil. Le seul moyen de révoquer ce partage par la suite est de transférer vos fonds vers un nouveau portefeuille.';
+      'Cette clé permet à quiconque la détient de voir tout ce que ce portefeuille a déjà reçu et envoyé, ainsi que tout ce qu\'il recevra et enverra à l\'avenir. Elle ne permet pas de dépenser vos fonds et ne permet pas de récupérer votre portefeuille. Ne la partagez qu\'avec une personne de confiance à qui vous souhaitez montrer l\'intégralité de votre historique, comme un comptable ou votre propre second appareil. Le seul moyen de révoquer ce partage par la suite est de transférer vos fonds vers un nouveau portefeuille.';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'Cette clé permet à quiconque la détient de voir tout ce que ce portefeuille a déjà reçu et envoyé — ainsi que tout ce qu\'il recevra et enverra à l\'avenir. Elle ne permet pas de dépenser vos fonds et ne permet pas de récupérer votre portefeuille. Ne la partagez qu\'avec une personne de confiance à qui vous souhaitez montrer l\'intégralité de votre historique, comme un comptable ou votre propre second appareil. Une fois ce partage effectué, il ne peut plus être révoqué.';
+      'Cette clé permet à quiconque la détient de voir tout ce que ce portefeuille a déjà reçu et envoyé, ainsi que tout ce qu\'il recevra et enverra à l\'avenir. Elle ne permet pas de dépenser vos fonds et ne permet pas de récupérer votre portefeuille. Ne la partagez qu\'avec une personne de confiance à qui vous souhaitez montrer l\'intégralité de votre historique, comme un comptable ou votre propre second appareil. Une fois ce partage effectué, il ne peut plus être révoqué.';
 
   @override
   String get walletExportViewingKeyReveal => 'Afficher la clé de consultation';
@@ -1363,7 +1364,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'Ceci est un portefeuille en lecture seule. Il a été configuré à partir d\'une clé de consultation : il peut donc voir votre solde et votre historique, mais ne détient aucune clé de dépense — il n\'y a rien à sauvegarder ici, et il ne peut pas envoyer de fonds.';
+      'Ceci est un portefeuille en lecture seule. Il a été configuré à partir d\'une clé de consultation : il peut donc voir votre solde et votre historique, mais ne détient aucune clé de dépense. Il n\'y a rien à sauvegarder ici, et il ne peut pas envoyer de fonds.';
 
   @override
   String get walletWatchOnlyBadge => 'Lecture seule';
@@ -1381,11 +1382,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedAlreadyOpen =>
-      'Ce portefeuille est ouvert dans une autre fenêtre ou application, ou termine encore une opération précédente. Fermez toute autre fenêtre l\'utilisant — ou patientez un instant — puis réessayez.';
+      'Ce portefeuille est ouvert dans une autre fenêtre ou application, ou termine encore une opération précédente. Fermez toute autre fenêtre l\'utilisant (ou patientez un instant), puis réessayez.';
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'La clé sécurisée de ce portefeuille n\'est plus disponible, il ne peut donc pas être ouvert sur cet appareil. Vos fonds sont en sécurité — restaurez à partir de votre phrase de récupération pour les récupérer.';
+      'La clé sécurisée de ce portefeuille n\'est plus disponible, il ne peut donc pas être ouvert sur cet appareil. Vos fonds sont en sécurité : restaurez à partir de votre phrase de récupération pour les récupérer.';
 
   @override
   String get walletOnboardingFailedRestoreAction =>
@@ -1397,7 +1398,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      'Assurez-vous d\'avoir votre phrase de récupération avant de continuer — vous en aurez besoin à l\'écran suivant pour récupérer vos fonds. Vos fonds sont en sécurité sur la blockchain et contrôlés par cette phrase. Cette opération supprime de cet appareil les données de portefeuille illisibles afin qu\'il puisse être reconstruit.';
+      'Assurez-vous d\'avoir votre phrase de récupération avant de continuer : vous en aurez besoin à l\'écran suivant pour récupérer vos fonds. Vos fonds sont en sécurité sur la blockchain et contrôlés par cette phrase. Cette opération supprime de cet appareil les données de portefeuille illisibles afin qu\'il puisse être reconstruit.';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'Annuler';
@@ -1416,7 +1417,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'La configuration du portefeuille ne s\'est pas terminée. Réessayez pour la terminer — rien n\'a été perdu.';
+      'La configuration du portefeuille ne s\'est pas terminée. Réessayez pour la terminer : rien n\'a été perdu.';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1424,18 +1425,18 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      'La configuration du portefeuille de cette application est incorrecte, le portefeuille ne peut donc pas démarrer. Réessayer n\'y changera rien — merci de signaler ce problème au développeur de l\'application. Vos fonds ne sont pas affectés.';
+      'La configuration du portefeuille de cette application est incorrecte, le portefeuille ne peut donc pas démarrer. Réessayer n\'y changera rien : merci de signaler ce problème au développeur de l\'application. Vos fonds ne sont pas affectés.';
 
   @override
   String get walletSendButton => 'Envoyer';
 
   @override
   String get walletSendSyncNotRunning =>
-      'La synchronisation n\'est pas en cours — votre solde disponible ne pourra pas se mettre à jour';
+      'La synchronisation n\'est pas en cours, votre solde disponible ne pourra donc pas se mettre à jour';
 
   @override
   String get walletSendWaitingForFunds =>
-      'Synchronisation encore en cours — vous pourrez envoyer dès que vous aurez un solde disponible';
+      'Synchronisation encore en cours. Vous pourrez envoyer dès que vous aurez un solde disponible';
 
   @override
   String get walletSendNoSpendableYet =>
@@ -1454,7 +1455,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'Ce portefeuille est en lecture seule. Il peut afficher le solde et recevoir des paiements, mais il ne détient aucune clé de dépense — il ne peut donc pas envoyer.';
+      'Ce portefeuille est en lecture seule. Il peut afficher le solde et recevoir des paiements, mais il ne détient aucune clé de dépense : il ne peut donc pas envoyer.';
 
   @override
   String get walletSendExpiredTitle => 'Cette demande de paiement a expiré';
@@ -1465,7 +1466,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'Ce portefeuille est en lecture seule — il ne détient aucune clé de dépense, il ne peut donc pas envoyer.';
+      'Ce portefeuille est en lecture seule : il ne détient aucune clé de dépense, il ne peut donc pas envoyer.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1474,7 +1475,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'Disponible à envoyer : $amount ZEC — votre solde rattrape encore son retard';
+    return 'Disponible à envoyer : $amount ZEC (votre solde rattrape encore son retard)';
   }
 
   @override
@@ -1600,7 +1601,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'Il s\'agit d\'un paiement important — la quasi-totalité de votre solde. Un paiement envoyé ne peut pas être annulé.';
+      'Il s\'agit d\'un paiement important : la quasi-totalité de votre solde. Un paiement envoyé ne peut pas être annulé.';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1618,7 +1619,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
       'Votre paiement a été diffusé sur le réseau.';
 
   @override
-  String get walletSendSavedTitle => 'Enregistré — l\'envoi sera finalisé';
+  String get walletSendSavedTitle => 'Enregistré : l\'envoi sera finalisé';
 
   @override
   String get walletSendSavedBody =>
@@ -1647,7 +1648,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSendAlreadyBody =>
-      'Ce paiement a déjà été soumis — il ne sera pas envoyé deux fois.';
+      'Ce paiement a déjà été soumis. Il ne sera pas envoyé deux fois.';
 
   @override
   String get walletSendFailedTitle => 'Impossible de finaliser le paiement';
@@ -1674,7 +1675,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return 'Solde disponible insuffisant — vous avez $available ZEC et ce paiement nécessite $required ZEC.';
+    return 'Solde disponible insuffisant : vous avez $available ZEC et ce paiement nécessite $required ZEC.';
   }
 
   @override
@@ -1695,7 +1696,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      'Ce serveur refuse, retient ou signale incorrectement l\'un des pools protégés de Zcash. Les fonds reçus dans ce pool ne peuvent pas être dépensés via ce serveur, et le solde affiché est un minimum. Passez à un autre serveur pour les utiliser — ce n\'est pas un problème de connexion.';
+      'Ce serveur refuse, retient ou signale incorrectement l\'un des pools protégés de Zcash. Les fonds reçus dans ce pool ne peuvent pas être dépensés via ce serveur, et le solde affiché est un minimum. Passez à un autre serveur pour les utiliser. Ce n\'est pas un problème de connexion.';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1732,15 +1733,15 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      'La chaîne de ce serveur s\'arrête à un bloc que le réseau avait déjà dépassé avant la compilation de cette version de l\'application ; votre solde n\'est donc à jour que jusqu\'à ce bloc. Les nouveaux paiements reçus peuvent ne pas encore apparaître, et un paiement envoyé d\'ici peut ne pas aboutir. Passez à un autre serveur pour rattraper le retard — ce n\'est pas un problème de connexion.';
+      'La chaîne de ce serveur s\'arrête à un bloc que le réseau avait déjà dépassé avant la compilation de cette version de l\'application ; votre solde n\'est donc à jour que jusqu\'à ce bloc. Les nouveaux paiements reçus peuvent ne pas encore apparaître, et un paiement envoyé d\'ici peut ne pas aboutir. Passez à un autre serveur pour rattraper le retard. Ce n\'est pas un problème de connexion.';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'En attente d\'une mise à jour de l\'application — vos fonds sont en sécurité et rien n\'a été envoyé.';
+      'En attente d\'une mise à jour de l\'application. Vos fonds sont en sécurité et rien n\'a été envoyé.';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'En attente d\'un serveur qui indique la version du réseau — changez de serveur. Vos fonds sont en sécurité et rien n\'a été envoyé.';
+      'En attente d\'un serveur qui indique la version du réseau : changez de serveur. Vos fonds sont en sécurité et rien n\'a été envoyé.';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
@@ -1756,18 +1757,18 @@ class WalletLocalizationsFr extends WalletLocalizations {
       hours,
       locale: localeName,
       other:
-          'L\'envoi fonctionne encore pendant environ $hours heures — changez ensuite de serveur.',
+          'L\'envoi fonctionne encore pendant environ $hours heures. Changez ensuite de serveur.',
       one:
-          'L\'envoi fonctionne encore pendant environ 1 heure — changez ensuite de serveur.',
+          'L\'envoi fonctionne encore pendant environ 1 heure. Changez ensuite de serveur.',
       zero:
-          'L\'envoi fonctionne encore pendant moins d\'une heure — changez ensuite de serveur.',
+          'L\'envoi fonctionne encore pendant moins d\'une heure. Changez ensuite de serveur.',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return 'L\'envoi fonctionne encore pendant environ $blocks blocs — changez ensuite de serveur.';
+    return 'L\'envoi fonctionne encore pendant environ $blocks blocs. Changez ensuite de serveur.';
   }
 
   @override
@@ -1785,19 +1786,19 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'Ce serveur ne dit pas sur quelle version du réseau Zcash il se trouve, cette application ne peut donc pas confirmer qu\'un paiement qu\'elle signe sera accepté. Votre solde est à jour. Passez à un autre serveur — ce n\'est pas un problème de connexion.';
+      'Ce serveur ne dit pas sur quelle version du réseau Zcash il se trouve, cette application ne peut donc pas confirmer qu\'un paiement qu\'elle signe sera accepté. Votre solde est à jour. Passez à un autre serveur. Ce n\'est pas un problème de connexion.';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'Ce serveur ne dit pas sur quelle version du réseau Zcash il se trouve, cette application ne peut donc pas confirmer qu\'un paiement qu\'elle signe sera accepté. Il a aussi continué à servir des blocs que ce portefeuille a ensuite dû annuler, votre solde n\'est donc peut-être pas à jour. Passez à un autre serveur — ce n\'est pas un problème de connexion.';
+      'Ce serveur ne dit pas sur quelle version du réseau Zcash il se trouve, cette application ne peut donc pas confirmer qu\'un paiement qu\'elle signe sera accepté. Il a aussi continué à servir des blocs que ce portefeuille a ensuite dû annuler, votre solde n\'est donc peut-être pas à jour. Passez à un autre serveur. Ce n\'est pas un problème de connexion.';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'Ce serveur continue aussi à servir des blocs que ce portefeuille doit ensuite annuler — changez de serveur.';
+      'Ce serveur continue aussi à servir des blocs que ce portefeuille doit ensuite annuler : changez de serveur.';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'Votre solde rattrape encore son retard — d\'autres fonds pourraient devenir disponibles à mesure que le portefeuille se synchronise.';
+      'Votre solde rattrape encore son retard. D\'autres fonds pourraient devenir disponibles à mesure que le portefeuille se synchronise.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1846,7 +1847,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSendFaultMemoConflict =>
-      'Impossible d\'envoyer ce paiement — l\'application y a joint deux notes. Rien n\'a été envoyé.';
+      'Impossible d\'envoyer ce paiement : l\'application y a joint deux notes. Rien n\'a été envoyé.';
 
   @override
   String get walletSendFaultNetworkMismatch =>
@@ -1912,7 +1913,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'Ce portefeuille est en lecture seule — il ne peut pas échanger.';
+      'Ce portefeuille est en lecture seule : il ne peut pas échanger.';
 
   @override
   String get walletSwapDone => 'Terminé';
@@ -1927,7 +1928,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'Disponible à échanger : $amount ZEC — votre solde rattrape encore son retard';
+    return 'Disponible à échanger : $amount ZEC (votre solde rattrape encore son retard)';
   }
 
   @override
@@ -1953,7 +1954,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return 'Une adresse $chain — c\'est là que votre actif échangé sera envoyé. Vérifiez bien que la chaîne est correcte.';
+    return 'Une adresse $chain. C\'est là que votre actif échangé sera envoyé. Vérifiez bien que la chaîne est correcte.';
   }
 
   @override
@@ -1974,7 +1975,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'Toujours en cours — l\'échange démarre. Cela peut prendre jusqu\'à une minute.';
+      'Toujours en cours : l\'échange démarre. Cela peut prendre jusqu\'à une minute.';
 
   @override
   String get walletSwapReviewTitle => 'Confirmer l\'échange';
@@ -1998,16 +1999,16 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'Devis valable encore environ $time — confirmez avant son expiration.';
+    return 'Devis valable encore environ $time. Confirmez avant son expiration.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'Devis valable encore moins d\'une minute — confirmez avant son expiration.';
+      'Devis valable encore moins d\'une minute. Confirmez avant son expiration.';
 
   @override
   String get walletSwapQuoteExpired =>
-      'Ce devis a expiré. Revenez en arrière pour en obtenir un nouveau — son taux n\'est plus garanti, et envoyer maintenant risque d\'entraîner un remboursement.';
+      'Ce devis a expiré. Revenez en arrière pour en obtenir un nouveau : son taux n\'est plus garanti, et envoyer maintenant risque d\'entraîner un remboursement.';
 
   @override
   String get walletCountdownUnderMinute => 'moins d\'une minute';
@@ -2032,7 +2033,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'Échanger votre ZEC le rend non protégé — le dépôt est une transaction publique, et le côté du prestataire est public sur son réseau.';
+      'Échanger votre ZEC le rend non protégé : le dépôt est une transaction publique, et le côté du prestataire est public sur son réseau.';
 
   @override
   String get walletSwapDiscloseTitle =>
@@ -2081,7 +2082,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'Votre portefeuille envoie le dépôt de ZEC au prestataire. Si vous êtes brièvement hors ligne, il sera envoyé automatiquement dès que vous serez de nouveau en ligne — mais la fenêtre d\'envoi est courte, et si elle se referme avant, l\'échange prend simplement fin et rien n\'est échangé. Votre ZEC vous reste acquis, et il peut prendre jusqu\'à une heure avant de réapparaître comme disponible.';
+      'Votre portefeuille envoie le dépôt de ZEC au prestataire. Si vous êtes brièvement hors ligne, il sera envoyé automatiquement dès que vous serez de nouveau en ligne. Mais la fenêtre d\'envoi est courte, et si elle se referme avant, l\'échange prend simplement fin et rien n\'est échangé. Votre ZEC vous reste acquis, et il peut prendre jusqu\'à une heure avant de réapparaître comme disponible.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2089,7 +2090,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'Cet échange attend toujours son dépôt. Les instructions de dépôt ne sont plus disponibles sur cet appareil — si vous avez déjà envoyé les fonds, ils seront détectés ; sinon, laissez cet échange expirer et démarrez-en un nouveau.';
+      'Cet échange attend toujours son dépôt. Les instructions de dépôt ne sont plus disponibles sur cet appareil. Si vous avez déjà envoyé les fonds, ils seront détectés ; sinon, laissez cet échange expirer et démarrez-en un nouveau.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2102,7 +2103,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'La fenêtre de dépôt est passée. Si vous n\'avez pas envoyé votre dépôt, cet échange prend simplement fin — obtenez un nouveau devis quand vous serez prêt.';
+      'La fenêtre de dépôt est passée. Si vous n\'avez pas envoyé votre dépôt, cet échange prend simplement fin : obtenez un nouveau devis quand vous serez prêt.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2128,15 +2129,15 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'La fenêtre de dépôt est passée — vérifiez le statut de cet échange.';
+      'La fenêtre de dépôt est passée : vérifiez le statut de cet échange.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'Cet échange n\'a pas encore atteint un résultat confirmé ici — ouvrez-le pour vérifier. Tout ZEC revenant à ce portefeuille apparaît dans votre solde après une synchronisation.';
+      'Cet échange n\'a pas encore atteint un résultat confirmé ici : ouvrez-le pour vérifier. Tout ZEC revenant à ce portefeuille apparaît dans votre solde après une synchronisation.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'Cet échange n\'a pas encore atteint un résultat confirmé ici — ouvrez-le pour vérifier. Tout ZEC livré par cet échange à ce portefeuille apparaît dans votre solde après une synchronisation.';
+      'Cet échange n\'a pas encore atteint un résultat confirmé ici : ouvrez-le pour vérifier. Tout ZEC livré par cet échange à ce portefeuille apparaît dans votre solde après une synchronisation.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'Échange terminé.';
@@ -2155,15 +2156,15 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'Cela retire uniquement l\'échange de cette liste — cela n\'annule pas l\'échange, et ce portefeuille cessera de suivre son remboursement. Le ZEC remboursé plus tard appartient toujours à ce portefeuille ; une nouvelle analyse complète peut le retrouver.';
+      'Cela retire uniquement l\'échange de cette liste. Cela n\'annule pas l\'échange, et ce portefeuille cessera de suivre son remboursement. Le ZEC remboursé plus tard appartient toujours à ce portefeuille ; une nouvelle analyse complète peut le retrouver.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'Cela retire uniquement l\'échange de cette liste — cela n\'annule pas l\'échange, et ce portefeuille cessera de suivre le ZEC entrant. Le ZEC livré plus tard appartient toujours à ce portefeuille ; une nouvelle analyse complète peut le retrouver. Si l\'échange est remboursé à la place, le remboursement revient dans l\'actif que vous avez envoyé, en dehors de ce portefeuille.';
+      'Cela retire uniquement l\'échange de cette liste. Cela n\'annule pas l\'échange, et ce portefeuille cessera de suivre le ZEC entrant. Le ZEC livré plus tard appartient toujours à ce portefeuille ; une nouvelle analyse complète peut le retrouver. Si l\'échange est remboursé à la place, le remboursement revient dans l\'actif que vous avez envoyé, en dehors de ce portefeuille.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'Cela retire uniquement l\'échange de cette liste — cela n\'annule pas l\'échange, et ce portefeuille cessera de suivre le ZEC qui en provient encore. Le ZEC qui arrive plus tard appartient toujours à ce portefeuille ; une nouvelle analyse complète peut le retrouver.';
+      'Cela retire uniquement l\'échange de cette liste. Cela n\'annule pas l\'échange, et ce portefeuille cessera de suivre le ZEC qui en provient encore. Le ZEC qui arrive plus tard appartient toujours à ce portefeuille ; une nouvelle analyse complète peut le retrouver.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2246,7 +2247,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'L\'échange ne s\'est pas terminé, le prestataire a donc renvoyé votre ZEC vers ce portefeuille. Il arrive sous forme de fonds non protégés et apparaît dans votre solde après la prochaine synchronisation du portefeuille — cela peut prendre un peu de temps.';
+      'L\'échange ne s\'est pas terminé, le prestataire a donc renvoyé votre ZEC vers ce portefeuille. Il arrive sous forme de fonds non protégés et apparaît dans votre solde après la prochaine synchronisation du portefeuille, ce qui peut prendre un peu de temps.';
 
   @override
   String get walletSwapStatusFailedTitle => 'Échange échoué';
@@ -2260,7 +2261,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'Le prestataire n\'a plus d\'enregistrement de cet échange — il a probablement expiré. Si un dépôt a été effectué, le prestataire devrait le rembourser à l\'adresse de remboursement. L\'échange reste dans votre liste, et ce portefeuille continue de suivre son ZEC au cas où il arriverait encore ; vous pouvez le supprimer de la liste à tout moment.';
+      'Le prestataire n\'a plus d\'enregistrement de cet échange : il a probablement expiré. Si un dépôt a été effectué, le prestataire devrait le rembourser à l\'adresse de remboursement. L\'échange reste dans votre liste, et ce portefeuille continue de suivre son ZEC au cas où il arriverait encore ; vous pouvez le supprimer de la liste à tout moment.';
 
   @override
   String get walletSwapStatusUnknownTitle => 'Statut indisponible';
@@ -2278,14 +2279,14 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'L\'échange est désactivé ici, cet échange ne peut donc pas être suivi pour le moment. S\'il a été remboursé, le ZEC revient à ce portefeuille — il apparaît dans votre solde une fois l\'échange réactivé et le portefeuille synchronisé.';
+      'L\'échange est désactivé ici, cet échange ne peut donc pas être suivi pour le moment. S\'il a été remboursé, le ZEC revient à ce portefeuille. Il apparaît dans votre solde une fois l\'échange réactivé et le portefeuille synchronisé.';
 
   @override
   String get walletSwapTrackingError => 'Impossible de suivre cet échange.';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'Impossible d\'ouvrir le suivi de cet échange. L\'échange lui-même est peut-être toujours en cours — les fonds déposés seront réglés ou remboursés du côté du prestataire.';
+      'Impossible d\'ouvrir le suivi de cet échange. L\'échange lui-même est peut-être toujours en cours : les fonds déposés seront réglés ou remboursés du côté du prestataire.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2329,19 +2330,19 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      'Un échange est déjà en cours. Vous pourrez en démarrer un nouveau une fois celui-ci intégralement réglé ou son devis expiré — cela peut prendre un certain temps.';
+      'Un échange est déjà en cours. Vous pourrez en démarrer un nouveau une fois celui-ci intégralement réglé ou son devis expiré, ce qui peut prendre un certain temps.';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'Ce portefeuille ne peut pas encore configurer d\'adresse de remboursement — cela signifie généralement que la première synchronisation n\'est pas terminée. Attendez que la synchronisation se termine, puis réessayez.';
+      'Ce portefeuille ne peut pas encore configurer d\'adresse de remboursement. Cela signifie généralement que la première synchronisation n\'est pas terminée. Attendez que la synchronisation se termine, puis réessayez.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'Ce portefeuille ne peut pas encore configurer d\'adresse de réception pour cet échange — cela signifie généralement que la première synchronisation n\'est pas terminée. Attendez que la synchronisation se termine, puis réessayez.';
+      'Ce portefeuille ne peut pas encore configurer d\'adresse de réception pour cet échange. Cela signifie généralement que la première synchronisation n\'est pas terminée. Attendez que la synchronisation se termine, puis réessayez.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'L\'échange n\'a pas pu démarrer à temps — la connexion était peut-être lente, ou le portefeuille était occupé. Obtenez un nouveau devis et réessayez.';
+      'L\'échange n\'a pas pu démarrer à temps : la connexion était peut-être lente, ou le portefeuille était occupé. Obtenez un nouveau devis et réessayez.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2366,7 +2367,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'Cet échange nécessite environ $needed ZEC, frais de réseau compris, mais seulement $spendable ZEC sont disponibles pour le moment. Votre solde rattrape encore son retard — davantage pourrait devenir disponible bientôt.';
+    return 'Cet échange nécessite environ $needed ZEC, frais de réseau compris, mais seulement $spendable ZEC sont disponibles pour le moment. Votre solde rattrape encore son retard : davantage pourrait devenir disponible bientôt.';
   }
 
   @override
@@ -2400,7 +2401,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapRefundHelper =>
-      'Sur la chaîne depuis laquelle vous envoyez — pas une adresse Zcash.';
+      'Sur la chaîne depuis laquelle vous envoyez. Pas une adresse Zcash.';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2409,7 +2410,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return 'Une adresse $chain — là où vos pièces retournent si l\'échange échoue. Pas une adresse Zcash.';
+    return 'Une adresse $chain, là où vos pièces retournent si l\'échange échoue. Pas une adresse Zcash.';
   }
 
   @override
@@ -2418,7 +2419,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'Si l\'échange ne peut pas aboutir, le prestataire renvoie vos pièces à cette adresse sur la chaîne depuis laquelle vous avez payé. Saisissez une adresse que vous contrôlez — le portefeuille ne peut pas vérifier une adresse étrangère à votre place, alors vérifiez-la attentivement.';
+      'Si l\'échange ne peut pas aboutir, le prestataire renvoie vos pièces à cette adresse sur la chaîne depuis laquelle vous avez payé. Saisissez une adresse que vous contrôlez : le portefeuille ne peut pas vérifier une adresse étrangère à votre place, alors vérifiez-la attentivement.';
 
   @override
   String get walletSwapRefundScanTooltip =>
@@ -2473,7 +2474,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapPickerStale =>
-      'Impossible d\'actualiser la liste des actifs — affichage de la dernière liste connue.';
+      'Impossible d\'actualiser la liste des actifs. Affichage de la dernière liste connue.';
 
   @override
   String get walletSwapPickerEmpty =>
@@ -2510,22 +2511,22 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapSlippageMayFail =>
-      'Très faible — l\'échange peut échouer si le prix évolue.';
+      'Très faible : l\'échange peut échouer si le prix évolue.';
 
   @override
   String get walletSwapSlippageNormal => 'Une tolérance sûre.';
 
   @override
   String get walletSwapSlippageRisky =>
-      'Élevée — vous pourriez recevoir sensiblement moins que le montant coté.';
+      'Élevée : vous pourriez recevoir sensiblement moins que le montant coté.';
 
   @override
   String get walletSwapSlippageTooHigh =>
-      'Trop élevée — l\'échange sera rejeté. Réduisez-la à 10 % ou moins.';
+      'Trop élevée : l\'échange sera rejeté. Réduisez-la à 10 % ou moins.';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return 'Vous recevrez au moins $zec ZEC — votre plancher de glissement de $slippage %. Le montant final ne descendra pas en dessous de ce seuil.';
+    return 'Vous recevrez au moins $zec ZEC, votre plancher de glissement de $slippage %. Le montant final ne descendra pas en dessous de ce seuil.';
   }
 
   @override
@@ -2534,7 +2535,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'Tant que vous ne l\'avez pas protégé — un simple geste, suggéré à l\'arrivée — le montant reçu est brièvement public et visible sur la chaîne. Un petit montant peut rester public jusqu\'à son accumulation.';
+      'Tant que vous ne l\'avez pas protégé (un simple geste, suggéré à l\'arrivée), le montant reçu est brièvement public et visible sur la chaîne. Un petit montant peut rester public jusqu\'à son accumulation.';
 
   @override
   String get walletSwapRefundVerifyTitle =>
@@ -2542,7 +2543,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapRefundVerifyBody =>
-      'Vérifiez-la caractère par caractère — c\'est là que vos pièces retournent si l\'échange échoue. Le portefeuille ne peut pas vérifier une adresse étrangère à votre place.';
+      'Vérifiez-la caractère par caractère : c\'est là que vos pièces retournent si l\'échange échoue. Le portefeuille ne peut pas vérifier une adresse étrangère à votre place.';
 
   @override
   String get walletSwapRefundVerifyAck =>
@@ -2554,7 +2555,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return 'Vérifiez-la caractère par caractère — c\'est là que vous recevrez $asset. Le portefeuille ne peut pas vérifier une adresse étrangère à votre place.';
+    return 'Vérifiez-la caractère par caractère : c\'est là que vous recevrez $asset. Le portefeuille ne peut pas vérifier une adresse étrangère à votre place.';
   }
 
   @override
@@ -2596,7 +2597,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'Cette fenêtre de dépôt est fermée. N\'envoyez pas de fonds maintenant — démarrez un nouvel échange. Si vous avez déjà envoyé les fonds, le prestataire devrait les rembourser à votre adresse de remboursement.';
+      'Cette fenêtre de dépôt est fermée. N\'envoyez pas de fonds maintenant : démarrez un nouvel échange. Si vous avez déjà envoyé les fonds, le prestataire devrait les rembourser à votre adresse de remboursement.';
 
   @override
   String get walletSwapDepositQrLabel => 'Code QR de l\'adresse de dépôt';
@@ -2615,7 +2616,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapDepositMemoWarning =>
-      'Vous DEVEZ inclure ce mémo exact avec votre dépôt. L\'envoyer sans lui — ou avec un mémo incorrect — peut entraîner la perte définitive de vos fonds.';
+      'Vous DEVEZ inclure ce mémo exact avec votre dépôt. L\'envoyer sans lui, ou avec un mémo incorrect, peut entraîner la perte définitive de vos fonds.';
 
   @override
   String get walletSwapDepositMemoLabel => 'Mémo/tag de dépôt';
@@ -2634,11 +2635,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'Cela n\'annulera pas votre échange — il continue en arrière-plan. Mais vous aurez besoin de l\'adresse de dépôt pour payer, alors copiez-la d\'abord si ce n\'est pas déjà fait.';
+      'Cela n\'annulera pas votre échange : il continue en arrière-plan. Mais vous aurez besoin de l\'adresse de dépôt pour payer, alors copiez-la d\'abord si ce n\'est pas déjà fait.';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'Cela n\'annulera pas votre échange — il continue en arrière-plan. La fenêtre de dépôt est fermée. N\'envoyez pas de fonds à l\'adresse de dépôt maintenant. Si vous avez déjà envoyé les fonds, le prestataire devrait les rembourser à votre adresse de remboursement.';
+      'Cela n\'annulera pas votre échange : il continue en arrière-plan. La fenêtre de dépôt est fermée. N\'envoyez pas de fonds à l\'adresse de dépôt maintenant. Si vous avez déjà envoyé les fonds, le prestataire devrait les rembourser à votre adresse de remboursement.';
 
   @override
   String get walletSwapDepositBackStay => 'Rester';
@@ -2672,7 +2673,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'Votre portefeuille prépare cette adresse sur votre appareil — cela peut prendre un moment si le portefeuille est occupé par une autre tâche.';
+      'Votre portefeuille prépare cette adresse sur votre appareil. Cela peut prendre un moment si le portefeuille est occupé par une autre tâche.';
 
   @override
   String get walletReceiveRetry => 'Réessayer';
@@ -2703,7 +2704,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'Nouvelle adresse — elle ne peut pas être liée à vos autres adresses. Les paiements vers celle-ci arrivent quand même dans ce portefeuille, et vos adresses précédentes continuent de fonctionner. Elle ne sera plus affichée ici — copiez-la maintenant.';
+      'Nouvelle adresse : elle ne peut pas être liée à vos autres adresses. Les paiements vers celle-ci arrivent quand même dans ce portefeuille, et vos adresses précédentes continuent de fonctionner. Elle ne sera plus affichée ici : copiez-la maintenant.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2724,7 +2725,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCopyNow =>
-      'Elle ne sera plus affichée ici — copiez-la maintenant.';
+      'Elle ne sera plus affichée ici : copiez-la maintenant.';
 
   @override
   String get walletSecurityMenuItem => 'Sécurité…';
@@ -2781,18 +2782,18 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'Supprime ce portefeuille et sa clé de cet appareil. Il ne détient aucune clé de dépense, il n\'y a donc rien à sauvegarder — vous pouvez le rajouter à tout moment avec sa clé de consultation.';
+      'Supprime ce portefeuille et sa clé de cet appareil. Il ne détient aucune clé de dépense, il n\'y a donc rien à sauvegarder. Vous pouvez le rajouter à tout moment avec sa clé de consultation.';
 
   @override
   String get securityDeleteDialogTitle => 'Supprimer ce portefeuille ?';
 
   @override
   String get securityDeleteDialogBody =>
-      'Cette opération supprime le portefeuille et sa clé de cet appareil. Assurez-vous d\'avoir sauvegardé votre phrase de récupération — c\'est le SEUL moyen de restaurer vos fonds.';
+      'Cette opération supprime le portefeuille et sa clé de cet appareil. Assurez-vous d\'avoir sauvegardé votre phrase de récupération : c\'est le SEUL moyen de restaurer vos fonds.';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'Cette opération supprime le portefeuille et sa clé de cet appareil. Il ne détient aucune clé de dépense, il n\'y a donc rien à sauvegarder — vous pourrez le rajouter plus tard avec sa clé de consultation.';
+      'Cette opération supprime le portefeuille et sa clé de cet appareil. Il ne détient aucune clé de dépense, il n\'y a donc rien à sauvegarder. Vous pourrez le rajouter plus tard avec sa clé de consultation.';
 
   @override
   String get securityDeleteDialogConfirm => 'Supprimer';
@@ -2802,11 +2803,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'Impossible de supprimer le portefeuille — votre portefeuille est inchangé. Réessayez.';
+      'Impossible de supprimer le portefeuille. Votre portefeuille est inchangé. Réessayez.';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return 'Terminez d\'abord le changement de serveur — il aboutit ou s\'arrête en $seconds secondes au plus. Réessayez ensuite de supprimer le portefeuille.';
+    return 'Terminez d\'abord le changement de serveur : il aboutit ou s\'arrête en $seconds secondes au plus. Réessayez ensuite de supprimer le portefeuille.';
   }
 
   @override
@@ -2818,14 +2819,14 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'Ces paiements n\'ont pas encore été envoyés. Leurs montants font toujours partie de votre solde — sauf ceux que votre portefeuille est en train d\'envoyer, dont le montant est peut-être déjà réservé.';
+      'Ces paiements n\'ont pas encore été envoyés. Leurs montants font toujours partie de votre solde, sauf ceux que votre portefeuille est en train d\'envoyer, dont le montant est peut-être déjà réservé.';
 
   @override
   String get walletParkedCancel => 'Annuler';
 
   @override
   String get walletParkedPausedHint =>
-      'En pause — ce paiement ne sera pas envoyé tout seul. Vos fonds sont en sécurité. Envoyez-le maintenant, ou annulez-le.';
+      'En pause : ce paiement ne sera pas envoyé tout seul. Vos fonds sont en sécurité. Envoyez-le maintenant, ou annulez-le.';
 
   @override
   String get walletParkedRetryStale =>
@@ -2833,11 +2834,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'Ce paiement n\'est plus en attente — votre portefeuille est peut-être déjà en train de l\'envoyer. Consultez « Enregistré et en attente » et votre activité.';
+      'Ce paiement n\'est plus en attente : votre portefeuille est peut-être déjà en train de l\'envoyer. Consultez « Enregistré et en attente » et votre activité.';
 
   @override
   String get walletReclaimExplainer =>
-      'Les envois par adresse à usage unique sont bloqués. Vous pouvez les rouvrir — cela déplace un petit montant entre vos propres adresses, puis vous le renvoie.';
+      'Les envois par adresse à usage unique sont bloqués. Vous pouvez les rouvrir : cela déplace un petit montant entre vos propres adresses, puis vous le renvoie.';
 
   @override
   String get walletReclaimButton => 'Rouvrir l\'envoi';
@@ -2898,7 +2899,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      'Cela supprime le paiement enregistré. Il n\'a pas été envoyé, aucun fonds ne quitte donc votre portefeuille — mais cette action est irréversible.';
+      'Cela supprime le paiement enregistré. Il n\'a pas été envoyé, aucun fonds ne quitte donc votre portefeuille. Mais cette action est irréversible.';
 
   @override
   String get walletParkedCancelConfirmKeep => 'Conserver';
@@ -2911,7 +2912,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'Ce paiement est peut-être déjà en route — consultez votre activité.';
+      'Ce paiement est peut-être déjà en route. Consultez votre activité.';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2944,16 +2945,16 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return '$amount est en cours de récupération — certains fonds nécessitent encore une nouvelle tentative.';
+    return '$amount est en cours de récupération, mais certains fonds nécessitent encore une nouvelle tentative.';
   }
 
   @override
   String get walletRecoverRetry =>
-      'Certains fonds nécessitent une nouvelle tentative — relancez la récupération.';
+      'Certains fonds nécessitent une nouvelle tentative : relancez la récupération.';
 
   @override
   String get walletRecoverTruncated =>
-      'Toutes les adresses à usage unique n\'ont pas encore été vérifiées — relancez l\'opération pour vérifier le reste.';
+      'Toutes les adresses à usage unique n\'ont pas encore été vérifiées. Relancez l\'opération pour vérifier le reste.';
 
   @override
   String get walletRecoverNothing => 'Rien à récupérer pour le moment.';
@@ -2984,11 +2985,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'Votre portefeuille prépare ce paiement — son montant est peut-être déjà réservé. Vos fonds sont en sécurité. S\'il n\'aboutit pas, il retourne dans la liste tout seul.';
+      'Votre portefeuille prépare ce paiement ; son montant est peut-être déjà réservé. Vos fonds sont en sécurité. S\'il n\'aboutit pas, il retourne dans la liste tout seul.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'Votre portefeuille prépare ce paiement — son montant est peut-être déjà réservé. Vos fonds sont en sécurité, mais il ne pourra aboutir qu\'une fois que votre portefeuille se synchronisera à nouveau.';
+      'Votre portefeuille prépare ce paiement ; son montant est peut-être déjà réservé. Vos fonds sont en sécurité, mais il ne pourra aboutir qu\'une fois que votre portefeuille se synchronisera à nouveau.';
 
   @override
   String get walletParkedSendNow => 'Envoyer maintenant';
@@ -3022,7 +3023,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'Pas encore prêt à être envoyé. Votre paiement est enregistré et n\'est plus en pause — réessayez plus tard avec « Envoyer maintenant », ou annulez-le.';
+      'Pas encore prêt à être envoyé. Votre paiement est enregistré et n\'est plus en pause. Réessayez plus tard avec « Envoyer maintenant », ou annulez-le.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -3036,7 +3037,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsIntro =>
-      'Les fonds publics sont visibles publiquement sur la blockchain — le montant, les adresses et l\'historique des pièces.';
+      'Les fonds publics sont visibles publiquement sur la blockchain : le montant, les adresses et l\'historique des pièces.';
 
   @override
   String get walletExpertToggleLabel => 'Avancé : fonds publics';
@@ -3063,15 +3064,15 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      'La protection automatique ne s\'est pas terminée — ces fonds sont toujours visibles publiquement. Vous pouvez les protéger maintenant.';
+      'La protection automatique ne s\'est pas terminée : ces fonds sont toujours visibles publiquement. Vous pouvez les protéger maintenant.';
 
   @override
   String get walletSendPrivacyShielded =>
-      'Paiement protégé — le montant et le destinataire restent privés sur la chaîne.';
+      'Paiement protégé : le montant et le destinataire restent privés sur la chaîne.';
 
   @override
   String get walletSendPrivacyTransparent =>
-      'Paiement public — le montant et les adresses sont visibles sur la blockchain.';
+      'Paiement public : le montant et les adresses sont visibles sur la blockchain.';
 
   @override
   String get walletActivityPublicBadge =>
@@ -3088,7 +3089,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      'La protection automatique est désactivée — les fonds publics restent visibles publiquement jusqu\'à ce que vous les protégiez.';
+      'La protection automatique est désactivée : les fonds publics restent visibles publiquement jusqu\'à ce que vous les protégiez.';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -3096,7 +3097,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String walletMoveBelowFloorNote(String amount, String floor) {
-    return 'Après ce déplacement, votre solde public sera de $amount ZEC — en dessous des $floor ZEC nécessaires pour le protéger à nouveau. Il reste public jusqu\'à l\'arrivée de fonds supplémentaires.';
+    return 'Après ce déplacement, votre solde public sera de $amount ZEC, en dessous des $floor ZEC nécessaires pour le protéger à nouveau. Il reste public jusqu\'à l\'arrivée de fonds supplémentaires.';
   }
 
   @override
@@ -3108,7 +3109,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      'La protection automatique est en pause pour cette session — elle n\'a pas été approuvée. Vous pouvez toujours protéger vos fonds manuellement.';
+      'La protection automatique est en pause pour cette session, car elle n\'a pas été approuvée. Vous pouvez toujours protéger vos fonds manuellement.';
 
   @override
   String get walletDeepScanMenuItem =>
@@ -3124,7 +3125,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'Si vous avez restauré ce portefeuille et qu\'il a beaucoup utilisé les échanges par le passé, les fonds de ses échanges les plus anciens peuvent nécessiter une étape supplémentaire pour être retrouvés. Cette vérification les recherche — tout ce qui est trouvé apparaît dans votre solde à mesure que votre portefeuille se synchronise.';
+      'Si vous avez restauré ce portefeuille et qu\'il a beaucoup utilisé les échanges par le passé, les fonds de ses échanges les plus anciens peuvent nécessiter une étape supplémentaire pour être retrouvés. Cette vérification les recherche : tout ce qui est trouvé apparaît dans votre solde à mesure que votre portefeuille se synchronise.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3132,7 +3133,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'Vérification de la plage actuelle toujours en cours — tout ce qui est trouvé apparaît dans votre solde. Cela peut prendre un peu de temps.';
+      'Vérification de la plage actuelle toujours en cours. Tout ce qui est trouvé apparaît dans votre solde. Cela peut prendre un peu de temps.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3162,15 +3163,15 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'Vérification des anciennes adresses d\'échange — tout ce qui est trouvé apparaîtra dans votre solde.';
+      'Vérification des anciennes adresses d\'échange. Tout ce qui est trouvé apparaîtra dans votre solde.';
 
   @override
   String get walletDeepScanFailed =>
-      'Impossible de démarrer la vérification. Rien n\'a changé — réessayez.';
+      'Impossible de démarrer la vérification. Rien n\'a changé : réessayez.';
 
   @override
   String get walletDeepScanSlow =>
-      'Cela prend plus de temps que d\'habitude. Si vos anciennes adresses d\'échange ont été vérifiées, tout ce qui est trouvé apparaîtra dans votre solde — vérifiez à nouveau sous peu.';
+      'Cela prend plus de temps que d\'habitude. Si vos anciennes adresses d\'échange ont été vérifiées, tout ce qui est trouvé apparaîtra dans votre solde. Vérifiez à nouveau sous peu.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3178,7 +3179,7 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'La vérification de la dernière plage est encore en cours — cela peut prendre jusqu\'à deux jours, mais généralement beaucoup moins. Elle se termine d\'elle-même ; vérifiez à nouveau plus tard.';
+      'La vérification de la dernière plage est encore en cours. Cela peut prendre jusqu\'à deux jours, mais généralement beaucoup moins. Elle se termine d\'elle-même ; vérifiez à nouveau plus tard.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3186,11 +3187,11 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'Vérification des anciennes adresses d\'échange toujours en cours — tout ce qui est trouvé apparaîtra dans votre solde.';
+      'Vérification des anciennes adresses d\'échange toujours en cours. Tout ce qui est trouvé apparaîtra dans votre solde.';
 
   @override
   String get walletRescanSwapPointer =>
-      'Vous cherchez des fonds provenant d\'un ancien échange ? Une réanalyse ne les trouvera pas — utilisez plutôt « Vérifier les anciennes adresses d\'échange ».';
+      'Vous cherchez des fonds provenant d\'un ancien échange ? Une réanalyse ne les trouvera pas : utilisez plutôt « Vérifier les anciennes adresses d\'échange ».';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3276,15 +3277,15 @@ class WalletLocalizationsFr extends WalletLocalizations {
   String get walletLoadingLabel => 'Chargement';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'Vérifiez avant d\'envoyer à nouveau';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'Nous n\'avons pas pu confirmer ce paiement. Consultez Activité avant de l\'envoyer à nouveau.';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'Nous n\'avons pas pu confirmer que ce paiement a été enregistré. Consultez vos paiements en attente avant de l\'envoyer à nouveau.';
 
   @override
   String get walletShieldUnknownTitle => 'Vérifiez avant de protéger à nouveau';
@@ -3302,5 +3303,5 @@ class WalletLocalizationsFr extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'Cette tentative a expiré avant d\'être confirmée par le réseau. Votre portefeuille renverra le paiement de lui-même : ne le renvoyez donc pas vous-même.';
 }

@@ -98,7 +98,10 @@ pub use error::{Readiness, TargetProblem, TorDialError};
 pub use isolation::{
     EXIT_ROTATION_INTERVAL, EXIT_ROTATION_INTERVAL_MAX, ExitRotation, MAX_ISOLATION_KEYS,
 };
-pub use owned::{ClientLedger, LedgerEntry, OwnedDialer, OwnedOptions, OwnedStream, Shutdown};
+pub use owned::{
+    ClientLedger, ClientShutDown, LedgerEntry, OwnedDialer, OwnedOptions, OwnedStream, Shutdown,
+    is_client_shut_down,
+};
 pub use stream::TorStream;
 
 /// arti's own configuration and status types, re-exported so a caller can

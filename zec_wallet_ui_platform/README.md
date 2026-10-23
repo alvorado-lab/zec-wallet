@@ -40,8 +40,8 @@ call.**
 
 ```yaml
 dependencies:
-  zec_wallet_ui: ^0.0.1
-  zec_wallet_ui_platform: ^0.0.1
+  zec_wallet_ui: ^0.0.3
+  zec_wallet_ui_platform: ^0.0.3
 ```
 
 Run `flutter pub get` and rebuild the app. You can now delete any hand-written
@@ -94,7 +94,7 @@ notifications + `connectedScenes` rather than the scene callbacks, a path the
 scene-based example does not exercise. Confirm the app-switcher thumbnail is
 covered there too.
 
-## Status: pre-release (0.0.1)
+## Status: pre-release
 
 Both native halves compile in the example app's Android and iOS builds.
 Android `FLAG_SECURE` is verified on a device (`fl=SECURE` on the window,

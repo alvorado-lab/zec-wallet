@@ -19,14 +19,14 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      'Het instellen van de wallet volgt in een latere versie. Daarbij wordt u stap voor stap geholpen om uw herstelzin op te schrijven voordat er tegoeden kunnen worden ontvangen — zo loopt u nooit risico zonder back-up.';
+      'Het instellen van de wallet volgt in een latere versie. Daarbij wordt u stap voor stap geholpen om uw herstelzin op te schrijven voordat er tegoeden kunnen worden ontvangen. Zo loopt u nooit risico zonder back-up.';
 
   @override
   String get walletStartupFailedTitle => 'De wallet kon niet worden gestart';
 
   @override
   String get walletStartupFailedBody =>
-      'Er is iets misgegaan waardoor de wallet niet kon laden op dit apparaat. Als u al een wallet heeft, lopen de tegoeden ervan geen risico — ze bevinden zich op het Zcash-netwerk en kunnen worden hersteld met uw herstelzin. Probeer het opnieuw; als dit blijft gebeuren, sluit de app en open deze opnieuw.';
+      'Er is iets misgegaan waardoor de wallet niet kon laden op dit apparaat. Als u al een wallet heeft, lopen de tegoeden ervan geen risico: ze bevinden zich op het Zcash-netwerk en kunnen worden hersteld met uw herstelzin. Probeer het opnieuw; als dit blijft gebeuren, sluit de app en open deze opnieuw.';
 
   @override
   String get walletBalanceLabel => 'Saldo';
@@ -147,11 +147,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'Opgeslagen op dit apparaat, onder Opgeslagen & in behandeling — u kunt deze daar verzenden of annuleren.';
+      'Opgeslagen op dit apparaat, onder Opgeslagen & in behandeling. U kunt deze daar verzenden of annuleren.';
 
   @override
   String get walletTxExplainPending =>
-      'Verzonden naar het Zcash-netwerk — wacht op bevestiging in een blok.';
+      'Verzonden naar het Zcash-netwerk. Wacht op bevestiging in een blok.';
 
   @override
   String get walletTxExplainRetrying =>
@@ -197,7 +197,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletRescanRangeAll =>
-      'Scan uw hele geschiedenis — traagst, maar herstelt alles.';
+      'Scan uw hele geschiedenis: traagst, maar herstelt alles.';
 
   @override
   String get walletRescanRangeDefault =>
@@ -231,11 +231,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      'Dit scant de blockchain opnieuw. Recente datums duren enkele minuten; ver terugscannen kan uren duren. Synchronisatie loopt op de achtergrond — u kunt uw wallet blijven gebruiken.';
+      'Dit scant de blockchain opnieuw. Recente datums duren enkele minuten; ver terugscannen kan uren duren. Synchronisatie loopt op de achtergrond, dus u kunt uw wallet blijven gebruiken.';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'Een betaling vanuit deze wallet wordt nog bevestigd. De wallet weigert meestal opnieuw te scannen totdat deze is voltooid — u kunt het proberen, maar houd er rekening mee dat dit wordt geweigerd.';
+      'Een betaling vanuit deze wallet wordt nog bevestigd. De wallet weigert meestal opnieuw te scannen totdat deze is voltooid. U kunt het proberen, maar houd er rekening mee dat dit wordt geweigerd.';
 
   @override
   String get walletRescanConfirm => 'Herscan starten';
@@ -248,40 +248,40 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      'Uw geschiedenis wordt herbouwd — de hele keten wordt gescand. Uw saldo en activiteit vullen zich aan naarmate dit vordert.';
+      'Uw geschiedenis wordt herbouwd en de hele keten wordt gescand. Uw saldo en activiteit vullen zich aan naarmate dit vordert.';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return 'Uw geschiedenis wordt herbouwd vanaf $date — uw saldo en activiteit vullen zich aan naarmate dit vordert.';
+    return 'Uw geschiedenis wordt herbouwd vanaf $date. Uw saldo en activiteit vullen zich aan naarmate dit vordert.';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      'Uw geschiedenis wordt herbouwd vanaf het begin van uw wallet — uw saldo en activiteit vullen zich aan naarmate dit vordert.';
+      'Uw geschiedenis wordt herbouwd vanaf het begin van uw wallet. Uw saldo en activiteit vullen zich aan naarmate dit vordert.';
 
   @override
   String get walletCatchUpBanner =>
-      'Bezig met inhalen — uw saldo en activiteit vullen zich aan terwijl de wallet synchroniseert. Alles wat u heeft ontvangen is veilig.';
+      'Bezig met inhalen. Uw saldo en activiteit vullen zich aan terwijl de wallet synchroniseert. Alles wat u heeft ontvangen is veilig.';
 
   @override
   String get walletCatchUpRescanBanner =>
-      'Uw geschiedenis wordt herbouwd na een herscan — uw saldo en activiteit vullen zich aan naarmate dit vordert. Alles wat u heeft ontvangen is veilig.';
+      'Uw geschiedenis wordt herbouwd na een herscan. Uw saldo en activiteit vullen zich aan naarmate dit vordert. Alles wat u heeft ontvangen is veilig.';
 
   @override
   String get walletRescanFailedNotice =>
-      'Kon nu niet opnieuw scannen — uw tegoeden zijn veilig, al kunnen uw saldo en geschiedenis wat tijd nodig hebben om het weer bij te benen. Probeer het straks opnieuw.';
+      'Kon nu niet opnieuw scannen. Uw tegoeden zijn veilig, al kunnen uw saldo en geschiedenis wat tijd nodig hebben om het weer bij te benen. Probeer het straks opnieuw.';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      'Een betaling wordt nog bevestigd, daarom is opnieuw scannen gepauzeerd om uw tegoeden te beschermen. Uw wallet is ongewijzigd — probeer het over een paar uur opnieuw en houd de app ondertussen open en online.';
+      'Een betaling wordt nog bevestigd, daarom is opnieuw scannen gepauzeerd om uw tegoeden te beschermen. Uw wallet is ongewijzigd. Probeer het over een paar uur opnieuw en houd de app ondertussen open en online.';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      'Opnieuw scannen bouwt uw geschiedenis opnieuw op terwijl uw wallet synchroniseert, en synchronisatie loopt nu niet. Uw wallet is ongewijzigd — probeer het opnieuw zodra synchronisatie loopt.';
+      'Opnieuw scannen bouwt uw geschiedenis opnieuw op terwijl uw wallet synchroniseert, en synchronisatie loopt nu niet. Uw wallet is ongewijzigd. Probeer het opnieuw zodra synchronisatie loopt.';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      'Er is niet genoeg vrije opslagruimte om de geschiedenis van uw wallet opnieuw op te bouwen — uw tegoeden zijn veilig, al kunnen uw saldo en geschiedenis wat tijd nodig hebben om het weer bij te benen. Maak ruimte vrij en probeer het opnieuw.';
+      'Er is niet genoeg vrije opslagruimte om de geschiedenis van uw wallet opnieuw op te bouwen. Uw tegoeden zijn veilig, al kunnen uw saldo en geschiedenis wat tijd nodig hebben om het weer bij te benen. Maak ruimte vrij en probeer het opnieuw.';
 
   @override
   String get walletRescanFailedDismiss => 'Sluiten';
@@ -291,7 +291,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletActivityCatchingUp =>
-      'Nog steeds bezig met inhalen — alles wat u heeft ontvangen, verschijnt hier.';
+      'Nog steeds bezig met inhalen. Alles wat u heeft ontvangen, verschijnt hier.';
 
   @override
   String get walletActivitySyncNotRunning =>
@@ -308,7 +308,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      'Niet inbegrepen in \"Nu besteedbaar\" — scherm deze tegoeden af om ze te kunnen besteden. Tot die tijd blijven ze openbaar zichtbaar op de blockchain.';
+      'Niet inbegrepen in \"Nu besteedbaar\". Scherm deze tegoeden af om ze te kunnen besteden. Tot die tijd blijven ze openbaar zichtbaar op de blockchain.';
 
   @override
   String get walletTransparentNoteWatchOnly =>
@@ -368,7 +368,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      'Kon niet controleren of een betaling nog wordt voltooid. Opnieuw proberen — kijk tot die tijd in uw activiteit of er een betaling in behandeling is voordat u opnieuw verzendt.';
+      'Kon niet controleren of een betaling nog wordt voltooid. Opnieuw proberen. Kijk tot die tijd in uw activiteit of er een betaling in behandeling is voordat u opnieuw verzendt.';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -408,7 +408,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      'Dit bedrag ligt nu onder de drempel waarbij afschermen de moeite waard is — de netwerkkosten zouden hoger zijn dan het voordeel. Zodra er iets meer binnenkomt, kan het worden afgeschermd.';
+      'Dit bedrag ligt nu onder de drempel waarbij afschermen de moeite waard is: de netwerkkosten zouden hoger zijn dan het voordeel. Zodra er iets meer binnenkomt, kan het worden afgeschermd.';
 
   @override
   String get walletShieldDoneTitle => 'Afschermen ingediend';
@@ -419,7 +419,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletShieldSavedTitle =>
-      'Opgeslagen — we ronden het afschermen af';
+      'Opgeslagen. We ronden het afschermen af';
 
   @override
   String get walletShieldSavedBody =>
@@ -457,7 +457,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletMoveSheetSubtitle =>
-      'Verstuur afgeschermde ZEC naar uw eigen openbare adres — handig voor een beurs die geen afgeschermde storting accepteert.';
+      'Verstuur afgeschermde ZEC naar uw eigen openbare adres. Handig voor een beurs die geen afgeschermde storting accepteert.';
 
   @override
   String get walletMoveDestinationLabel => 'Uw openbare adres';
@@ -469,7 +469,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'Beschikbaar om te verplaatsen: $amount ZEC — uw saldo is nog aan het inhalen';
+    return 'Beschikbaar om te verplaatsen: $amount ZEC (uw saldo is nog aan het inhalen)';
   }
 
   @override
@@ -478,7 +478,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      'Verplaatsen naar een openbaar adres haalt deze tegoeden uit uw afgeschermde saldo — het bedrag en uw openbare adres worden openbaar zichtbaar op de Zcash-blockchain.';
+      'Verplaatsen naar een openbaar adres haalt deze tegoeden uit uw afgeschermde saldo. Het bedrag en uw openbare adres worden openbaar zichtbaar op de Zcash-blockchain.';
 
   @override
   String get walletMoveWalletEnded =>
@@ -520,8 +520,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
       'Uw tegoeden worden verplaatst naar uw openbare adres. Dit wordt binnenkort bevestigd op de blockchain.';
 
   @override
-  String get walletMoveSavedTitle =>
-      'Opgeslagen — we ronden de verplaatsing af';
+  String get walletMoveSavedTitle => 'Opgeslagen. We ronden de verplaatsing af';
 
   @override
   String get walletMoveSavedBody =>
@@ -546,7 +545,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'Uw wallet is nog aan het inhalen — alles wat u heeft ontvangen wordt beschikbaar om te verplaatsen zodra het synchroniseren is voltooid.';
+      'Uw wallet is nog aan het inhalen. Alles wat u heeft ontvangen wordt beschikbaar om te verplaatsen zodra het synchroniseren is voltooid.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -564,7 +563,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletBalanceStale =>
-      'Verversen mislukt — laatst bekende saldo wordt getoond.';
+      'Verversen mislukt. Laatst bekende saldo wordt getoond.';
 
   @override
   String get walletSyncStartFailed =>
@@ -634,7 +633,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'Bezig met inhalen op het netwerk — een uitgebreide eerste synchronisatie kan even duren. U kunt de app blijven gebruiken terwijl dit wordt afgerond';
+      'Bezig met inhalen op het netwerk. Een uitgebreide eerste synchronisatie kan even duren. U kunt de app blijven gebruiken terwijl dit wordt afgerond';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -659,7 +658,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      'Het Zcash-netwerk is nu niet bereikbaar. We blijven het automatisch proberen — controleer uw internetverbinding, of de server is mogelijk tijdelijk niet beschikbaar.';
+      'Het Zcash-netwerk is nu niet bereikbaar. We blijven het automatisch proberen. Controleer uw internetverbinding, of de server is mogelijk tijdelijk niet beschikbaar.';
 
   @override
   String get walletStallTor =>
@@ -679,7 +678,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      'Deze server heeft gegevens gestuurd die niet kunnen kloppen, dus de synchronisatie is gestopt. Dit is geen verbindingsprobleem — schakel over naar een andere server. Wordt elke server geweigerd, scan dan de geschiedenis opnieuw: de wallet bewaart mogelijk een foutief record van een eerdere server.';
+      'Deze server heeft gegevens gestuurd die niet kunnen kloppen, dus de synchronisatie is gestopt. Dit is geen verbindingsprobleem: schakel over naar een andere server. Wordt elke server geweigerd, scan dan de geschiedenis opnieuw: de wallet bewaart mogelijk een foutief record van een eerdere server.';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -721,11 +720,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncExplainIdle =>
-      'Synchronisatie is nog niet gestart — dit gebeurt automatisch. Geen actie nodig.';
+      'Synchronisatie is nog niet gestart. Dit gebeurt automatisch. Geen actie nodig.';
 
   @override
   String get walletSyncExplainStartFailed =>
-      'Synchroniseren kon niet starten. Uw tegoeden zijn veilig — de wallet controleert momenteel gewoon niet op nieuwe activiteit. Probeer het hieronder opnieuw, of open de app opnieuw.';
+      'Synchroniseren kon niet starten. Uw tegoeden zijn veilig; de wallet controleert momenteel gewoon niet op nieuwe activiteit. Probeer het hieronder opnieuw, of open de app opnieuw.';
 
   @override
   String get walletSyncExplainStarting =>
@@ -737,7 +736,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'De wallet controleert blockchainblokken op uw tegoeden. Uw saldo en activiteit worden bijgewerkt zodra nieuwe transacties worden gevonden — u kunt de app blijven gebruiken terwijl dit wordt afgerond.';
+      'De wallet controleert blockchainblokken op uw tegoeden. Uw saldo en activiteit worden bijgewerkt zodra nieuwe transacties worden gevonden. U kunt de app blijven gebruiken terwijl dit wordt afgerond.';
 
   @override
   String get walletSyncExplainUpToDate =>
@@ -749,11 +748,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'Het Zcash-netwerk is niet bereikbaar — dat is normaal als u offline bent, of de server is mogelijk tijdelijk niet beschikbaar. Uw tegoeden zijn veilig: het saldo toont de laatst gesynchroniseerde stand, en verzendingen in de wachtrij blijven opgeslagen onder Opgeslagen & in behandeling. De verbinding wordt automatisch opnieuw geprobeerd.';
+      'Het Zcash-netwerk is niet bereikbaar. Dat is normaal als u offline bent, of de server is mogelijk tijdelijk niet beschikbaar. Uw tegoeden zijn veilig: het saldo toont de laatst gesynchroniseerde stand, en verzendingen in de wachtrij blijven opgeslagen onder Opgeslagen & in behandeling. De verbinding wordt automatisch opnieuw geprobeerd.';
 
   @override
   String get walletSyncExplainOffline =>
-      'Geen netwerkverbinding. Uw tegoeden zijn veilig — het saldo toont de laatst gesynchroniseerde stand, en verzendingen in de wachtrij blijven opgeslagen onder Opgeslagen & in behandeling.';
+      'Geen netwerkverbinding. Uw tegoeden zijn veilig: het saldo toont de laatst gesynchroniseerde stand, en verzendingen in de wachtrij blijven opgeslagen onder Opgeslagen & in behandeling.';
 
   @override
   String get walletSyncExplainUnknown =>
@@ -783,41 +782,42 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTorFellBack =>
-      'Tor niet beschikbaar — directe verbinding wordt gebruikt';
+      'Tor niet beschikbaar, directe verbinding wordt gebruikt';
 
   @override
   String get walletTorUnavailable =>
-      'Privépad niet beschikbaar — geen verbinding';
+      'Privépad niet beschikbaar, geen verbinding';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport niet beschikbaar — geen verbinding';
+    return '$transport niet beschikbaar, geen verbinding';
   }
 
   @override
-  String get walletTorUnanswered => 'Privépad verbonden — er komt niets terug';
+  String get walletTorUnanswered =>
+      'Privépad verbonden, maar er komt niets terug';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'Privépad verbonden — er komt niets terug (privacy niet geverifieerd)';
+      'Privépad verbonden, maar er komt niets terug (privacy niet geverifieerd)';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport verbonden — er komt niets terug';
+    return '$transport verbonden, maar er komt niets terug';
   }
 
   @override
   String get walletTorUnansweredDirect =>
-      'Niet privé (directe verbinding van uw app) — er komt niets terug';
+      'Niet privé (directe verbinding van uw app), en er komt niets terug';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return 'Verbonden via $transport — er komt niets terug; verbindingen kunnen door de proxy aan elkaar worden gekoppeld';
+    return 'Verbonden via $transport, maar er komt niets terug; verbindingen kunnen door de proxy aan elkaar worden gekoppeld';
   }
 
   @override
   String get walletTorUnknown =>
-      'Tor-status onbekend — beschouw als niet beschermd';
+      'Tor-status onbekend. Beschouw als niet beschermd';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -922,7 +922,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'Deze server is niet bereikbaar. Controleer het adres — en als dat klopt, antwoordt deze server niet of kan uw app hem nu niet bereiken. Probeer het opnieuw of kies een andere server.';
+      'Deze server is niet bereikbaar. Controleer het adres. Als dat klopt, antwoordt deze server niet of kan uw app hem nu niet bereiken. Probeer het opnieuw of kies een andere server.';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -956,7 +956,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return 'Wisselen is mislukt — $host wordt nog gebruikt.';
+    return 'Wisselen is mislukt. $host wordt nog gebruikt.';
   }
 
   @override
@@ -991,24 +991,24 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      'Het privépad heeft de verbinding geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server — de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
+      'Het privépad heeft de verbinding geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server; de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport heeft de verbinding geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server — de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
+    return '$transport heeft de verbinding geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server; de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      'Walletverkeer maakt rechtstreeks verbinding met de server. De server kan uw IP-adres zien. De verbinding is geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server — de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
+      'Walletverkeer maakt rechtstreeks verbinding met de server. De server kan uw IP-adres zien. De verbinding is geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server; de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'De privacy van deze verbinding kan niet worden geverifieerd — beschouw deze als niet privé. De verbinding is geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server — de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
+      'De privacy van deze verbinding kan niet worden geverifieerd. Beschouw deze als niet privé. De verbinding is geaccepteerd, maar er komt al een minuut niets terug. Het kan het pad zijn of de wallet-server; de wallet kan dat niet onderscheiden. Hij blijft het proberen; als het niet overgaat, probeer een andere server of controleer de netwerkinstellingen van uw app.';
 
   @override
   String get walletTransportExplainUnverified =>
-      'De privacy van deze verbinding kan niet worden geverifieerd — beschouw deze als niet privé.';
+      'De privacy van deze verbinding kan niet worden geverifieerd. Beschouw deze als niet privé.';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1019,7 +1019,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      'Maak een nieuwe wallet aan om ZEC te ontvangen en te bewaren. We genereren een herstelzin en helpen u deze stap voor stap veilig te stellen voordat er tegoeden kunnen binnenkomen — zo loopt u nooit risico zonder back-up.';
+      'Maak een nieuwe wallet aan om ZEC te ontvangen en te bewaren. We genereren een herstelzin en helpen u deze stap voor stap veilig te stellen voordat er tegoeden kunnen binnenkomen. Zo loopt u nooit risico zonder back-up.';
 
   @override
   String get walletCreateButton => 'Nieuwe wallet aanmaken';
@@ -1073,7 +1073,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return 'Scant vanaf $date — tegoeden die daarvoor zijn ontvangen, verschijnen niet. Oudere wallet? Kies een eerdere datum.';
+    return 'Scant vanaf $date. Tegoeden die daarvoor zijn ontvangen, verschijnen niet. Oudere wallet? Kies een eerdere datum.';
   }
 
   @override
@@ -1109,7 +1109,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'Voer uw herstelzin in om uw wallet te herstellen — typ of plak de woorden in de juiste volgorde, gescheiden door spaties. Alleen standaardzinnen: als uw wallet een extra wachtwoordzin gebruikte (een \"25e woord\"), kan deze app die nog niet herstellen — u zou een lege wallet zien, geen foutmelding.';
+      'Voer uw herstelzin in om uw wallet te herstellen. Typ of plak de woorden in de juiste volgorde, gescheiden door spaties. Alleen standaardzinnen: als uw wallet een extra wachtwoordzin gebruikte (een \"25e woord\"), kan deze app die nog niet herstellen. U zou dan een lege wallet zien, geen foutmelding.';
 
   @override
   String get walletRestorePhraseHint => 'woord een  woord twee  woord drie  …';
@@ -1136,8 +1136,8 @@ class WalletLocalizationsNl extends WalletLocalizations {
       count,
       locale: localeName,
       other:
-          '$count woorden zijn geen herstelwoorden — corrigeer de gemarkeerde woorden',
-      one: '1 woord is geen herstelwoord — corrigeer het gemarkeerde woord',
+          '$count woorden zijn geen herstelwoorden. Corrigeer de gemarkeerde woorden',
+      one: '1 woord is geen herstelwoord. Corrigeer het gemarkeerde woord',
     );
     return '$_temp0';
   }
@@ -1168,11 +1168,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletRestoreBirthdayNone =>
-      'We scannen uw hele geschiedenis — trager, maar niets wordt gemist.';
+      'We scannen uw hele geschiedenis: trager, maar niets wordt gemist.';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return 'Scant vanaf $date — tegoeden die daarvoor zijn ontvangen, verschijnen niet. Oudere wallet? Kies een eerdere datum, of Scan alle geschiedenis.';
+    return 'Scant vanaf $date. Tegoeden die daarvoor zijn ontvangen, verschijnen niet. Oudere wallet? Kies een eerdere datum, of Scan alle geschiedenis.';
   }
 
   @override
@@ -1216,7 +1216,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'Deze woorden zijn de ENIGE manier om uw wallet en tegoeden te herstellen. Schrijf ze in de juiste volgorde op en bewaar ze op een veilige, privé plek. Deel ze nooit en bewaar ze nooit online — iedereen die deze woorden kent, kan uw tegoeden overnemen.';
+      'Deze woorden zijn de ENIGE manier om uw wallet en tegoeden te herstellen. Schrijf ze in de juiste volgorde op en bewaar ze op een veilige, privé plek. Deel ze nooit en bewaar ze nooit online: iedereen die deze woorden kent, kan uw tegoeden overnemen.';
 
   @override
   String get walletBackupSecureNoteAndroid =>
@@ -1263,7 +1263,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      'Dit verwijdert deze wallet van het apparaat en brengt u terug naar het begin. Er kan niets via deze app worden gestort voordat het instellen is voltooid.\n\nAls deze wallet ooit tegoeden heeft bevat — of is hersteld vanaf een herstelzin — kan alleen die zin hem terughalen.';
+      'Dit verwijdert deze wallet van het apparaat en brengt u terug naar het begin. Er kan niets via deze app worden gestort voordat het instellen is voltooid.\n\nAls deze wallet ooit tegoeden heeft bevat (of is hersteld vanaf een herstelzin), kan alleen die zin hem terughalen.';
 
   @override
   String get walletBackupStartOverConfirm => 'Verwijderen en opnieuw beginnen';
@@ -1292,7 +1292,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'Deze wallet is ingesteld met uw account uit de app die de wallet heeft geïnstalleerd en heeft daarom geen eigen herstelzin. Uw tegoeden worden samen met dat account hersteld — gebruik de back-up daarvan om ze veilig te houden.';
+      'Deze wallet is ingesteld met uw account uit de app die de wallet heeft geïnstalleerd en heeft daarom geen eigen herstelzin. Uw tegoeden worden samen met dat account hersteld. Gebruik de back-up daarvan om ze veilig te houden.';
 
   @override
   String get walletExportViewingKeyTitle => 'Exporteer uw inzagesleutel';
@@ -1302,15 +1302,15 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      'Deel een alleen-inzagekopie van uw wallet — deze kan uw geschiedenis zien, maar niet besteden.';
+      'Deel een alleen-inzagekopie van uw wallet. Deze kan uw geschiedenis zien, maar niet besteden.';
 
   @override
   String get walletExportViewingKeyWarning =>
-      'Met deze sleutel kan iedereen die hem in bezit heeft alles zien wat deze wallet ooit heeft ontvangen en verzonden — en alles wat hij in de toekomst nog zal ontvangen en verzenden. Hij kan uw tegoeden niet besteden en kan uw wallet niet herstellen. Deel hem alleen met iemand die u vertrouwt om uw volledige geschiedenis te zien, zoals een boekhouder of uw eigen tweede apparaat. De enige manier om dit later weer ongedaan te maken, is door uw tegoeden naar een nieuwe wallet te verplaatsen.';
+      'Met deze sleutel kan iedereen die hem in bezit heeft alles zien wat deze wallet ooit heeft ontvangen en verzonden, en alles wat hij in de toekomst nog zal ontvangen en verzenden. Hij kan uw tegoeden niet besteden en kan uw wallet niet herstellen. Deel hem alleen met iemand die u vertrouwt om uw volledige geschiedenis te zien, zoals een boekhouder of uw eigen tweede apparaat. De enige manier om dit later weer ongedaan te maken, is door uw tegoeden naar een nieuwe wallet te verplaatsen.';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'Met deze sleutel kan iedereen die hem in bezit heeft alles zien wat deze wallet ooit heeft ontvangen en verzonden — en alles wat hij in de toekomst nog zal ontvangen en verzenden. Hij kan uw tegoeden niet besteden en kan uw wallet niet herstellen. Deel hem alleen met iemand die u vertrouwt om uw volledige geschiedenis te zien, zoals een boekhouder of uw eigen tweede apparaat. Eenmaal gedeeld, kan dit niet meer ongedaan worden gemaakt.';
+      'Met deze sleutel kan iedereen die hem in bezit heeft alles zien wat deze wallet ooit heeft ontvangen en verzonden, en alles wat hij in de toekomst nog zal ontvangen en verzenden. Hij kan uw tegoeden niet besteden en kan uw wallet niet herstellen. Deel hem alleen met iemand die u vertrouwt om uw volledige geschiedenis te zien, zoals een boekhouder of uw eigen tweede apparaat. Eenmaal gedeeld, kan dit niet meer ongedaan worden gemaakt.';
 
   @override
   String get walletExportViewingKeyReveal => 'Inzagesleutel tonen';
@@ -1351,7 +1351,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'Dit is een alleen-inzagewallet. Deze is ingesteld vanuit een inzagesleutel, waardoor hij uw saldo en geschiedenis kan zien maar geen bestedingssleutels bezit — er is hier niets om een back-up van te maken, en hij kan geen tegoeden verzenden.';
+      'Dit is een alleen-inzagewallet. Deze is ingesteld vanuit een inzagesleutel, waardoor hij uw saldo en geschiedenis kan zien maar geen bestedingssleutels bezit. Er is hier dus niets om een back-up van te maken, en hij kan geen tegoeden verzenden.';
 
   @override
   String get walletWatchOnlyBadge => 'Alleen-inzage';
@@ -1369,11 +1369,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedAlreadyOpen =>
-      'Deze wallet is geopend in een ander venster of een andere app, of rondt nog een vorige bewerking af. Sluit eventuele andere vensters die de wallet gebruiken — of wacht even — en probeer het daarna opnieuw.';
+      'Deze wallet is geopend in een ander venster of een andere app, of rondt nog een vorige bewerking af. Sluit eventuele andere vensters die de wallet gebruiken, of wacht even, en probeer het daarna opnieuw.';
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'De beveiligde sleutel van deze wallet is niet meer beschikbaar, waardoor de wallet niet op dit apparaat kan worden geopend. Uw tegoeden zijn veilig — herstel vanaf uw herstelzin om ze terug te krijgen.';
+      'De beveiligde sleutel van deze wallet is niet meer beschikbaar, waardoor de wallet niet op dit apparaat kan worden geopend. Uw tegoeden zijn veilig. Herstel vanaf uw herstelzin om ze terug te krijgen.';
 
   @override
   String get walletOnboardingFailedRestoreAction =>
@@ -1384,7 +1384,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      'Zorg dat u uw herstelzin bij de hand heeft voordat u doorgaat — u heeft deze nodig op het volgende scherm om uw tegoeden terug te krijgen. Uw tegoeden zijn veilig op de blockchain en worden beheerd door die herstelzin. Dit verwijdert de onleesbare walletgegevens van dit apparaat, zodat deze opnieuw kan worden opgebouwd.';
+      'Zorg dat u uw herstelzin bij de hand heeft voordat u doorgaat: u heeft deze nodig op het volgende scherm om uw tegoeden terug te krijgen. Uw tegoeden zijn veilig op de blockchain en worden beheerd door die herstelzin. Dit verwijdert de onleesbare walletgegevens van dit apparaat, zodat deze opnieuw kan worden opgebouwd.';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'Annuleren';
@@ -1403,7 +1403,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'Het instellen van de wallet is niet voltooid. Probeer opnieuw om dit af te ronden — er is niets verloren gegaan.';
+      'Het instellen van de wallet is niet voltooid. Probeer opnieuw om dit af te ronden. Er is niets verloren gegaan.';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1411,18 +1411,18 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      'De walletinstellingen van deze app zijn onjuist, waardoor de wallet niet kan starten. Opnieuw proberen helpt niet — meld dit bij de ontwikkelaar van de app. Uw tegoeden lopen geen risico.';
+      'De walletinstellingen van deze app zijn onjuist, waardoor de wallet niet kan starten. Opnieuw proberen helpt niet; meld dit bij de ontwikkelaar van de app. Uw tegoeden lopen geen risico.';
 
   @override
   String get walletSendButton => 'Verzenden';
 
   @override
   String get walletSendSyncNotRunning =>
-      'Synchronisatie loopt niet — uw besteedbare saldo kan niet worden bijgewerkt';
+      'Synchronisatie loopt niet, dus uw besteedbare saldo kan niet worden bijgewerkt';
 
   @override
   String get walletSendWaitingForFunds =>
-      'Nog aan het synchroniseren — u kunt verzenden zodra u een besteedbaar saldo heeft';
+      'Nog aan het synchroniseren. U kunt verzenden zodra u een besteedbaar saldo heeft';
 
   @override
   String get walletSendNoSpendableYet => 'Nog geen besteedbaar saldo';
@@ -1440,7 +1440,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'Dit is een alleen-inzage wallet. Deze kan saldo\'s tonen en betalingen ontvangen, maar heeft geen bestedingssleutels — dus kan deze niet verzenden.';
+      'Dit is een alleen-inzage wallet. Deze kan saldo\'s tonen en betalingen ontvangen, maar heeft geen bestedingssleutels en kan dus niet verzenden.';
 
   @override
   String get walletSendExpiredTitle => 'Dit betaalverzoek is verlopen';
@@ -1451,7 +1451,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'Dit is een alleen-inzage wallet — deze heeft geen bestedingssleutels, dus kan deze niet verzenden.';
+      'Dit is een alleen-inzage wallet. Deze heeft geen bestedingssleutels, dus kan deze niet verzenden.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1460,7 +1460,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'Beschikbaar om te verzenden: $amount ZEC — uw saldo is nog aan het inhalen';
+    return 'Beschikbaar om te verzenden: $amount ZEC (uw saldo is nog aan het inhalen)';
   }
 
   @override
@@ -1585,7 +1585,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'Dit is een groot bedrag — bijna uw volledige saldo. Een verzonden betaling kan niet worden teruggedraaid.';
+      'Dit is een groot bedrag: bijna uw volledige saldo. Een verzonden betaling kan niet worden teruggedraaid.';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1602,7 +1602,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
   String get walletSendSentBody => 'Uw betaling is verzonden naar het netwerk.';
 
   @override
-  String get walletSendSavedTitle => 'Opgeslagen — we ronden het verzenden af';
+  String get walletSendSavedTitle => 'Opgeslagen. We ronden het verzenden af';
 
   @override
   String get walletSendSavedBody =>
@@ -1631,7 +1631,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSendAlreadyBody =>
-      'Deze betaling is al ingediend — deze wordt niet twee keer verzonden.';
+      'Deze betaling is al ingediend. Deze wordt niet twee keer verzonden.';
 
   @override
   String get walletSendFailedTitle => 'Betaling kon niet worden voltooid';
@@ -1658,7 +1658,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return 'Onvoldoende besteedbaar saldo — u heeft $available ZEC en dit vereist $required ZEC.';
+    return 'Onvoldoende besteedbaar saldo: u heeft $available ZEC en dit vereist $required ZEC.';
   }
 
   @override
@@ -1679,7 +1679,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      'Deze server weigert, houdt achter of rapporteert een van de afgeschermde Zcash-pools verkeerd. Tegoed dat in die pool is ontvangen kan niet via deze server worden uitgegeven, en het getoonde saldo is een ondergrens. Schakel over naar een andere server om het te gebruiken — dit is geen verbindingsprobleem.';
+      'Deze server weigert, houdt achter of rapporteert een van de afgeschermde Zcash-pools verkeerd. Tegoed dat in die pool is ontvangen kan niet via deze server worden uitgegeven, en het getoonde saldo is een ondergrens. Schakel over naar een andere server om het te gebruiken. Dit is geen verbindingsprobleem.';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1716,19 +1716,19 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      'De keten van deze server stopt bij een blok dat het netwerk al was gepasseerd voordat deze versie van de app werd gebouwd, dus uw saldo is alleen actueel tot dat blok. Nieuwe betalingen aan u worden mogelijk nog niet getoond, en een betaling die vanaf hier wordt verzonden komt mogelijk niet aan. Schakel over naar een andere server om bij te werken — dit is geen verbindingsprobleem.';
+      'De keten van deze server stopt bij een blok dat het netwerk al was gepasseerd voordat deze versie van de app werd gebouwd, dus uw saldo is alleen actueel tot dat blok. Nieuwe betalingen aan u worden mogelijk nog niet getoond, en een betaling die vanaf hier wordt verzonden komt mogelijk niet aan. Schakel over naar een andere server om bij te werken. Dit is geen verbindingsprobleem.';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'Wachten op een app-update — je tegoed is veilig en er is niets verzonden.';
+      'Wachten op een app-update. Je tegoed is veilig en er is niets verzonden.';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'Wachten op een server die de netwerkversie meldt — wissel van server. Je tegoed is veilig en er is niets verzonden.';
+      'Wachten op een server die de netwerkversie meldt. Wissel van server. Je tegoed is veilig en er is niets verzonden.';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
-      'Wachten op een server die de netwerkversie meldt. Als de datum en tijd van dit apparaat niet kloppen, corrigeer die dan eerst — en wissel daarna van server. Je tegoed is veilig en er is niets verzonden.';
+      'Wachten op een server die de netwerkversie meldt. Als de datum en tijd van dit apparaat niet kloppen, corrigeer die dan eerst en wissel daarna van server. Je tegoed is veilig en er is niets verzonden.';
 
   @override
   String get walletSyncUnverified =>
@@ -1740,17 +1740,16 @@ class WalletLocalizationsNl extends WalletLocalizations {
       hours,
       locale: localeName,
       other:
-          'Verzenden werkt nog ongeveer $hours uur — wissel daarna van server.',
-      one: 'Verzenden werkt nog ongeveer 1 uur — wissel daarna van server.',
-      zero:
-          'Verzenden werkt nog minder dan een uur — wissel daarna van server.',
+          'Verzenden werkt nog ongeveer $hours uur. Wissel daarna van server.',
+      one: 'Verzenden werkt nog ongeveer 1 uur. Wissel daarna van server.',
+      zero: 'Verzenden werkt nog minder dan een uur. Wissel daarna van server.',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return 'Verzenden werkt nog ongeveer $blocks blokken — wissel daarna van server.';
+    return 'Verzenden werkt nog ongeveer $blocks blokken. Wissel daarna van server.';
   }
 
   @override
@@ -1760,7 +1759,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncGraceEndedClock =>
-      'Deze server heeft de netwerkversie al een dag niet gemeld, dus deze app kan niet bevestigen dat verzenden veilig is. Als de datum en tijd van dit apparaat niet kloppen, corrigeer die dan eerst — en wissel daarna naar een server die de netwerkversie meldt.';
+      'Deze server heeft de netwerkversie al een dag niet gemeld, dus deze app kan niet bevestigen dat verzenden veilig is. Als de datum en tijd van dit apparaat niet kloppen, corrigeer die dan eerst en wissel daarna naar een server die de netwerkversie meldt.';
 
   @override
   String get walletSyncGraceNeverConfirmed =>
@@ -1768,19 +1767,19 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'Deze server zegt niet op welke versie van het Zcash-netwerk hij zit, dus deze app kan niet bevestigen dat een betaling die hij ondertekent wordt geaccepteerd. Je saldo is actueel. Wissel naar een andere server — dit is geen verbindingsprobleem.';
+      'Deze server zegt niet op welke versie van het Zcash-netwerk hij zit, dus deze app kan niet bevestigen dat een betaling die hij ondertekent wordt geaccepteerd. Je saldo is actueel. Wissel naar een andere server. Dit is geen verbindingsprobleem.';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'Deze server zegt niet op welke versie van het Zcash-netwerk hij zit, dus deze app kan niet bevestigen dat een betaling die hij ondertekent wordt geaccepteerd. Hij is ook blokken blijven leveren die deze wallet daarna moest terugdraaien, dus je saldo is mogelijk niet actueel. Wissel naar een andere server — dit is geen verbindingsprobleem.';
+      'Deze server zegt niet op welke versie van het Zcash-netwerk hij zit, dus deze app kan niet bevestigen dat een betaling die hij ondertekent wordt geaccepteerd. Hij is ook blokken blijven leveren die deze wallet daarna moest terugdraaien, dus je saldo is mogelijk niet actueel. Wissel naar een andere server. Dit is geen verbindingsprobleem.';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'Deze server blijft ook blokken leveren die deze wallet daarna moet terugdraaien — wissel van server.';
+      'Deze server blijft ook blokken leveren die deze wallet daarna moet terugdraaien. Wissel van server.';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'Uw saldo is nog aan het inhalen — er kan meer beschikbaar komen terwijl de wallet synchroniseert.';
+      'Uw saldo is nog aan het inhalen. Er kan meer beschikbaar komen terwijl de wallet synchroniseert.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1829,7 +1828,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSendFaultMemoConflict =>
-      'Deze betaling kon niet worden verzonden – de app heeft er twee notities aan gekoppeld. Er is niets verzonden.';
+      'Deze betaling kon niet worden verzonden: de app heeft er twee notities aan gekoppeld. Er is niets verzonden.';
 
   @override
   String get walletSendFaultNetworkMismatch =>
@@ -1894,7 +1893,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'Dit is een alleen-inzage wallet — deze kan niet wisselen.';
+      'Dit is een alleen-inzage wallet. Deze kan niet wisselen.';
 
   @override
   String get walletSwapDone => 'Gereed';
@@ -1909,7 +1908,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'Beschikbaar om te wisselen: $amount ZEC — uw saldo is nog aan het inhalen';
+    return 'Beschikbaar om te wisselen: $amount ZEC (uw saldo is nog aan het inhalen)';
   }
 
   @override
@@ -1935,7 +1934,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return 'Een $chain-adres — waar uw gewisselde munt naartoe wordt gestuurd. Controleer goed of het juiste netwerk is gekozen.';
+    return 'Een $chain-adres, waar uw gewisselde munt naartoe wordt gestuurd. Controleer goed of het juiste netwerk is gekozen.';
   }
 
   @override
@@ -1956,7 +1955,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'Nog bezig — de wissel wordt gestart. Dit kan tot een minuut duren.';
+      'Nog bezig. De wissel wordt gestart. Dit kan tot een minuut duren.';
 
   @override
   String get walletSwapReviewTitle => 'Wissel bevestigen';
@@ -1981,16 +1980,16 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'Koers nog ongeveer $time geldig — bevestig voordat deze verloopt.';
+    return 'Koers nog ongeveer $time geldig. Bevestig voordat deze verloopt.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'Koers nog minder dan een minuut geldig — bevestig voordat deze verloopt.';
+      'Koers nog minder dan een minuut geldig. Bevestig voordat deze verloopt.';
 
   @override
   String get walletSwapQuoteExpired =>
-      'Deze koers is verlopen. Ga terug en vraag een nieuwe koers op — de oude wordt niet meer gegarandeerd, en nu verzenden kan leiden tot een terugbetaling.';
+      'Deze koers is verlopen. Ga terug en vraag een nieuwe koers op. De oude wordt niet meer gegarandeerd, en nu verzenden kan leiden tot een terugbetaling.';
 
   @override
   String get walletCountdownUnderMinute => 'minder dan een minuut';
@@ -2015,7 +2014,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'Wisselen vanuit ZEC ontschermt uw ZEC — de storting is een openbare transactie, en de kant van de aanbieder is openbaar op diens netwerk.';
+      'Wisselen vanuit ZEC ontschermt uw ZEC: de storting is een openbare transactie, en de kant van de aanbieder is openbaar op diens netwerk.';
 
   @override
   String get walletSwapDiscloseTitle => 'Wat de wisselaanbieder zal zien';
@@ -2061,7 +2060,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'Uw wallet verstuurt de ZEC-storting naar de aanbieder. Bent u kort offline, dan wordt deze automatisch verzonden zodra u weer online bent — maar het verzendvenster is kort, en sluit dit eerder, dan stopt de wissel gewoon en wordt er niets gewisseld. Uw ZEC blijft van u, al kan het tot een uur duren voordat het weer als besteedbaar wordt weergegeven.';
+      'Uw wallet verstuurt de ZEC-storting naar de aanbieder. Bent u kort offline, dan wordt deze automatisch verzonden zodra u weer online bent. Maar het verzendvenster is kort, en sluit dit eerder, dan stopt de wissel gewoon en wordt er niets gewisseld. Uw ZEC blijft van u, al kan het tot een uur duren voordat het weer als besteedbaar wordt weergegeven.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2069,7 +2068,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'Deze wissel wacht nog op de storting. De stortingsinstructies zijn niet meer beschikbaar op dit apparaat — hebt u het geld al verzonden, dan wordt dit gedetecteerd; zo niet, laat deze wissel dan verlopen en start een nieuwe.';
+      'Deze wissel wacht nog op de storting. De stortingsinstructies zijn niet meer beschikbaar op dit apparaat. Hebt u het geld al verzonden, dan wordt dit gedetecteerd; zo niet, laat deze wissel dan verlopen en start een nieuwe.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2082,7 +2081,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'Het stortingsvenster is verstreken. Als u uw storting nog niet hebt verzonden, stopt deze wissel gewoon — vraag een nieuwe koers aan wanneer u zover bent.';
+      'Het stortingsvenster is verstreken. Als u uw storting nog niet hebt verzonden, stopt deze wissel gewoon. Vraag een nieuwe koers aan wanneer u zover bent.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2108,15 +2107,15 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'Het stortingsvenster is verstreken — controleer de status van deze wissel.';
+      'Het stortingsvenster is verstreken. Controleer de status van deze wissel.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'Deze wissel heeft hier nog geen bevestigde uitkomst bereikt — open hem om te controleren. ZEC die terugkomt naar deze wallet, verschijnt na een synchronisatie in uw saldo.';
+      'Deze wissel heeft hier nog geen bevestigde uitkomst bereikt. Open hem om te controleren. ZEC die terugkomt naar deze wallet, verschijnt na een synchronisatie in uw saldo.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'Deze wissel heeft hier nog geen bevestigde uitkomst bereikt — open hem om te controleren. ZEC die deze wissel aan deze wallet levert, verschijnt na een synchronisatie in uw saldo.';
+      'Deze wissel heeft hier nog geen bevestigde uitkomst bereikt. Open hem om te controleren. ZEC die deze wissel aan deze wallet levert, verschijnt na een synchronisatie in uw saldo.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'Wissel voltooid.';
@@ -2135,15 +2134,15 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'Dit verwijdert de wissel alleen uit deze lijst — de wissel wordt niet geannuleerd, en deze wallet stopt met het volgen van de terugbetaling ervan. Later terugbetaalde ZEC blijft eigendom van deze wallet; een volledige nieuwe scan kan het terugvinden.';
+      'Dit verwijdert de wissel alleen uit deze lijst. De wissel wordt niet geannuleerd, en deze wallet stopt met het volgen van de terugbetaling ervan. Later terugbetaalde ZEC blijft eigendom van deze wallet; een volledige nieuwe scan kan het terugvinden.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'Dit verwijdert de wissel alleen uit deze lijst — de wissel wordt niet geannuleerd, en deze wallet stopt met het volgen van binnenkomende ZEC. Later geleverde ZEC blijft eigendom van deze wallet; een volledige nieuwe scan kan het terugvinden. Als de wissel in plaats daarvan wordt terugbetaald, gaat de terugbetaling terug in de munt die u hebt verzonden, buiten deze wallet.';
+      'Dit verwijdert de wissel alleen uit deze lijst. De wissel wordt niet geannuleerd, en deze wallet stopt met het volgen van binnenkomende ZEC. Later geleverde ZEC blijft eigendom van deze wallet; een volledige nieuwe scan kan het terugvinden. Als de wissel in plaats daarvan wordt terugbetaald, gaat de terugbetaling terug in de munt die u hebt verzonden, buiten deze wallet.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'Dit verwijdert de wissel alleen uit deze lijst — de wissel wordt niet geannuleerd, en deze wallet stopt met het volgen van ZEC die er nog vanuit onderweg is. Later binnenkomende ZEC blijft eigendom van deze wallet; een volledige nieuwe scan kan het terugvinden.';
+      'Dit verwijdert de wissel alleen uit deze lijst. De wissel wordt niet geannuleerd, en deze wallet stopt met het volgen van ZEC die er nog vanuit onderweg is. Later binnenkomende ZEC blijft eigendom van deze wallet; een volledige nieuwe scan kan het terugvinden.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2225,7 +2224,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'De wissel is niet voltooid, dus heeft de aanbieder uw ZEC teruggestuurd naar deze wallet. Dit komt binnen als niet-afgeschermd tegoed en verschijnt in uw saldo na de volgende synchronisatie van de wallet — dit kan even duren.';
+      'De wissel is niet voltooid, dus heeft de aanbieder uw ZEC teruggestuurd naar deze wallet. Dit komt binnen als niet-afgeschermd tegoed en verschijnt in uw saldo na de volgende synchronisatie van de wallet. Dit kan even duren.';
 
   @override
   String get walletSwapStatusFailedTitle => 'Wissel mislukt';
@@ -2239,7 +2238,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'De aanbieder heeft geen registratie meer van deze wissel — deze is hoogstwaarschijnlijk verlopen. Als er een storting is gedaan, zou de aanbieder deze moeten terugbetalen naar het terugbetalingsadres. De wissel blijft in uw lijst staan en deze wallet blijft de ZEC ervan volgen voor het geval deze nog aankomt; u kunt hem op elk moment uit de lijst verwijderen.';
+      'De aanbieder heeft geen registratie meer van deze wissel; deze is hoogstwaarschijnlijk verlopen. Als er een storting is gedaan, zou de aanbieder deze moeten terugbetalen naar het terugbetalingsadres. De wissel blijft in uw lijst staan en deze wallet blijft de ZEC ervan volgen voor het geval deze nog aankomt; u kunt hem op elk moment uit de lijst verwijderen.';
 
   @override
   String get walletSwapStatusUnknownTitle => 'Status niet beschikbaar';
@@ -2257,14 +2256,14 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'Wisselen is hier uitgeschakeld, dus deze wissel kan nu niet worden gevolgd. Als deze is terugbetaald, komt de ZEC terug naar deze wallet — dit verschijnt in uw saldo nadat wisselen weer is ingeschakeld en de wallet synchroniseert.';
+      'Wisselen is hier uitgeschakeld, dus deze wissel kan nu niet worden gevolgd. Als deze is terugbetaald, komt de ZEC terug naar deze wallet. Dit verschijnt in uw saldo nadat wisselen weer is ingeschakeld en de wallet synchroniseert.';
 
   @override
   String get walletSwapTrackingError => 'Deze wissel kon niet worden gevolgd.';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'Het volgen van deze wissel kon niet worden geopend. De wissel zelf loopt mogelijk nog steeds door — eventueel gestorte tegoeden worden bij de aanbieder verrekend of terugbetaald.';
+      'Het volgen van deze wissel kon niet worden geopend. De wissel zelf loopt mogelijk nog steeds door: eventueel gestorte tegoeden worden bij de aanbieder verrekend of terugbetaald.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2307,19 +2306,19 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      'Er loopt al een wissel. U kunt een nieuwe starten nadat deze volledig is verrekend of de koers is verlopen — dit kan een tijdje duren.';
+      'Er loopt al een wissel. U kunt een nieuwe starten nadat deze volledig is verrekend of de koers is verlopen. Dit kan een tijdje duren.';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'Deze wallet kan nog geen terugbetalingsadres instellen — dit betekent meestal alleen dat de eerste synchronisatie nog niet is voltooid. Wacht tot de synchronisatie is voltooid en probeer het daarna opnieuw.';
+      'Deze wallet kan nog geen terugbetalingsadres instellen. Dit betekent meestal alleen dat de eerste synchronisatie nog niet is voltooid. Wacht tot de synchronisatie is voltooid en probeer het daarna opnieuw.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'Deze wallet kan nog geen ontvangstadres voor deze wissel instellen — dit betekent meestal alleen dat de eerste synchronisatie nog niet is voltooid. Wacht tot de synchronisatie is voltooid en probeer het daarna opnieuw.';
+      'Deze wallet kan nog geen ontvangstadres voor deze wissel instellen. Dit betekent meestal alleen dat de eerste synchronisatie nog niet is voltooid. Wacht tot de synchronisatie is voltooid en probeer het daarna opnieuw.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'De wissel kon niet op tijd starten — de verbinding was mogelijk traag, of de wallet was bezet. Vraag een nieuwe koers op en probeer het opnieuw.';
+      'De wissel kon niet op tijd starten. De verbinding was mogelijk traag, of de wallet was bezet. Vraag een nieuwe koers op en probeer het opnieuw.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2344,7 +2343,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'Deze wissel vereist ongeveer $needed ZEC inclusief de netwerkkosten, maar er is nu slechts $spendable ZEC besteedbaar. Uw saldo is nog aan het inhalen — er kan binnenkort meer besteedbaar worden.';
+    return 'Deze wissel vereist ongeveer $needed ZEC inclusief de netwerkkosten, maar er is nu slechts $spendable ZEC besteedbaar. Uw saldo is nog aan het inhalen; er kan binnenkort meer besteedbaar worden.';
   }
 
   @override
@@ -2378,7 +2377,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapRefundHelper =>
-      'Op het netwerk waarvandaan u verzendt — geen Zcash-adres.';
+      'Op het netwerk waarvandaan u verzendt, geen Zcash-adres.';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2387,7 +2386,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return 'Een $chain-adres — waar uw munten naar teruggaan als de wissel mislukt. Geen Zcash-adres.';
+    return 'Een $chain-adres, waar uw munten naar teruggaan als de wissel mislukt. Geen Zcash-adres.';
   }
 
   @override
@@ -2395,7 +2394,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'Als de wissel niet kan worden voltooid, stuurt de aanbieder uw munten terug naar dit adres op het netwerk waarvandaan u betaalde. Voer een adres in dat u zelf beheert — de wallet kan een extern adres niet voor u controleren, dus verifieer het zorgvuldig.';
+      'Als de wissel niet kan worden voltooid, stuurt de aanbieder uw munten terug naar dit adres op het netwerk waarvandaan u betaalde. Voer een adres in dat u zelf beheert. De wallet kan een extern adres niet voor u controleren, dus verifieer het zorgvuldig.';
 
   @override
   String get walletSwapRefundScanTooltip =>
@@ -2450,7 +2449,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapPickerStale =>
-      'De muntenlijst kon niet worden ververst — laatst bekende lijst wordt getoond.';
+      'De muntenlijst kon niet worden ververst. Laatst bekende lijst wordt getoond.';
 
   @override
   String get walletSwapPickerEmpty =>
@@ -2487,22 +2486,22 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapSlippageMayFail =>
-      'Zeer laag — de wissel kan mislukken als de prijs verandert.';
+      'Zeer laag: de wissel kan mislukken als de prijs verandert.';
 
   @override
   String get walletSwapSlippageNormal => 'Een veilige tolerantie.';
 
   @override
   String get walletSwapSlippageRisky =>
-      'Hoog — u kunt merkbaar minder ontvangen dan de opgegeven koers.';
+      'Hoog: u kunt merkbaar minder ontvangen dan de opgegeven koers.';
 
   @override
   String get walletSwapSlippageTooHigh =>
-      'Te hoog — de wissel wordt geweigerd. Verlaag naar 10% of minder.';
+      'Te hoog: de wissel wordt geweigerd. Verlaag naar 10% of minder.';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return 'U ontvangt minimaal $zec ZEC — uw ondergrens bij $slippage% slippage. Het uiteindelijke bedrag komt hier niet onder.';
+    return 'U ontvangt minimaal $zec ZEC, uw ondergrens bij $slippage% slippage. Het uiteindelijke bedrag komt hier niet onder.';
   }
 
   @override
@@ -2510,14 +2509,14 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'Totdat u het afschermt — één tik, waarop u bij aankomst wordt geattendeerd — is het ontvangen bedrag kort openbaar en zichtbaar op de blockchain. Een klein bedrag kan openbaar blijven totdat het is opgebouwd.';
+      'Totdat u het afschermt (één tik, waarop u bij aankomst wordt geattendeerd), is het ontvangen bedrag kort openbaar en zichtbaar op de blockchain. Een klein bedrag kan openbaar blijven totdat het is opgebouwd.';
 
   @override
   String get walletSwapRefundVerifyTitle => 'Verifieer uw terugbetalingsadres';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      'Controleer het teken voor teken — hier komen uw munten terug als de wissel mislukt. De wallet kan een extern adres niet voor u verifiëren.';
+      'Controleer het teken voor teken: hier komen uw munten terug als de wissel mislukt. De wallet kan een extern adres niet voor u verifiëren.';
 
   @override
   String get walletSwapRefundVerifyAck =>
@@ -2528,7 +2527,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return 'Controleer het teken voor teken — hier ontvangt u $asset. De wallet kan een extern adres niet voor u verifiëren.';
+    return 'Controleer het teken voor teken: hier ontvangt u $asset. De wallet kan een extern adres niet voor u verifiëren.';
   }
 
   @override
@@ -2570,7 +2569,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'Dit stortingsvenster is gesloten. Verzend nu geen tegoeden — start een nieuwe wissel. Heeft u al verzonden, dan zou de aanbieder moeten terugbetalen op uw terugbetalingsadres.';
+      'Dit stortingsvenster is gesloten. Verzend nu geen tegoeden, maar start een nieuwe wissel. Heeft u al verzonden, dan zou de aanbieder moeten terugbetalen op uw terugbetalingsadres.';
 
   @override
   String get walletSwapDepositQrLabel => 'QR-code van het stortingsadres';
@@ -2590,7 +2589,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapDepositMemoWarning =>
-      'U MOET deze exacte memo bij uw storting vermelden. Verzenden zonder memo — of met de verkeerde memo — kan uw tegoeden permanent verloren doen gaan.';
+      'U MOET deze exacte memo bij uw storting vermelden. Verzenden zonder memo (of met de verkeerde memo) kan uw tegoeden permanent verloren doen gaan.';
 
   @override
   String get walletSwapDepositMemoLabel => 'Stortingsmemo/-tag';
@@ -2609,11 +2608,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'Dit annuleert uw wissel niet — deze gaat op de achtergrond door. Maar u heeft het stortingsadres nodig om te betalen, dus kopieer dit eerst als u dat nog niet heeft gedaan.';
+      'Dit annuleert uw wissel niet; deze gaat op de achtergrond door. Maar u heeft het stortingsadres nodig om te betalen, dus kopieer dit eerst als u dat nog niet heeft gedaan.';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'Dit annuleert uw wissel niet — deze gaat op de achtergrond door. Het stortingsvenster is gesloten. Verzend nu geen tegoeden naar het stortingsadres. Heeft u al verzonden, dan zou de aanbieder moeten terugbetalen op uw terugbetalingsadres.';
+      'Dit annuleert uw wissel niet; deze gaat op de achtergrond door. Het stortingsvenster is gesloten. Verzend nu geen tegoeden naar het stortingsadres. Heeft u al verzonden, dan zou de aanbieder moeten terugbetalen op uw terugbetalingsadres.';
 
   @override
   String get walletSwapDepositBackStay => 'Blijven';
@@ -2646,7 +2645,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'Uw wallet bereidt dit adres voor op uw apparaat — dit kan even duren als de wallet bezig is met ander werk.';
+      'Uw wallet bereidt dit adres voor op uw apparaat. Dit kan even duren als de wallet bezig is met ander werk.';
 
   @override
   String get walletReceiveRetry => 'Opnieuw proberen';
@@ -2677,7 +2676,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'Nieuw adres — kan niet worden gekoppeld aan uw andere adressen. Betalingen hiernaartoe komen nog steeds in deze wallet aan, en uw eerdere adressen blijven werken. Het wordt hier niet opnieuw getoond — kopieer het nu.';
+      'Nieuw adres: kan niet worden gekoppeld aan uw andere adressen. Betalingen hiernaartoe komen nog steeds in deze wallet aan, en uw eerdere adressen blijven werken. Het wordt hier niet opnieuw getoond, dus kopieer het nu.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2698,7 +2697,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCopyNow =>
-      'Het wordt hier niet opnieuw getoond — kopieer het nu.';
+      'Het wordt hier niet opnieuw getoond, dus kopieer het nu.';
 
   @override
   String get walletSecurityMenuItem => 'Beveiliging…';
@@ -2755,18 +2754,18 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'Deze wallet en de sleutel ervan van dit apparaat verwijderen. Hij bezit geen bestedingssleutels, dus er is niets om een back-up van te maken — voeg hem op elk moment opnieuw toe met zijn inzagesleutel.';
+      'Deze wallet en de sleutel ervan van dit apparaat verwijderen. Hij bezit geen bestedingssleutels, dus er is niets om een back-up van te maken. Voeg hem op elk moment opnieuw toe met zijn inzagesleutel.';
 
   @override
   String get securityDeleteDialogTitle => 'Deze wallet verwijderen?';
 
   @override
   String get securityDeleteDialogBody =>
-      'Dit verwijdert de wallet en de sleutel ervan van dit apparaat. Zorg dat u een back-up van uw herstelzin heeft gemaakt — dit is de ENIGE manier om uw tegoeden te herstellen.';
+      'Dit verwijdert de wallet en de sleutel ervan van dit apparaat. Zorg dat u een back-up van uw herstelzin heeft gemaakt: dit is de ENIGE manier om uw tegoeden te herstellen.';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'Dit verwijdert de wallet en de sleutel ervan van dit apparaat. Hij bezit geen bestedingssleutels, dus er is niets om een back-up van te maken — u kunt hem later opnieuw toevoegen met zijn inzagesleutel.';
+      'Dit verwijdert de wallet en de sleutel ervan van dit apparaat. Hij bezit geen bestedingssleutels, dus er is niets om een back-up van te maken. U kunt hem later opnieuw toevoegen met zijn inzagesleutel.';
 
   @override
   String get securityDeleteDialogConfirm => 'Verwijderen';
@@ -2776,11 +2775,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'De wallet kon niet worden verwijderd — uw wallet is ongewijzigd. Probeer het opnieuw.';
+      'De wallet kon niet worden verwijderd. Uw wallet is ongewijzigd. Probeer het opnieuw.';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return 'Rond eerst de serverwissel af — die wordt binnen $seconds seconden voltooid of gestopt. Probeer daarna opnieuw de wallet te verwijderen.';
+    return 'Rond eerst de serverwissel af; die wordt binnen $seconds seconden voltooid of gestopt. Probeer daarna opnieuw de wallet te verwijderen.';
   }
 
   @override
@@ -2792,14 +2791,14 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'Deze betalingen zijn nog niet verzonden. De bedragen maken nog steeds deel uit van uw saldo — behalve die uw wallet aan het verzenden is, waarvan het bedrag mogelijk al is toegewezen.';
+      'Deze betalingen zijn nog niet verzonden. De bedragen maken nog steeds deel uit van uw saldo, behalve die uw wallet aan het verzenden is: daarvan is het bedrag mogelijk al toegewezen.';
 
   @override
   String get walletParkedCancel => 'Annuleren';
 
   @override
   String get walletParkedPausedHint =>
-      'Gepauzeerd — deze betaling wordt niet vanzelf verzonden. Uw tegoeden zijn veilig. Verzend deze nu, of annuleer de betaling.';
+      'Gepauzeerd. Deze betaling wordt niet vanzelf verzonden. Uw tegoeden zijn veilig. Verzend deze nu, of annuleer de betaling.';
 
   @override
   String get walletParkedRetryStale =>
@@ -2807,11 +2806,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'Deze betaling wacht niet meer — uw wallet is deze mogelijk al aan het verzenden. Controleer Opgeslagen & in behandeling en uw activiteit.';
+      'Deze betaling wacht niet meer; uw wallet is deze mogelijk al aan het verzenden. Controleer Opgeslagen & in behandeling en uw activiteit.';
 
   @override
   String get walletReclaimExplainer =>
-      'Verzenden via eenmalige adressen zit vast. U kunt dit heropenen — dit verplaatst een klein bedrag tussen uw eigen adressen, dat vervolgens weer terugkomt.';
+      'Verzenden via eenmalige adressen zit vast. U kunt dit heropenen: dit verplaatst een klein bedrag tussen uw eigen adressen, dat vervolgens weer terugkomt.';
 
   @override
   String get walletReclaimButton => 'Verzenden heropenen';
@@ -2872,7 +2871,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      'Dit verwijdert de opgeslagen betaling. Deze is nog niet verzonden, dus er gaat niets uit uw wallet — maar dit kan niet ongedaan worden gemaakt.';
+      'Dit verwijdert de opgeslagen betaling. Deze is nog niet verzonden, dus er gaat niets uit uw wallet. Maar dit kan niet ongedaan worden gemaakt.';
 
   @override
   String get walletParkedCancelConfirmKeep => 'Behouden';
@@ -2885,7 +2884,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'Deze betaling is mogelijk al onderweg — controleer uw activiteit.';
+      'Deze betaling is mogelijk al onderweg. Controleer uw activiteit.';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2918,16 +2917,16 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return '$amount wordt hersteld — voor sommige tegoeden is nog een nieuwe poging nodig.';
+    return '$amount wordt hersteld. Voor sommige tegoeden is nog een nieuwe poging nodig.';
   }
 
   @override
   String get walletRecoverRetry =>
-      'Voor sommige tegoeden is nog een poging nodig — voer herstel opnieuw uit.';
+      'Voor sommige tegoeden is nog een poging nodig. Voer herstel opnieuw uit.';
 
   @override
   String get walletRecoverTruncated =>
-      'Nog niet elk eenmalig adres is gecontroleerd — voer het opnieuw uit om de rest te controleren.';
+      'Nog niet elk eenmalig adres is gecontroleerd. Voer het opnieuw uit om de rest te controleren.';
 
   @override
   String get walletRecoverNothing => 'Er is nu niets om te herstellen.';
@@ -2958,11 +2957,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'Uw wallet maakt deze betaling verzendklaar — het bedrag kan al zijn toegewezen. Uw tegoeden zijn veilig. Als dit niet lukt, keert de betaling vanzelf terug naar de lijst.';
+      'Uw wallet maakt deze betaling verzendklaar; het bedrag kan al zijn toegewezen. Uw tegoeden zijn veilig. Als dit niet lukt, keert de betaling vanzelf terug naar de lijst.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'Uw wallet maakt deze betaling verzendklaar — het bedrag kan al zijn toegewezen. Uw tegoeden zijn veilig, maar dit kan pas worden voltooid zodra uw wallet weer synchroniseert.';
+      'Uw wallet maakt deze betaling verzendklaar; het bedrag kan al zijn toegewezen. Uw tegoeden zijn veilig, maar dit kan pas worden voltooid zodra uw wallet weer synchroniseert.';
 
   @override
   String get walletParkedSendNow => 'Nu verzenden';
@@ -2996,7 +2995,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'Nog niet klaar om te verzenden. Uw betaling is opgeslagen en niet meer gepauzeerd — probeer het later opnieuw via Nu verzenden, of annuleer de betaling.';
+      'Nog niet klaar om te verzenden. Uw betaling is opgeslagen en niet meer gepauzeerd. Probeer het later opnieuw via Nu verzenden, of annuleer de betaling.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -3010,7 +3009,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsIntro =>
-      'Openbare tegoeden zijn openbaar zichtbaar op de blockchain — het bedrag, de adressen en de geschiedenis van de munten.';
+      'Openbare tegoeden zijn openbaar zichtbaar op de blockchain: het bedrag, de adressen en de geschiedenis van de munten.';
 
   @override
   String get walletExpertToggleLabel => 'Geavanceerd: openbare tegoeden';
@@ -3037,15 +3036,15 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      'Automatisch afschermen is niet voltooid — deze tegoeden zijn nog steeds openbaar zichtbaar. U kunt ze nu afschermen.';
+      'Automatisch afschermen is niet voltooid. Deze tegoeden zijn nog steeds openbaar zichtbaar. U kunt ze nu afschermen.';
 
   @override
   String get walletSendPrivacyShielded =>
-      'Afgeschermde betaling — het bedrag en de ontvanger blijven privé op de blockchain.';
+      'Afgeschermde betaling: het bedrag en de ontvanger blijven privé op de blockchain.';
 
   @override
   String get walletSendPrivacyTransparent =>
-      'Openbare betaling — het bedrag en de adressen zijn zichtbaar op de blockchain.';
+      'Openbare betaling: het bedrag en de adressen zijn zichtbaar op de blockchain.';
 
   @override
   String get walletActivityPublicBadge => 'Openbaar zichtbaar op de blockchain';
@@ -3061,7 +3060,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      'Automatisch afschermen is uitgeschakeld — openbare tegoeden blijven openbaar zichtbaar totdat u ze afschermt.';
+      'Automatisch afschermen is uitgeschakeld. Openbare tegoeden blijven openbaar zichtbaar totdat u ze afschermt.';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -3069,7 +3068,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String walletMoveBelowFloorNote(String amount, String floor) {
-    return 'Na deze verplaatsing is uw openbare saldo $amount ZEC — minder dan de $floor ZEC die nodig is om het weer af te schermen. Het blijft openbaar tot er meer binnenkomt.';
+    return 'Na deze verplaatsing is uw openbare saldo $amount ZEC. Dat is minder dan de $floor ZEC die nodig is om het weer af te schermen. Het blijft openbaar tot er meer binnenkomt.';
   }
 
   @override
@@ -3081,7 +3080,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      'Automatisch afschermen is gepauzeerd voor deze sessie — dit is niet goedgekeurd. U kunt nog steeds handmatig afschermen.';
+      'Automatisch afschermen is gepauzeerd voor deze sessie, omdat dit niet is goedgekeurd. U kunt nog steeds handmatig afschermen.';
 
   @override
   String get walletDeepScanMenuItem => 'Oudere wisseladressen controleren…';
@@ -3094,7 +3093,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'Als u deze wallet hersteld hebt en deze vroeger veel gebruikmaakte van wisselen, kan geld van de oudste wisseltransacties een extra stap nodig hebben om te worden gevonden. Dit controleert daarop — alles wat wordt gevonden verschijnt in uw saldo terwijl uw wallet synchroniseert.';
+      'Als u deze wallet hersteld hebt en deze vroeger veel gebruikmaakte van wisselen, kan geld van de oudste wisseltransacties een extra stap nodig hebben om te worden gevonden. Dit controleert daarop. Alles wat wordt gevonden verschijnt in uw saldo terwijl uw wallet synchroniseert.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3102,7 +3101,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'Het huidige bereik wordt nog gecontroleerd — alles wat wordt gevonden, verschijnt in uw saldo. Dit kan een tijdje duren.';
+      'Het huidige bereik wordt nog gecontroleerd. Alles wat wordt gevonden, verschijnt in uw saldo. Dit kan een tijdje duren.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3131,15 +3130,15 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'Oudere wisseladressen worden gecontroleerd — alles wat wordt gevonden, verschijnt in uw saldo.';
+      'Oudere wisseladressen worden gecontroleerd. Alles wat wordt gevonden, verschijnt in uw saldo.';
 
   @override
   String get walletDeepScanFailed =>
-      'Kon de controle niet starten. Er is niets veranderd — probeer het opnieuw.';
+      'Kon de controle niet starten. Er is niets veranderd. Probeer het opnieuw.';
 
   @override
   String get walletDeepScanSlow =>
-      'Dit duurt langer dan gebruikelijk. Als uw oudere wisseladressen zijn gecontroleerd, verschijnt alles wat wordt gevonden in uw saldo — controleer straks nog eens.';
+      'Dit duurt langer dan gebruikelijk. Als uw oudere wisseladressen zijn gecontroleerd, verschijnt alles wat wordt gevonden in uw saldo. Controleer straks nog eens.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3147,7 +3146,7 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'Het laatste bereik wordt nog gecontroleerd — dit kan tot een paar dagen duren, maar meestal veel korter. Dit wordt vanzelf voltooid; controleer later opnieuw.';
+      'Het laatste bereik wordt nog gecontroleerd. Dit kan tot een paar dagen duren, maar meestal veel korter. Dit wordt vanzelf voltooid; controleer later opnieuw.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3155,11 +3154,11 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'Oudere wisseladressen worden nog gecontroleerd — alles wat wordt gevonden, verschijnt in uw saldo.';
+      'Oudere wisseladressen worden nog gecontroleerd. Alles wat wordt gevonden, verschijnt in uw saldo.';
 
   @override
   String get walletRescanSwapPointer =>
-      'Zoekt u geld van een oude wisseltransactie? Een herscan vindt dat niet — gebruik in plaats daarvan “Oudere wisseladressen controleren”.';
+      'Zoekt u geld van een oude wisseltransactie? Een herscan vindt dat niet. Gebruik in plaats daarvan “Oudere wisseladressen controleren”.';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3244,15 +3243,15 @@ class WalletLocalizationsNl extends WalletLocalizations {
   String get walletLoadingLabel => 'Laden';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'Controleer voordat u opnieuw verzendt';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'We konden deze betaling niet bevestigen. Kijk bij Activiteit voordat u deze opnieuw verzendt.';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'We konden niet bevestigen dat deze betaling is opgeslagen. Controleer uw betalingen in behandeling voordat u deze opnieuw verzendt.';
 
   @override
   String get walletShieldUnknownTitle =>
@@ -3272,5 +3271,5 @@ class WalletLocalizationsNl extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'Deze poging is verlopen voordat het netwerk haar bevestigde. Uw wallet verzendt de betaling vanzelf opnieuw, dus verzend deze niet zelf opnieuw.';
 }

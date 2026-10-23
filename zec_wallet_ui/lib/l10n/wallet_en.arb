@@ -12,7 +12,7 @@
   "@walletNotSetUpTitle": {
     "description": "Heading shown when no wallet is provisioned in this build."
   },
-  "walletNotSetUpBody": "Wallet setup arrives in a later build. Setup will walk you through writing down your recovery phrase before any funds can be received — so nothing is ever at risk without a backup.",
+  "walletNotSetUpBody": "Wallet setup arrives in a later build. Setup will walk you through writing down your recovery phrase before any funds can be received, so nothing is ever at risk without a backup.",
   "@walletNotSetUpBody": {
     "description": "Honest-degradation body for the not-set-up wallet state; states the money-safety reason setup is gated. Only for builds that genuinely ship without the wallet — a failed boot wiring renders walletStartupFailed* instead (#356-F1)."
   },
@@ -20,7 +20,7 @@
   "@walletStartupFailedTitle": {
     "description": "Heading of the boot-wiring failure screen (WalletStartupFailedScreen): the app ships the wallet but its startup work (native library load / data directory) failed."
   },
-  "walletStartupFailedBody": "Something stopped the wallet from loading on this device. If you already have a wallet, its funds are not affected — they live on the Zcash network and can be restored with your recovery phrase. Try again; if this keeps happening, close and reopen the app.",
+  "walletStartupFailedBody": "Something stopped the wallet from loading on this device. If you already have a wallet, its funds are not affected: they live on the Zcash network and can be restored with your recovery phrase. Try again; if this keeps happening, close and reopen the app.",
   "@walletStartupFailedBody": {
     "description": "Body of the boot-wiring failure screen. Must reassure that a boot failure never means fund loss (funds are on-chain), and point at the retry."
   },
@@ -171,11 +171,11 @@
   "@walletTxFundsKept": {
     "description": "Prominent reassurance for an expired/failed transaction: the money-honest core fact (TxStatus.expired ⇒ funds returned to spendable; failed ⇒ endpoint rejected, nothing spent). Used in the detail-sheet banner and appended to the history row's screen-reader label."
   },
-  "walletTxExplainQueued": "Saved on this device, under Saved & pending — you can send it or cancel it there.",
+  "walletTxExplainQueued": "Saved on this device, under Saved & pending. You can send it or cancel it there.",
   "@walletTxExplainQueued": {
     "description": "Plain-language explanation of the Queued status in the transaction-detail sheet. Never 'waiting for a connection' (a send can be queued while ONLINE via the not-synced-yet path, and a queued row can be viewed during a non-network stall). Names NO drain schedule at all (#401 R1): at host custody the background pass holds no signing credential, so it points at the surface and the two real actions instead — the walletSendQueuedBody wording family. LATENT today: history.rs maps Queued rows out of the chain view, so this arm is unreachable; it is kept true so it cannot go live wrong."
   },
-  "walletTxExplainPending": "Sent to the Zcash network — waiting to be confirmed in a block.",
+  "walletTxExplainPending": "Sent to the Zcash network. Waiting to be confirmed in a block.",
   "@walletTxExplainPending": {
     "description": "Plain-language explanation of the Pending status in the transaction-detail sheet (also the forward-compat Unknown arm, which renders as Pending). Shown for an unmined wallet-created row only once an endpoint ACCEPTED it (TxSummary.delivery accepted/null); a row the wallet is still retrying gets walletTxExplainRetrying instead, because 'sent to the network' is false for it."
   },
@@ -227,7 +227,7 @@
   "@walletRescanRangeTitle": {
     "description": "Heading of the date-range control in the rescan sheet."
   },
-  "walletRescanRangeAll": "Scan your whole history — slowest, but recovers everything.",
+  "walletRescanRangeAll": "Scan your whole history. Slowest, but recovers everything.",
   "@walletRescanRangeAll": {
     "description": "Description shown when the rescan will scan the full history (no date)."
   },
@@ -274,11 +274,11 @@
   "@walletRescanDatePick": {
     "description": "Help text on the rescan date picker dialog."
   },
-  "walletRescanWarning": "This re-scans the blockchain. Recent dates take minutes; scanning far back can take hours. Sync runs in the background — you can keep using your wallet.",
+  "walletRescanWarning": "This re-scans the blockchain. Recent dates take minutes; scanning far back can take hours. Sync runs in the background, so you can keep using your wallet.",
   "@walletRescanWarning": {
     "description": "Honest expectation-setting note in the rescan sheet — the duration scales with how far back the chosen date reaches (the ~1-year default measured hours on emulator-class hardware, so 'a few minutes' over-promised)."
   },
-  "walletRescanSettlingAdvisory": "A payment from this wallet is still settling. The wallet usually declines to rescan until it completes — you can try, but expect it to be refused.",
+  "walletRescanSettlingAdvisory": "A payment from this wallet is still settling. The wallet usually declines to rescan until it completes. You can try, but expect it to be refused.",
   "@walletRescanSettlingAdvisory": {
     "description": "Rescan sheet advisory shown while in-flight sends exist (#364 M3): the engine's settling-send fence will likely refuse the rescan, and the refusal costs a full quiesce — say so BEFORE Start. Advisory only; the engine stays authoritative, so the copy must hedge ('usually', 'expect') and never promise refusal."
   },
@@ -294,11 +294,11 @@
   "@walletRescanRunning": {
     "description": "Label while the rescan rebuild FFI call is in progress."
   },
-  "walletRescanRebuildingAll": "Rebuilding your history — scanning your whole chain. Your balance and activity fill in as it catches up.",
+  "walletRescanRebuildingAll": "Rebuilding your history by scanning your whole chain. Your balance and activity fill in as it catches up.",
   "@walletRescanRebuildingAll": {
     "description": "Activity-section cue while a full-history rescan repopulates."
   },
-  "walletRescanRebuildingFrom": "Rebuilding your history from {date} — your balance and activity fill in as it catches up.",
+  "walletRescanRebuildingFrom": "Rebuilding your history from {date}. Your balance and activity fill in as it catches up.",
   "@walletRescanRebuildingFrom": {
     "description": "Activity-section cue while a dated rescan repopulates.",
     "placeholders": {
@@ -307,31 +307,31 @@
       }
     }
   },
-  "walletRescanRebuildingDefault": "Rebuilding your history from your wallet's start — your balance and activity fill in as it catches up.",
+  "walletRescanRebuildingDefault": "Rebuilding your history from your wallet's start. Your balance and activity fill in as it catches up.",
   "@walletRescanRebuildingDefault": {
     "description": "Activity-section cue while the default rescan (from the wallet's own birthday) repopulates."
   },
-  "walletCatchUpBanner": "Catching up — your balance and activity fill in as the wallet syncs. Anything you've received is safe.",
+  "walletCatchUpBanner": "Catching up. Your balance and activity fill in as the wallet syncs. Anything you've received is safe.",
   "@walletCatchUpBanner": {
     "description": "Top-of-wallet reassurance banner on the durable catch-up arm (#380): the wallet has never completed a sync pass and is below the chain tip — a relaunch mid-rescan catch-up, a dismissed rescan notice over a rebuilt wallet, or a restore/create's first sync. Generic: unlike the walletRescanRebuilding* family it cannot name what the user chose (the choice does not survive a relaunch). HEDGED funds claim (review, the #356-F7 precedent): a fresh create's first sync — possibly offline, so unbounded — shares this cue, and 'your funds are safe' would assert funds that provably don't exist; 'anything you've received' is conditionally true on every arm."
   },
-  "walletCatchUpRescanBanner": "Rebuilding your history after a rescan — your balance and activity fill in as it catches up. Anything you've received is safe.",
+  "walletCatchUpRescanBanner": "Rebuilding your history after a rescan. Your balance and activity fill in as it catches up. Anything you've received is safe.",
   "@walletCatchUpRescanBanner": {
     "description": "Top-of-wallet reassurance banner on the durable rescan arm (#377 s357b-2): the core's rescan-rebuilding breadcrumb says a rescan rebuild is still catching up, but the in-session choice (which range) did not survive the relaunch — so the copy names the RESCAN (the user's own deliberate action, the stronger 'did I lose funds?' reassurance) without naming the range the walletRescanRebuilding* family can. Same HEDGED funds claim as walletCatchUpBanner ('anything you've received' — a zero-balance wallet rescans too)."
   },
-  "walletRescanFailedNotice": "Couldn't rescan right now — your funds are safe, though your balance and history may need a little time to catch back up. Try again in a moment.",
+  "walletRescanFailedNotice": "Couldn't rescan right now. Your funds are safe, though your balance and history may need a little time to catch back up. Try again in a moment.",
   "@walletRescanFailedNotice": {
     "description": "Honest cue shown when a rescan failed but the wallet was recovered by re-opening. Claims funds-safety only, never 'unchanged' (#379): a fault AFTER the rebuild's atomic rename recovers into the REBUILT lower-birthday wallet, whose balance/history repopulate via the auto-restarted sync."
   },
-  "walletRescanBlockedSettlingNotice": "A payment is still settling, so rescanning is paused to protect your funds. Your wallet is unchanged — try again in a couple of hours and keep the app open and online.",
+  "walletRescanBlockedSettlingNotice": "A payment is still settling, so rescanning is paused to protect your funds. Your wallet is unchanged. Try again in a couple of hours and keep the app open and online.",
   "@walletRescanBlockedSettlingNotice": {
     "description": "Cue shown when the SDK refused a rescan because a broadcast send has not settled yet (rebuilding under it could double-pay); resolution takes hours of online sync."
   },
-  "walletRescanBlockedSyncNotRunningNotice": "Rescanning rebuilds your history as your wallet syncs, and syncing isn't running right now. Your wallet is unchanged — try again once syncing is running.",
+  "walletRescanBlockedSyncNotRunningNotice": "Rescanning rebuilds your history as your wallet syncs, and syncing isn't running right now. Your wallet is unchanged. Try again once syncing is running.",
   "@walletRescanBlockedSyncNotRunningNotice": {
     "description": "Rescan refusal notice (#405): the commit-point fence turned the confirm away because no sync pass will run (host policy off OR a failed sync start), so the wipe would strand a zeroed wallet behind a rebuild that cannot execute. Nothing destructive ran, which is why this is the one rescan refusal entitled to say 'your wallet is unchanged' outright (#379 softened walletRescanFailedNotice because a post-rename fault leaves a REBUILT wallet). CAUSE-AGNOSTIC — the badge and the start-failed notice above it carry the cause and the way out."
   },
-  "walletRescanNeedsSpaceNotice": "There isn't enough free space to rebuild your wallet history — your funds are safe, though your balance and history may need a little time to catch back up. Free up some space and try again.",
+  "walletRescanNeedsSpaceNotice": "There isn't enough free space to rebuild your wallet history. Your funds are safe, though your balance and history may need a little time to catch back up. Free up some space and try again.",
   "@walletRescanNeedsSpaceNotice": {
     "description": "Cue shown when a rescan failed because the device is out of disk space; retrying without freeing space will fail again, so the copy asks for space instead of a retry. Claims funds-safety only, never 'unchanged' (#379): a DiskFull after the rebuild's atomic rename recovers into the REBUILT lower-birthday wallet."
   },
@@ -343,7 +343,7 @@
   "@walletActivityRebuilding": {
     "description": "Short activity-section cue shown in place of the empty card while a rescan repopulates."
   },
-  "walletActivityCatchingUp": "Still catching up — anything you've received will show up here.",
+  "walletActivityCatchingUp": "Still catching up. Anything you've received will show up here.",
   "@walletActivityCatchingUp": {
     "description": "Short activity-section cue shown in place of the empty card on the durable catch-up arm (#380) — the wallet is provably still filling in but the rescan choice is unknown (post-relaunch / post-dismiss / a restore's first sync). HEDGED (review): a fresh create's first sync shares this cue, so it must not assert a history that doesn't exist — 'anything you've received will show up here' is true on the rebuilt, restored, AND empty-new arms."
   },
@@ -363,7 +363,7 @@
   "@walletTransparentLabel": {
     "description": "Label for the transparent (unshielded) portion of the balance — privacy-relevant, shown only when nonzero."
   },
-  "walletTransparentNote": "Not included in \"Spendable now\" — shield these funds to spend them. Until then they stay publicly visible on-chain.",
+  "walletTransparentNote": "Not included in \"Spendable now\". Shield these funds to spend them. Until then they stay publicly visible on-chain.",
   "@walletTransparentNote": {
     "description": "Honest note under a nonzero unshielded balance: BOTH the spendability truth (transparent funds count toward the total but not the spendable figure until shielded — the 'why is my total bigger than spendable' question must be answerable from the card itself, maintainer) AND the privacy truth (publicly visible until shielded)."
   },
@@ -439,7 +439,7 @@
       }
     }
   },
-  "walletInFlightReadError": "Couldn't check whether a payment is still completing. Retrying — until then, look for a pending payment in your activity before you send again.",
+  "walletInFlightReadError": "Couldn't check whether a payment is still completing. Retrying. Until that works, look for a pending payment in your activity before you send again.",
   "@walletInFlightReadError": {
     "description": "#308a (S2 §3.5d): shown in place of the in-flight cue (walletInFlightNote) when the in-flight-sends read FAILS, instead of the cue silently vanishing — a vanished cue reads exactly like 'nothing is mid-flight'. The read retries on its own and on every sync/resume edge, so 'Retrying' is true. It must not claim anything IS in flight (we don't know), and must keep the don't-double-pay caution by pointing at the activity list, where the payment's first leg shows as a pending transaction."
   },
@@ -492,7 +492,7 @@
   "@walletShieldNothingTitle": {
     "description": "Shown when the transparent balance is below the shieldable minimum."
   },
-  "walletShieldNothingBody": "These funds are below the amount worth shielding right now — the network fee would outweigh the benefit. They'll be shieldable once a bit more arrives.",
+  "walletShieldNothingBody": "These funds are below the amount worth shielding right now: the network fee would outweigh the benefit. They'll be shieldable once a bit more arrives.",
   "@walletShieldNothingBody": {
     "description": "Honest explanation that the transparent balance is below the shielding threshold."
   },
@@ -504,7 +504,7 @@
   "@walletShieldDoneBody": {
     "description": "Body for a successful shield broadcast."
   },
-  "walletShieldSavedTitle": "Saved — we'll finish shielding",
+  "walletShieldSavedTitle": "Saved, we'll finish shielding",
   "@walletShieldSavedTitle": {
     "description": "The shield tx is persisted but not yet broadcast; it re-sends on a later sync (money-safe). NOT 'when you're online' (#401 R1b): that is the reconnect-promptness shape #399 forbids — the re-send rides a completed sync pass, which can lag a reconnect and never comes at all while sync is paused. Mirrors walletSendSavedTitle."
   },
@@ -548,7 +548,7 @@
   "@walletMoveSheetTitle": {
     "description": "Title of the move-to-transparent (de-shield to own address) sheet."
   },
-  "walletMoveSheetSubtitle": "Send shielded ZEC to your own public address — useful for an exchange that won't accept a shielded deposit.",
+  "walletMoveSheetSubtitle": "Send shielded ZEC to your own public address. Useful for an exchange that won't accept a shielded deposit.",
   "@walletMoveSheetSubtitle": {
     "description": "Explains what move-to-transparent is for (exchange deposits that reject shielded sources)."
   },
@@ -565,7 +565,7 @@
       }
     }
   },
-  "walletMoveAvailableCatchingUp": "Available to move: {amount} ZEC — your balance is still catching up",
+  "walletMoveAvailableCatchingUp": "Available to move: {amount} ZEC (your balance is still catching up)",
   "@walletMoveAvailableCatchingUp": {
     "description": "Variant of walletMoveAvailable while the wallet is still catching up (#381, the #380 swap-line rule): the spendable figure is the partial repopulating balance, so a low/zero figure must not read as final.",
     "placeholders": {
@@ -578,7 +578,7 @@
   "@walletMoveDeshieldTitle": {
     "description": "The §5.1 de-shield warning title, move-specific (a self-transfer, not a payment to a third party)."
   },
-  "walletMoveDeshieldBody": "Moving to a public address takes these funds out of your shielded balance — the amount and your public address become publicly visible on the Zcash blockchain.",
+  "walletMoveDeshieldBody": "Moving to a public address takes these funds out of your shielded balance. The amount and your public address become publicly visible on the Zcash blockchain.",
   "@walletMoveDeshieldBody": {
     "description": "The §5.1 de-shield warning body, move-specific: the funds + the user's own t-address go public on-chain (no third-party 'recipient' framing)."
   },
@@ -630,7 +630,7 @@
   "@walletMoveDoneBody": {
     "description": "Body for a successful de-shield broadcast."
   },
-  "walletMoveSavedTitle": "Saved — we'll finish the move",
+  "walletMoveSavedTitle": "Saved, we'll finish the move",
   "@walletMoveSavedTitle": {
     "description": "The de-shield tx is persisted but not yet broadcast; it re-sends on a later sync (money-safe). NOT 'when you're online' — the #399 reconnect-promptness rule, folded in by #401 R1b. Mirrors walletSendSavedTitle."
   },
@@ -658,7 +658,7 @@
   "@walletMoveNothingBody": {
     "description": "Honest explanation that there is no spendable shielded balance to de-shield."
   },
-  "walletMoveNothingCatchingUpBody": "Your wallet is still catching up — anything you've received becomes available to move once syncing completes.",
+  "walletMoveNothingCatchingUpBody": "Your wallet is still catching up. Anything you've received becomes available to move once syncing completes.",
   "@walletMoveNothingCatchingUpBody": {
     "description": "Variant of walletMoveNothingBody while the wallet is still catching up (#381, hardware-proven): the missing shielded balance is UNSCANNED, not unconfirmed, so the default body's 'Once funds confirm' would misattribute the cause. Hedged ('anything you've received') — it must not assert funds exist (#356-F7 precedent)."
   },
@@ -678,7 +678,7 @@
   "@walletSnapshotUnavailable": {
     "description": "Honest, recoverable message when the cold snapshot read fails."
   },
-  "walletBalanceStale": "Couldn't refresh — showing your last-known balance.",
+  "walletBalanceStale": "Couldn't refresh. Showing your last-known balance.",
   "@walletBalanceStale": {
     "description": "Honest staleness cue shown when the last-known balance is rendered through a failed refresh."
   },
@@ -772,7 +772,7 @@
   "@walletSyncSpendableReady": {
     "description": "Shown while scanning when funds are already spendable (spend-before-sync)."
   },
-  "walletSyncCatchingUp": "Catching up with the network — a deep initial sync can take a while. You can keep using the app while it finishes",
+  "walletSyncCatchingUp": "Catching up with the network. A deep initial sync can take a while. You can keep using the app while it finishes",
   "@walletSyncCatchingUp": {
     "description": "Shown under the Scanning status during the opaque early phase (percent still rounds to 0) so the wallet reads as actively working, not stuck — explains WHY the sync is slow. No trailing period: it can precede another detail line in the joined a11y label. Says 'a deep initial sync' (not 'first sync') since a restore also hits this on a fresh device."
   },
@@ -805,7 +805,7 @@
   "@walletSyncStalled": {
     "description": "Sync status headline for a stalled (typed, renderable) state."
   },
-  "walletStallEndpoint": "Can't reach the Zcash network right now. We'll keep trying automatically — check your connection, or the server may be temporarily unavailable.",
+  "walletStallEndpoint": "Can't reach the Zcash network right now. We'll keep trying automatically. Check your connection, or the server may be temporarily unavailable.",
   "@walletStallEndpoint": {
     "description": "Stall reason: endpoint unreachable — the normal-offline (caution) arm since #399. Hedged on purpose: a refused dial can mean the SERVER is down while the user's internet is fine, so it must not assert the user's connection is the problem. The wallet retries on its own. Since P3-13 the server IS user-switchable (the sync sheet's Server row opens the picker); the copy still does not promise a switch, because a refused dial cannot say whether it is this server or the user's link that is down."
   },
@@ -825,7 +825,7 @@
   "@walletStallInternal": {
     "description": "Stall reason: a CORRUPT wallet store, or a local fault the wallet could not diagnose (StallReason.internal; R10 narrowed it) — repair/restore, never switch servers. A busy or briefly unreadable store is walletStallStorageUnavailable, which must never offer the restore."
   },
-  "walletStallEndpointMisbehaving": "This server sent data that can't be right, so sync stopped. It isn't a connection problem — switch to another server. If every server is refused, rescan your history: the wallet may be keeping a bad record from an earlier server.",
+  "walletStallEndpointMisbehaving": "This server sent data that can't be right, so sync stopped. It isn't a connection problem. Switch to another server. If every server is refused, rescan your history: the wallet may be keeping a bad record from an earlier server.",
   "@walletStallEndpointMisbehaving": {
     "description": "Stall reason: the server ANSWERED and the answer was wrong (StallReason.endpointMisbehaving — malformed or impossible data, a required pool it does not know, or a root/height that conflicts with what an EARLIER server told this wallet). The mirror image of walletStallInternal: the problem is on the SERVER, so the next step IS 'switch servers'. MUST NOT say 'check your connection' (that is walletStallEndpoint — the link works) and MUST NOT suggest restoring from the recovery phrase (nothing on the device is at fault; the seed is not involved). MAY name a RESCAN as the last resort, after other servers (T0-1d): one member of the class is a conflict with the wallet's own cached record — written from an earlier server — and the conflict alone cannot say which server lied; a rescan rebuilds that record and is the only exit when every server is refused. Uses the same 'rescan your history' vocabulary as walletRescanMenuItem. The wallet keeps retrying on its own."
   },
@@ -873,11 +873,11 @@
       }
     }
   },
-  "walletSyncExplainIdle": "Syncing hasn't started yet — it starts automatically. No action needed.",
+  "walletSyncExplainIdle": "Syncing hasn't started yet. It starts automatically. No action needed.",
   "@walletSyncExplainIdle": {
     "description": "Sync-detail sheet explanation: genuinely idle (loop not running, no start failure)."
   },
-  "walletSyncExplainStartFailed": "Syncing couldn't start. Your funds are safe — the wallet just isn't checking for new activity. Try again below, or reopen the app.",
+  "walletSyncExplainStartFailed": "Syncing couldn't start. Your funds are safe; the wallet just isn't checking for new activity. Try again below, or reopen the app.",
   "@walletSyncExplainStartFailed": {
     "description": "Sync-detail sheet explanation when the sync START command itself failed (#356-F8): replaces the idle arm's 'starts automatically — no action needed', which would contradict the retry notice. Shown above the sheet's Try-again button."
   },
@@ -889,7 +889,7 @@
   "@walletSyncExplainConnecting": {
     "description": "Sync-detail sheet explanation: the Connecting arm (incl. Tor bootstrap)."
   },
-  "walletSyncExplainScanning": "The wallet is checking blockchain blocks for your funds. Your balance and activity update as new transactions are found — you can keep using the app while it finishes.",
+  "walletSyncExplainScanning": "The wallet is checking blockchain blocks for your funds. Your balance and activity update as new transactions are found. You can keep using the app while it finishes.",
   "@walletSyncExplainScanning": {
     "description": "Sync-detail sheet explanation: scanning. Reassures the user the app stays usable (maintainer: 'what's going on' behind the badge)."
   },
@@ -901,11 +901,11 @@
   "@walletSyncExplainStalled": {
     "description": "Sync-detail sheet explanation: stalled; the typed walletStall* reason renders as its own paragraph underneath. The endpointUnreachable stall gets walletSyncExplainStalledOffline instead (#399)."
   },
-  "walletSyncExplainStalledOffline": "Can't reach the Zcash network — that's normal if you're offline, or the server may be temporarily unavailable. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending. The connection retries on its own.",
+  "walletSyncExplainStalledOffline": "Can't reach the Zcash network. That's normal if you're offline, or the server may be temporarily unavailable. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending. The connection retries on its own.",
   "@walletSyncExplainStalledOffline": {
     "description": "Sync-detail sheet explanation for the endpointUnreachable stall only (#399): the calm normal-offline story — funds-safe reassurance, queued-sends-are-normal, automatic retry. Carries BOTH hedges itself ('if you're offline' conditional + the server-side possibility) because the sheet suppresses the walletStallEndpoint detail under this explanation (the near-identical-pair rule); the detail still rides the badge a11y label. The queued-sends clause names the SURFACE and no schedule (#401 R1 — host custody cannot drain on a background pass), and the retry sentence says CONNECTION explicitly so it can never be read as a promise about the send. Hard stalls keep walletSyncExplainStalled."
   },
-  "walletSyncExplainOffline": "No network connection. Your funds are safe — the balance shows the last synced state, and queued sends stay saved under Saved & pending.",
+  "walletSyncExplainOffline": "No network connection. Your funds are safe: the balance shows the last synced state, and queued sends stay saved under Saved & pending.",
   "@walletSyncExplainOffline": {
     "description": "Sync-detail sheet explanation: offline; leads with the funds-are-safe reassurance. The queued-sends clause names the SURFACE, never a drain schedule (#401 R1 — host custody cannot drain on a background pass); keep 'Saved & pending' in step with walletParkedTitle."
   },
@@ -942,15 +942,15 @@
   "@walletTorActiveUnattested": {
     "description": "Transport chip for TorRuntimeKind.dialer — an arbitrary byte-stream dialer a Rust host injected, which the SDK (net/dialer.rs) \"never knows or names\". FR-32 (a): this arm read \"Tor active\" in the PROTECTED tone until stage S1 `copy`, asserting onion routing for a path the SDK cannot attest (ADR-0547: the SDK has no predefined transport kinds and renders only what the host declared). It says what IS true — wallet traffic is riding the path the app supplied — and refuses the privacy claim; paired with walletTransportExplainUnverified in the caution tone. A Rust host that KNOWS what it injected says so through WalletHostTransport (label + protection), which wins over any SDK TorState."
   },
-  "walletTorFellBack": "Tor unavailable — using direct connection",
+  "walletTorFellBack": "Tor unavailable, using direct connection",
   "@walletTorFellBack": {
     "description": "Tor state chip: policy preferred and Tor degraded to clearnet (visible, never silent)."
   },
-  "walletTorUnavailable": "Private path unavailable — not connected",
+  "walletTorUnavailable": "Private path unavailable, not connected",
   "@walletTorUnavailable": {
     "description": "Transport chip: zero traffic — the path is GENUINELY DOWN. NARROWED at stage S1 `truth` to a dial that FAILED (refused, unreachable, a dial timeout, a NotReady/Retired/FAILED descriptor) plus the cases where there is no path at all (nothing registered, a registrant that declared its transport FAILED — ABI v3 health, ADR-0549). A dial the transport ACCEPTED and then carried nothing is NOT this state: it reads TorState.unanswered, because the SDK cannot separate a blackholed path from a wedged server and this chip would blame the path. The NEUTRAL variant, used when the SDK has no name to show; walletTorUnavailableNamed carries the host's own name when there is one. Never says \"Tor\" (ADR-0547, FR-30 (a)); names no policy (FR-32 (b))."
   },
-  "walletTorUnavailableNamed": "{transport} unavailable — not connected",
+  "walletTorUnavailableNamed": "{transport} unavailable, not connected",
   "@walletTorUnavailableNamed": {
     "description": "Transport chip: as walletTorUnavailable, for a REGISTERED transport whose descriptor names it. transport = the host's own name, verbatim.",
     "placeholders": {
@@ -959,15 +959,15 @@
       }
     }
   },
-  "walletTorUnanswered": "Private path connected — nothing coming back",
+  "walletTorUnanswered": "Private path connected, nothing coming back",
   "@walletTorUnanswered": {
     "description": "Transport CHIP for TorState.unanswered (stage S1 `truth`, FR-36): the path took the connection and no RPC has come back over it for the maintainer's minute while the wallet was trying. It states the two attested facts — the dial was accepted, nothing has answered — and blames neither side: the SDK cannot tell a blackholed path from a wedged server and never guesses (the either/or is spelled out in the sheet, walletTransportExplainUnanswered). The NEUTRAL variant, used when the SDK has no name to show; walletTorUnansweredNamed carries the host's own name when there is one. Never says \"Tor\" (ADR-0547). Deliberately NOT walletTorUnavailable's wording: that one means the path is genuinely down."
   },
-  "walletTorUnansweredUnattested": "Private path connected — nothing coming back (privacy not verified)",
+  "walletTorUnansweredUnattested": "Private path connected, nothing coming back (privacy not verified)",
   "@walletTorUnansweredUnattested": {
     "description": "Transport chip for TorState.unanswered on the runtimes that declared NOTHING to branch on — TorRuntimeKind.dialer (an arbitrary byte-stream dialer a Rust host injected, which net/dialer.rs says the SDK \"never knows or names\") and TorRuntimeKind.unknown. It is walletTorUnanswered plus the refusal that walletTorActiveUnattested already makes for the SAME runtime while traffic is flowing. WHY IT EXISTS (crypto audit HIGH + the product pass, found independently): the unanswered arm sent these two runtimes to the bare walletTorUnanswered, so a path the SDK cannot attest read \"Private path in use (privacy not verified)\" while it carried and the STRONGER \"Private path connected\" once it went quiet — a user checking privacy at the moment the path stopped carrying read a bigger claim than while it was working. That is FR-44's defect class, sign-identical, on a different runtime; FR-32 (a) is the rule it breaks. Paired with walletTransportExplainUnansweredUnverified, caution tone. ExternalSocks5 keeps the unqualified walletTorUnanswered (the host named Tor by choosing that variant), as does the attested empty-name hostDialer. STILL OPEN, deliberately: whether the noun \"private path\" over-claims even with the parenthetical — that question is the same for this string and for walletTorActiveUnattested, and they must change together or not at all."
   },
-  "walletTorUnansweredNamed": "{transport} connected — nothing coming back",
+  "walletTorUnansweredNamed": "{transport} connected, nothing coming back",
   "@walletTorUnansweredNamed": {
     "description": "Transport chip: as walletTorUnanswered, for a REGISTERED transport whose descriptor names it — and ONLY for a path the host declared HIDDEN and isolating, since it is the variant that carries no privacy qualifier. transport = the HOST'S OWN name for its transport, verbatim — the wallet never interprets or translates it (ADR-0547).",
     "placeholders": {
@@ -976,11 +976,11 @@
       }
     }
   },
-  "walletTorUnansweredDirect": "Not private (your app's direct connection) — nothing coming back",
+  "walletTorUnansweredDirect": "Not private (your app's direct connection), nothing coming back",
   "@walletTorUnansweredDirect": {
     "description": "Transport chip for TorState.unanswered on a registered dialer whose descriptor declared its path EXPOSED (ADR-0547 exposure = exposed: the server sees the device's address). FR-44: the unanswered arm inherited Active's payload and not its honesty — it read the plain \"connected — nothing coming back\" sentence for an exposed path, so a state change silently dropped a privacy loss the Active chip had been disclosing (walletTorHostDirect). The name is discarded here exactly as it is on walletTorHostDirect: what matters is that the path is not private, whatever the host called it and whatever the isolation says. Paired with walletTransportExplainUnansweredDirect, caution tone."
   },
-  "walletTorUnansweredLinkable": "Connected over {transport} — nothing coming back; connections can be linked by the proxy",
+  "walletTorUnansweredLinkable": "Connected over {transport}, nothing coming back; connections can be linked by the proxy",
   "@walletTorUnansweredLinkable": {
     "description": "Transport chip for TorState.unanswered on a registered dialer that is NOT the plainly-private case: the host declared isolation unsupported (or did not declare it), so the wallet's connections can be linked to each other at the proxy — or the host did not declare whether the path hides the device's address (exposure unknown), where the weaker sentence is the honest one (the §3.3 privacy rule: never inherit a benign framing for something the binding cannot attest). The twin of walletTorHostPathLinkable on the Active family. transport = the host's own name, verbatim, or walletTorHostOtherTransport when the SDK has none to show — the sentence leads with the state, not the name, so the unattributed fragment reads inside it. Caution tone.",
     "placeholders": {
@@ -989,7 +989,7 @@
       }
     }
   },
-  "walletTorUnknown": "Tor status unknown — treat as not protected",
+  "walletTorUnknown": "Tor status unknown. Treat as not protected",
   "@walletTorUnknown": {
     "description": "Tor state chip: forward-compatibility arm; privacy rule renders it as not protected."
   },
@@ -1136,7 +1136,7 @@
   "@walletSyncServerSwitchNoticeAtTip": {
     "description": "The in-flight notice body at an UP-TO-DATE status (nothing is in progress): the switch reconnects; balance and history stay. fold of the walk's observation 2."
   },
-  "walletSyncServerUnreachable": "Couldn't reach this server. Check the address — and if it's right, either this server isn't answering or your app can't reach it right now. Try again, or pick another server.",
+  "walletSyncServerUnreachable": "Couldn't reach this server. Check the address. If it's right, either this server isn't answering or your app can't reach it right now. Try again, or pick another server.",
   "@walletSyncServerUnreachable": {
     "description": "Picker refusal copy for WalletErrorKind.syncServerUnreachable when the user TYPED this address (the custom-URL field): the probe could not dial, timed out, or was refused — a gated server rejecting the key lands here too. Hedged like walletStallEndpoint: it MUST NOT say 'check your connection' alone — the server may be the down side. Nothing changed: the wallet stays on its current server. WHY IT NO LONGER STOPS AT 'check the address' (stage S1 `copy`, from the `truth` re-adjudication): probe_oracle (wallet.rs) maps everything that is not a FAILED private dial onto this kind, and since stage S1 a private path that ACCEPTS the dial and then carries nothing no longer reports TorUnavailable — deliberately, because blaming the path for what cannot be separated from a wedged server is the over-claim the stage removed. So a censored path and a wedged server arrive here as the same error and the SDK cannot tell them apart; the address stays the first step (this reader typed it) but it is no longer the ONLY one. Its sibling walletSyncServerUnreachableOffered serves the reader who typed nothing."
   },
@@ -1178,7 +1178,7 @@
       }
     }
   },
-  "walletSyncServerSwitchFailedRecovered": "Couldn't switch — still using {host}.",
+  "walletSyncServerSwitchFailedRecovered": "Couldn't switch. Still using {host}.",
   "@walletSyncServerSwitchFailedRecovered": {
     "description": "Picker notice after a switch failed PAST the point of no return and the wallet was recovered by re-opening (the rescan's recover-by-reopen). Names the server actually in use after the re-open (the new one if the choice landed, the previous one otherwise). Funds and history are untouched either way.",
     "placeholders": {
@@ -1225,11 +1225,11 @@
       }
     }
   },
-  "walletTransportExplainUnanswered": "The private path took the connection, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
+  "walletTransportExplainUnanswered": "The private path took the connection, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
   "@walletTransportExplainUnanswered": {
     "description": "Sync sheet Connection explanation for TorState.unanswered (stage S1 `truth`, FR-36). The either/or is the POINT and must survive translation: the SDK reports what its own RPCs saw over a connection whose arm it knows, and it never says WHY a ready path is not carrying — a blackholed transport and a wedged server look identical from here. TWO next steps for the two causes (the walletStallBirthdayInFuture discipline): another server for a wedged server, the app's network settings for the path. MUST NOT promise that nothing left in the clear — a `Preferred` wallet reads this too, and its next dial leaves for clearnet. The NEUTRAL variant (no name to show)."
   },
-  "walletTransportExplainUnansweredNamed": "{transport} took the connection, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
+  "walletTransportExplainUnansweredNamed": "{transport} took the connection, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
   "@walletTransportExplainUnansweredNamed": {
     "description": "Sync sheet Connection explanation: as walletTransportExplainUnanswered, naming the host's own transport verbatim. Only the FIRST clause takes the name — the either/or still says \"the path\", because naming the host's transport a second time would read as an accusation of it.",
     "placeholders": {
@@ -1238,15 +1238,15 @@
       }
     }
   },
-  "walletTransportExplainUnansweredDirect": "Wallet traffic connects directly to the server. The server can see your IP address. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
+  "walletTransportExplainUnansweredDirect": "Wallet traffic connects directly to the server. The server can see your IP address. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
   "@walletTransportExplainUnansweredDirect": {
     "description": "Sync sheet Connection explanation for TorState.unanswered on an EXPOSED registered path (FR-44). Two facts, in this order: the privacy verdict the descriptor decides (walletTransportExplainDirect's sentence, verbatim — the server sees the device's address) and then the unanswered either/or with its two next steps, which survive here unchanged because the state means the same thing whatever the exposure. The subject is \"the connection\", never \"the private path\": naming this path private is the FR-44 defect."
   },
-  "walletTransportExplainUnansweredUnverified": "The privacy of this connection can't be verified — treat it as not private. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server — the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
+  "walletTransportExplainUnansweredUnverified": "The privacy of this connection can't be verified, so treat it as not private. The connection was accepted, but nothing has come back for a minute. It could be the path or the wallet server; the wallet can't tell which. It keeps trying; if it doesn't clear, try another server or check your app's network settings.",
   "@walletTransportExplainUnansweredUnverified": {
     "description": "Sync sheet Connection explanation for TorState.unanswered on a registered path whose EXPOSURE the host did not declare, or declared with a value this binding cannot read (FR-44). walletTransportExplainUnverified's verdict, verbatim, then the unanswered either/or with its two next steps. The Active family renders walletTransportExplainUnverified alone on the same payload; this is the same verdict with the state's own sentence after it."
   },
-  "walletTransportExplainUnverified": "The privacy of this connection can't be verified — treat it as not private.",
+  "walletTransportExplainUnverified": "The privacy of this connection can't be verified, so treat it as not private.",
   "@walletTransportExplainUnverified": {
     "description": "Sync sheet Connection explanation: an unverifiable/unknown transport state (privacy rule: never claim protection)."
   },
@@ -1258,7 +1258,7 @@
   "@walletOnboardingWelcomeTitle": {
     "description": "Heading on the wallet onboarding welcome screen."
   },
-  "walletOnboardingWelcomeBody": "Create a new wallet to receive and hold ZEC. We'll generate a recovery phrase and walk you through backing it up before any funds can arrive — so nothing is ever at risk without a backup.",
+  "walletOnboardingWelcomeBody": "Create a new wallet to receive and hold ZEC. We'll generate a recovery phrase and walk you through backing it up before any funds can arrive, so nothing is ever at risk without a backup.",
   "@walletOnboardingWelcomeBody": {
     "description": "Body on the wallet onboarding welcome screen; states the money-safety reason backup comes first."
   },
@@ -1322,7 +1322,7 @@
   "@walletWatchOnlyBirthdayTitle": {
     "description": "Heading of the required creation-date control on the watch-only import screen."
   },
-  "walletWatchOnlyBirthdayChosen": "Scanning from {date} on — funds received before then won't appear. Older wallet? Pick an earlier date.",
+  "walletWatchOnlyBirthdayChosen": "Scanning from {date} on. Funds received before then won't appear. Older wallet? Pick an earlier date.",
   "@walletWatchOnlyBirthdayChosen": {
     "description": "The chosen watch-only start month/year, carrying the honest warning that older funds won't appear (a watch-only import always scans from a floor — no full-scan arm — so the auditor importing an older wallet must not silently see an understated balance). Mirrors walletRestoreBirthdayChosen without the 'Scan all history' clause.",
     "placeholders": {
@@ -1367,7 +1367,7 @@
   "@walletRestoreTitle": {
     "description": "Heading on the restore (recovery-phrase entry) screen."
   },
-  "walletRestoreBody": "Enter your recovery phrase to restore your wallet — type or paste the words in order, separated by spaces. Standard phrases only: if your wallet used an extra passphrase (a \"25th word\"), this app can't restore it yet — you'd see an empty wallet, not an error.",
+  "walletRestoreBody": "Enter your recovery phrase to restore your wallet. Type or paste the words in order, separated by spaces. Standard phrases only: if your wallet used an extra passphrase (a \"25th word\"), this app can't restore it yet. You'd see an empty wallet, not an error.",
   "@walletRestoreBody": {
     "description": "Body on the restore screen explaining what to enter, with an honest note that passphrase-protected ('25th word') wallets can't be imported (a wrong/absent passphrase silently restores a different, empty wallet)."
   },
@@ -1388,7 +1388,7 @@
   "@walletRestoreLengthHint": {
     "description": "Hint shown beside the word count when it isn't yet a valid phrase length."
   },
-  "walletRestoreSomeWordsInvalid": "{count, plural, =1{1 word isn't a recovery word — fix the highlighted one} other{{count} words aren't recovery words — fix the highlighted ones}}",
+  "walletRestoreSomeWordsInvalid": "{count, plural, =1{1 word isn't a recovery word. Fix the highlighted one} other{{count} words aren't recovery words. Fix the highlighted ones}}",
   "@walletRestoreSomeWordsInvalid": {
     "description": "Live cue when one or more entered words aren't in the BIP39 list (shown as error-coloured pills).",
     "placeholders": {
@@ -1439,11 +1439,11 @@
   "@walletRestoreBirthdayTitle": {
     "description": "Heading of the restore starting-point (wallet-creation date) control."
   },
-  "walletRestoreBirthdayNone": "We'll scan your whole history — slower, but nothing is missed.",
+  "walletRestoreBirthdayNone": "We'll scan your whole history. Slower, but nothing is missed.",
   "@walletRestoreBirthdayNone": {
     "description": "Shown when the user chose a full scan (no date): money-safe but slower."
   },
-  "walletRestoreBirthdayChosen": "Scanning from {date} on — funds received before then won't appear. Older wallet? Pick an earlier date, or Scan all history.",
+  "walletRestoreBirthdayChosen": "Scanning from {date} on. Funds received before then won't appear. Older wallet? Pick an earlier date, or Scan all history.",
   "@walletRestoreBirthdayChosen": {
     "description": "Shown when a creation date is set (the ~6-months-ago default). States the exclusion as a FACT and names both escape hatches (earlier date / full scan).",
     "placeholders": {
@@ -1501,7 +1501,7 @@
   "@walletBackupTitle": {
     "description": "Heading on the recovery-phrase backup screen."
   },
-  "walletBackupBody": "These words are the ONLY way to recover your wallet and funds. Write them down in order and keep them somewhere safe and private. Never share them or store them online — anyone with these words can take your funds.",
+  "walletBackupBody": "These words are the ONLY way to recover your wallet and funds. Write them down in order and keep them somewhere safe and private. Never share them or store them online: anyone with these words can take your funds.",
   "@walletBackupBody": {
     "description": "Explanation on the backup screen of what the recovery phrase is and the rules for handling it."
   },
@@ -1553,7 +1553,7 @@
   "@walletBackupStartOverConfirmTitle": {
     "description": "Title of the Start-over confirmation dialog on the forced-backup screen."
   },
-  "walletBackupStartOverConfirmBody": "This deletes this wallet from the device and returns you to the start. Nothing can be deposited through this app before setup is finished.\n\nIf this wallet ever held funds — or was restored from a recovery phrase — only that phrase can bring it back.",
+  "walletBackupStartOverConfirmBody": "This deletes this wallet from the device and returns you to the start. Nothing can be deposited through this app before setup is finished.\n\nIf this wallet ever held funds, or was restored from a recovery phrase, only that phrase can bring it back.",
   "@walletBackupStartOverConfirmBody": {
     "description": "Body of the Start-over confirmation dialog. Must stay honest for EVERY way of reaching forced backup: a fresh create (nothing deposited via this app), the rare restore stranded here by a confirm-persist failure, AND the residual lost-flag edge on a wallet that was briefly active (review) — hence the hedged 'if this wallet ever held funds' phrase-warning instead of an absolute 'never received anything' claim."
   },
@@ -1589,7 +1589,7 @@
   "@walletBackupManagedTitle": {
     "description": "Heading of the managed-by-host state, shown when the wallet was set up from a host-supplied seed and has no recovery phrase of its own."
   },
-  "walletBackupManagedBody": "This wallet was set up using your account from the app that installed it, so it has no recovery phrase of its own. Your funds are recovered together with that account — use its backup to keep them safe.",
+  "walletBackupManagedBody": "This wallet was set up using your account from the app that installed it, so it has no recovery phrase of its own. Your funds are recovered together with that account. Use its backup to keep them safe.",
   "@walletBackupManagedBody": {
     "description": "Explanation shown when the wallet has no local recovery phrase (a host-managed / raw seed); tells the user their recovery lives with the installing app's account."
   },
@@ -1601,15 +1601,15 @@
   "@walletExportViewingKeyTileTitle": {
     "description": "Settings → Security list-tile that opens the viewing-key export screen."
   },
-  "walletExportViewingKeyTileSubtitle": "Share a view-only copy of your wallet — it can see your history but cannot spend.",
+  "walletExportViewingKeyTileSubtitle": "Share a view-only copy of your wallet. It can see your history but cannot spend.",
   "@walletExportViewingKeyTileSubtitle": {
     "description": "Subtitle of the export-viewing-key settings tile, summarizing that the exported key is view-only."
   },
-  "walletExportViewingKeyWarning": "This key lets whoever holds it see everything this wallet has ever received and sent — and everything it will in the future. It cannot spend your funds and cannot recover your wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. The only way to un-share it later is to move your funds to a new wallet.",
+  "walletExportViewingKeyWarning": "This key lets whoever holds it see everything this wallet has ever received and sent, and everything it will in the future. It cannot spend your funds and cannot recover your wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. The only way to un-share it later is to move your funds to a new wallet.",
   "@walletExportViewingKeyWarning": {
     "description": "The #397 D9 warning copy shown on the export-viewing-key screen. Must state all four facts: (1) it reveals all history in and out, past and future; (2) it cannot spend or recover; (3) share only with someone trusted; (4) the only un-share is moving funds to a new wallet. No softening."
   },
-  "walletExportViewingKeyWarningWatchOnly": "This key lets whoever holds it see everything this wallet has ever received and sent — and everything it will in the future. It cannot spend any funds and cannot recover the wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. Once shared, it cannot be un-shared.",
+  "walletExportViewingKeyWarningWatchOnly": "This key lets whoever holds it see everything this wallet has ever received and sent, and everything it will in the future. It cannot spend any funds and cannot recover the wallet. Share it only with someone you trust to see your full history, such as an accountant or your own second device. Once shared, it cannot be un-shared.",
   "@walletExportViewingKeyWarningWatchOnly": {
     "description": "The #397 D9 warning for a WATCH-ONLY wallet exporting its own viewing key (UX-M3): identical to walletExportViewingKeyWarning but its final clause states the honest 'once shared it cannot be un-shared', since a watch-only wallet cannot 'move your funds to a new wallet' (no spending keys). Keep the same four facts, no softening."
   },
@@ -1657,7 +1657,7 @@
   "@walletWatchOnlySectionTitle": {
     "description": "Security-screen section header shown instead of the backup section for a watch-only wallet."
   },
-  "walletWatchOnlyAboutBody": "This is a watch-only wallet. It was set up from a viewing key, so it can see your balance and history but holds no spending keys — there is nothing to back up here, and it cannot send funds.",
+  "walletWatchOnlyAboutBody": "This is a watch-only wallet. It was set up from a viewing key, so it can see your balance and history but holds no spending keys. There is nothing to back up here, and it cannot send funds.",
   "@walletWatchOnlyAboutBody": {
     "description": "Security-screen explanation for a watch-only wallet: it has no spending keys and nothing to back up."
   },
@@ -1677,11 +1677,11 @@
   "@walletOnboardingFailedDeviceLocked": {
     "description": "Onboarding failure: device locked, or the key store did not answer within the SDK's bound (retryable; a wedge clears only on restart)."
   },
-  "walletOnboardingFailedAlreadyOpen": "This wallet is open in another window or app, or is still finishing a previous operation. Close any other window using it — or wait a moment — then try again.",
+  "walletOnboardingFailedAlreadyOpen": "This wallet is open in another window or app, or is still finishing a previous operation. Close any other window using it (or wait a moment), then try again.",
   "@walletOnboardingFailedAlreadyOpen": {
     "description": "Onboarding failure: the wallet's single-instance lock is held (retryable). Honest for BOTH causes — a real second window AND a transient internal straggler finishing up (the device-proven case, where no other window exists)."
   },
-  "walletOnboardingFailedNeedsRecovery": "This wallet's secure key is no longer available, so it can't be opened on this device. Your funds are safe — restore from your recovery phrase to recover them.",
+  "walletOnboardingFailedNeedsRecovery": "This wallet's secure key is no longer available, so it can't be opened on this device. Your funds are safe. Restore from your recovery phrase to recover them.",
   "@walletOnboardingFailedNeedsRecovery": {
     "description": "Onboarding failure: damaged seal / destroyed key / corrupt storage — restore is the path, not retry. Funds are recoverable from the phrase."
   },
@@ -1693,7 +1693,7 @@
   "@walletOnboardingRecoverConfirmTitle": {
     "description": "Title of the confirm dialog before the deliberate force-clear + restore."
   },
-  "walletOnboardingRecoverConfirmBody": "Make sure you have your recovery phrase before continuing — you'll need it on the next screen to recover your funds. Your funds are safe on the blockchain and controlled by that phrase. This removes the unreadable wallet data from this device so it can be rebuilt.",
+  "walletOnboardingRecoverConfirmBody": "Make sure you have your recovery phrase before continuing. You'll need it on the next screen to recover your funds. Your funds are safe on the blockchain and controlled by that phrase. This removes the unreadable wallet data from this device so it can be rebuilt.",
   "@walletOnboardingRecoverConfirmBody": {
     "description": "Body of the confirm dialog: WARN the user they must have their recovery phrase in hand, then reassure funds are safe (phrase-controlled), before the irreversible force-clear."
   },
@@ -1713,7 +1713,7 @@
   "@walletOnboardingFailedNetwork": {
     "description": "Onboarding failure: a network condition during setup (retryable)."
   },
-  "walletOnboardingFailedInterruptedSetup": "Wallet setup didn't finish. Try again to complete it — nothing was lost.",
+  "walletOnboardingFailedInterruptedSetup": "Wallet setup didn't finish. Try again to complete it; nothing was lost.",
   "@walletOnboardingFailedInterruptedSetup": {
     "description": "Onboarding failure: an interrupted create (remnant); retrying re-probes and resumes the repair via create (open cannot repair it). Retryable, reassuring (the sealed seed is intact)."
   },
@@ -1721,7 +1721,7 @@
   "@walletOnboardingFailedUnknown": {
     "description": "Onboarding failure: anything else / a forward-compat kind (retryable; the stable code rides logs)."
   },
-  "walletOnboardingFailedConfiguration": "This app's wallet setup is misconfigured, so the wallet can't start. Retrying won't help — please report this to the app's developer. Your funds are not affected.",
+  "walletOnboardingFailedConfiguration": "This app's wallet setup is misconfigured, so the wallet can't start. Retrying won't help. Please report this to the app's developer. Your funds are not affected.",
   "@walletOnboardingFailedConfiguration": {
     "description": "Onboarding failure: the host app supplied an invalid wallet configuration (e.g. a rejected data directory). A developer error, not a device/user condition — NON-retryable, and deliberately without an action button (a Retry here would loop the same failure; security review N1)."
   },
@@ -1729,11 +1729,11 @@
   "@walletSendButton": {
     "description": "Entry button on the active wallet surface that opens the send flow."
   },
-  "walletSendSyncNotRunning": "Syncing isn't running — your spendable balance can't update",
+  "walletSendSyncNotRunning": "Syncing isn't running, so your spendable balance can't update",
   "@walletSendSyncNotRunning": {
     "description": "Honest reason under a disabled Send when no sync pass will run (#405 → the SSOT). Wins over any retained status arm: nothing is syncing, stalling, or catching up. CAUSE-AGNOSTIC — the badge names the cause. No trailing period (it renders as a reason line)."
   },
-  "walletSendWaitingForFunds": "Still syncing — you can send once you have a spendable balance",
+  "walletSendWaitingForFunds": "Still syncing. You can send once you have a spendable balance",
   "@walletSendWaitingForFunds": {
     "description": "Honest reason shown under a disabled Send button while sync is still catching up and nothing is spendable yet (spend-before-sync). Neutral wording (#356-F7): a zero-fund wallet has no funds for sync to 'reach', so the copy must not imply funds are known to exist."
   },
@@ -1753,7 +1753,7 @@
   "@walletSendUnavailable": {
     "description": "Honest state when the send screen has no live wallet session (defensive)."
   },
-  "walletSendWatchOnly": "This is a watch-only wallet. It can show balances and receive payments, but it holds no spending keys — so it can't send.",
+  "walletSendWatchOnly": "This is a watch-only wallet. It can show balances and receive payments, but it holds no spending keys, so it can't send.",
   "@walletSendWatchOnly": {
     "description": "Honest full-screen state when the send screen is reached on a watch-only wallet (no spending keys). Permanent fact, not transient."
   },
@@ -1765,7 +1765,7 @@
   "@walletSendExpiredBody": {
     "description": "Body for walletSendExpiredTitle. States the limit the user hit (the five-second mount grace — keep the number in step with WalletSendEntry's grace if it is ever re-priced), why the wallet refuses (the app already holds a final \"nothing was sent\" for this request, and paying under it would put a payment on chain with no record of it in the app), and the ONE next step. Never promises the wallet will pay it later; nothing was signed."
   },
-  "walletSendFaultWatchOnly": "This is a watch-only wallet — it holds no spending keys, so it can't send.",
+  "walletSendFaultWatchOnly": "This is a watch-only wallet. It holds no spending keys, so it can't send.",
   "@walletSendFaultWatchOnly": {
     "description": "Inline send-form fault when a watch-only wallet somehow reaches propose/send (defense-in-depth; the SDK refuses the spend)."
   },
@@ -1778,7 +1778,7 @@
       }
     }
   },
-  "walletSendAvailableCatchingUp": "Available to send: {amount} ZEC — your balance is still catching up",
+  "walletSendAvailableCatchingUp": "Available to send: {amount} ZEC (your balance is still catching up)",
   "@walletSendAvailableCatchingUp": {
     "description": "Variant of walletSendAvailable while the wallet is still catching up (#381, the #380 swap-line rule): the spendable figure is the partial repopulating balance, so a low/zero figure (incl. the post-'Send another' refresh) must not read as final.",
     "placeholders": {
@@ -1933,7 +1933,7 @@
   "@walletSendLargeConfirmOverThreshold": {
     "description": "Large-send dialog body when the amount is over the absolute large-amount threshold (overAbsoluteThreshold)."
   },
-  "walletSendLargeConfirmBoth": "This is a large payment — almost your entire balance. A sent payment can't be reversed.",
+  "walletSendLargeConfirmBoth": "This is a large payment: almost your entire balance. A sent payment can't be reversed.",
   "@walletSendLargeConfirmBoth": {
     "description": "Large-send dialog body when both the relative and absolute large-amount triggers fired (both, and the forward-compat unknown arm)."
   },
@@ -1958,7 +1958,7 @@
   "@walletSendSentBody": {
     "description": "Result body for a fully-broadcast send."
   },
-  "walletSendSavedTitle": "Saved — we'll finish sending",
+  "walletSendSavedTitle": "Saved, we'll finish sending",
   "@walletSendSavedTitle": {
     "description": "Result: nothing was accepted this attempt (transport miss or mempool reject); the payment is persisted and will retry."
   },
@@ -1990,7 +1990,7 @@
   "@walletSendAlreadyTitle": {
     "description": "Result: the one-shot proposal was already consumed (double-tap)."
   },
-  "walletSendAlreadyBody": "This payment was already submitted — it won't be sent twice.",
+  "walletSendAlreadyBody": "This payment was already submitted. It won't be sent twice.",
   "@walletSendAlreadyBody": {
     "description": "Result body for a re-consumed proposal token (no double-spend)."
   },
@@ -2022,7 +2022,7 @@
   "@walletSendQueuedBody": {
     "description": "Result body for a queued (offline-first) send. It must be true at EVERY custody tier (#400 R9): the previous 'we'll send this automatically the next time your wallet syncs online' is FALSE wherever the wallet holds no signing credential of its own — a host that authorizes each spend individually cannot sign on an unattended background pass at all, and that is exactly the host the offline queue was widened for (FR-23-b). So promise no schedule; name the surface the payment now lives on (keep the wording in step with walletParkedTitle) and the two things the user can actually do there. Never 'as soon as you're online' (the retry schedule can lag a reconnect), and never anything that invites re-entering the payment (a double pay)."
   },
-  "walletSendFaultInsufficient": "Not enough spendable balance — you have {available} ZEC and this needs {required} ZEC.",
+  "walletSendFaultInsufficient": "Not enough spendable balance. You have {available} ZEC and this needs {required} ZEC.",
   "@walletSendFaultInsufficient": {
     "description": "Form fault: insufficient funds. Figures are integer-formatted; never logged (§5.4).",
     "placeholders": {
@@ -2050,7 +2050,7 @@
   "@walletSyncUpToDateDegraded": {
     "description": "Sync-status headline for SyncStatus.upToDateDegraded (T0-1b): the wallet scanned to the chain tip, but THIS SERVER refused, withheld or misreported the subtree roots of one of Zcash's shielded pools, so funds received in that pool cannot be spent through it. MUST NOT read as a plain 'Up to date' — the balance shown alongside is a floor for that pool. Distinct from walletSyncUpToDateLimited (that one is about this app VERSION and says update; this one is about the SERVER and says switch)."
   },
-  "walletSyncExplainUpToDateDegraded": "This server is refusing, withholding or misreporting one of Zcash's shielded pools. Funds received in that pool can't be spent through it, and the balance shown is a floor. Switch to another server to use them — this isn't a connection problem.",
+  "walletSyncExplainUpToDateDegraded": "This server is refusing, withholding or misreporting one of Zcash's shielded pools. Funds received in that pool can't be spent through it, and the balance shown is a floor. Switch to another server to use them. This isn't a connection problem.",
   "@walletSyncExplainUpToDateDegraded": {
     "description": "Sync-detail sheet explanation paired with walletSyncUpToDateDegraded. The next step MUST be 'switch servers': never 'check your connection' (the link works — the pass reached the tip) and never 'update the app' (that is the UpToDateLimited pair). Names the money consequence honestly (unspendable funds in that pool, balance is a floor) without claiming the user holds any. WHICH pool, and how, is the detail line under it — walletSyncPoolUnsupported / walletSyncPoolWithheld / walletSyncPoolHeightViolation / walletSyncPoolUnknown, one per affected pool (§4r U-3)."
   },
@@ -2106,19 +2106,19 @@
   "@walletSyncEndpointBehind": {
     "description": "Sync-status headline for SyncStatus.endpointBehind (T0-1c): the wallet scanned to THIS SERVER's reported tip, but that tip is below a block height the network had already passed before this version of the app was built — the server is behind the chain (a node still syncing, stuck or forked, or a server under-reporting its height). MUST NOT read as a plain 'Up to date': the balance shown alongside is current only as of that older block. Distinct from walletSyncUpToDateLimited (this app VERSION — says update) and walletSyncUpToDateDegraded (this server's POOLS — says switch); this one is about this server's HEIGHT and also says switch."
   },
-  "walletSyncExplainEndpointBehind": "This server's copy of the chain stops at a block the network passed before this version of the app was built, so your balance is only current as of that block. New payments to you may not show yet, and a payment sent from here may not go through. Switch to another server to catch up — this isn't a connection problem.",
+  "walletSyncExplainEndpointBehind": "This server's copy of the chain stops at a block the network passed before this version of the app was built, so your balance is only current as of that block. New payments to you may not show yet, and a payment sent from here may not go through. Switch to another server to catch up. This isn't a connection problem.",
   "@walletSyncExplainEndpointBehind": {
     "description": "Sync-detail sheet explanation paired with walletSyncEndpointBehind. The next step MUST be 'switch servers': never 'check your connection' (the link works — the pass completed) and never 'update the app' (that is the UpToDateLimited pair). Names both money consequences honestly and without claiming the user holds any: incoming payments after that block are not visible from this server, and a send built against this server's tip carries an expiry the real chain may already be past (it would expire and the funds return, not be lost). MUST NOT say the funds are lost or that anything needs restoring."
   },
-  "walletParkedBlockedByNetworkUpgrade": "Waiting for an app update — your funds are safe and nothing has been sent.",
+  "walletParkedBlockedByNetworkUpgrade": "Waiting for an app update. Your funds are safe and nothing has been sent.",
   "@walletParkedBlockedByNetworkUpgrade": {
     "description": "Parked-send row detail when ParkedSend.signingBlock is SigningBlock.networkUpgrade — and ONLY then (GRACE-1 §4p G-6): the drain will not sign this row until the app is updated. MUST NOT say 'will send when ready' (it will not, on this version) and MUST NOT say 'failed' (the money is untouched and the intent is intact). Cancel stays offered; retry does not, since retrying changes nothing until the app is updated. A server that merely stopped reporting its network is walletParkedBlockedByServerSilent, never this."
   },
-  "walletParkedBlockedByServerSilent": "Waiting for a server that reports the network version — switch servers. Your funds are safe and nothing has been sent.",
+  "walletParkedBlockedByServerSilent": "Waiting for a server that reports the network version. Switch servers. Your funds are safe and nothing has been sent.",
   "@walletParkedBlockedByServerSilent": {
     "description": "Parked-send row detail when ParkedSend.signingBlock is SigningBlock.graceExpired (GRACE-1 §4p): this server will not say which network it is on and the wallet's grace for it has run out (or never began), so the drain will not sign this row until a server that reports its network is used. The next step is SWITCH SERVERS. MUST NOT say 'upgraded' or 'update the app' (nothing was upgraded and an update fixes nothing — that is walletParkedBlockedByNetworkUpgrade), MUST NOT say 'will send when ready' and MUST NOT say 'failed'. Cancel stays offered; retry does not."
   },
-  "walletParkedBlockedByServerSilentClock": "Waiting for a server that reports the network version. If this device's date and time are wrong, fix them first — then switch servers. Your funds are safe and nothing has been sent.",
+  "walletParkedBlockedByServerSilentClock": "Waiting for a server that reports the network version. If this device's date and time are wrong, fix them first, then switch servers. Your funds are safe and nothing has been sent.",
   "@walletParkedBlockedByServerSilentClock": {
     "description": "walletParkedBlockedByServerSilent's variant when the grace ran out on the DEVICE CLOCK (GraceExpiry.clock). The next step is the SAME as the sibling's — a server that reports the network version — and the device clock is a PRECONDITION of it, never an alternative to it (§4p-run fold review row 6, §4r U-5): a corrected clock alone re-permits nothing (the latch holds until a branch-reporting server), so the copy MUST read 'if the date and time are wrong, fix them FIRST — then switch' and MUST NOT read 'switch servers, OR check the date and time'. Same prohibitions as the sibling: never 'upgraded', 'update the app', 'will send when ready' or 'failed'."
   },
@@ -2126,7 +2126,7 @@
   "@walletSyncUnverified": {
     "description": "Sync-status headline for SyncStatus.upToDateUnverified (GRACE-1 §4p): the wallet scanned to the chain tip, but THIS SERVER will not say which version of the Zcash network it is on, so the app cannot confirm a payment it signs will be accepted; sending works for a short grace and is then refused. MUST NOT read as a plain 'Up to date'. Distinct from walletSyncUpToDateLimited (this app VERSION — says update; MUST NOT be conflated: nothing was upgraded here), walletSyncUpToDateDegraded (this server's POOLS) and walletSyncEndpointBehind (this server's HEIGHT); this one is about the server's NETWORK CLAIM and, like the last two, says switch. MUST NOT contain 'upgraded' or 'update'."
   },
-  "walletSyncGraceLeftHours": "{hours, plural, =0{Sending still works for less than an hour — then switch servers.} =1{Sending still works for about 1 more hour — then switch servers.} other{Sending still works for about {hours} more hours — then switch servers.}}",
+  "walletSyncGraceLeftHours": "{hours, plural, =0{Sending still works for less than an hour. Then switch servers.} =1{Sending still works for about 1 more hour. Then switch servers.} other{Sending still works for about {hours} more hours. Then switch servers.}}",
   "@walletSyncGraceLeftHours": {
     "description": "Detail line under walletSyncUnverified while the grace RUNS and the device clock can be trusted for it: how long sending keeps working. hours is the whole hours left on whichever of the two grace rules (blocks, device clock) runs out FIRST — the SDK already converted the blocks through the network's block spacing, so this is one figure; 0 renders as 'less than an hour'. The next step ('then switch servers') rides in the sentence. MUST NOT say 'upgraded' or 'update'.",
     "placeholders": {
@@ -2135,7 +2135,7 @@
       }
     }
   },
-  "walletSyncGraceLeftBlocks": "Sending still works for about {blocks} more blocks — then switch servers.",
+  "walletSyncGraceLeftBlocks": "Sending still works for about {blocks} more blocks. Then switch servers.",
   "@walletSyncGraceLeftBlocks": {
     "description": "walletSyncGraceLeftHours's variant when the SDK hands NO time — the device clock cannot be trusted for the grace (it reads before the last confirmation), so the block rule alone decides and only the blocks are shown (GRACE-1 §4p G-4; this is the same string set, not a new case). blocks is pre-formatted compactly (e.g. \"1.2K\"). MUST NOT say 'upgraded' or 'update'.",
     "placeholders": {
@@ -2153,7 +2153,7 @@
       }
     }
   },
-  "walletSyncGraceEndedClock": "This server hasn't reported the network version for a day, so this app can't confirm it's safe to send. If this device's date and time are wrong, fix them first — then switch to a server that reports the network version.",
+  "walletSyncGraceEndedClock": "This server hasn't reported the network version for a day, so this app can't confirm it's safe to send. If this device's date and time are wrong, fix them first, then switch to a server that reports the network version.",
   "@walletSyncGraceEndedClock": {
     "description": "The grace ENDED by the DEVICE CLOCK rule (GraceExpiry.clock; GRACE-1 §4p G-6): a day passed on this device's clock since the last confirmation, whatever the server's block height did — the axis a server that freezes its height cannot hold still — or the clock was set back after that day was seen (which does not re-open the grace). Shared by the sync detail line and the send-fault body. ONE next step — a server that reports the network version — with the device clock as its PRECONDITION, never an alternative (§4p-run fold review row 6, §4r U-5): a wrong clock is the one benign cause, but a corrected clock alone re-permits nothing (the latch holds until a branch-reporting server), so the copy MUST read 'if the date and time are wrong, fix them FIRST — then switch' and MUST NOT read 'switch, OR check the date and time'. MUST NOT say 'upgraded' or 'update the app'."
   },
@@ -2161,19 +2161,19 @@
   "@walletSyncGraceNeverConfirmed": {
     "description": "The grace never BEGAN (GraceExpiry.neverConfirmed; GRACE-1 §4p): every server this wallet has met withheld the network version, so the app has never confirmed it can send at all. Shared by the sync detail line and the send-fault body; also the forward-compat fallback for a grace shape this UI does not know. NOT the never-synced case (that is walletSendFaultNotSynced — wait for sync). Next step: SWITCH SERVERS. MUST NOT say 'upgraded' or 'update the app'."
   },
-  "walletSyncExplainUnverified": "This server isn't saying which version of the Zcash network it's on, so this app can't confirm that a payment it signs will be accepted. Your balance is current. Switch to another server — this isn't a connection problem.",
+  "walletSyncExplainUnverified": "This server isn't saying which version of the Zcash network it's on, so this app can't confirm that a payment it signs will be accepted. Your balance is current. Switch to another server. This isn't a connection problem.",
   "@walletSyncExplainUnverified": {
     "description": "Sync-detail sheet explanation paired with walletSyncUnverified; the grace's own line (walletSyncGraceLeft*/walletSyncGraceEnded*) renders beside it and OWNS the sending claim (running: a countdown; ended: a refusal) — this body makes NO claim about sending (fold of the security and crypto angles: it used to say 'sending keeps working for a short grace period', false once the grace has ended). The next step MUST be 'switch servers': never 'check your connection' (the link works — the pass reached the tip) and never 'update the app' (that is the UpToDateLimited pair; nothing was upgraded here). States honestly that the balance IS current (this server serves blocks; only its network claim is missing) — unlike the Limited and Degraded pairs, this is not a balance-is-a-floor state. Under a reported rewinding streak the sheet shows walletSyncExplainUnverifiedStreak instead. MUST NOT say 'upgraded' or 'update'."
   },
-  "walletSyncExplainUnverifiedStreak": "This server isn't saying which version of the Zcash network it's on, so this app can't confirm that a payment it signs will be accepted. It has also kept serving blocks this wallet then had to undo, so your balance may not be current. Switch to another server — this isn't a connection problem.",
+  "walletSyncExplainUnverifiedStreak": "This server isn't saying which version of the Zcash network it's on, so this app can't confirm that a payment it signs will be accepted. It has also kept serving blocks this wallet then had to undo, so your balance may not be current. Switch to another server. This isn't a connection problem.",
   "@walletSyncExplainUnverifiedStreak": {
     "description": "Sync-detail sheet explanation paired with walletSyncUnverified when the SDK reports streakReported: true on the grace claim (P3-12, maintainer): the loop has judged this server misbehaving (repeated rewinds — the endpointMisbehaving stall the grace outranks, P2-6). MUST NOT say the balance is current; names the rewinds and their consequence for the balance; makes NO claim about sending (the grace line beside it owns that — fold). The next step MUST be 'switch servers': never 'check your connection', never 'update the app'. MUST NOT say 'upgraded' or 'update'."
   },
-  "walletSyncUnverifiedStreakDetail": "This server also keeps serving blocks this wallet then has to undo — switch servers.",
+  "walletSyncUnverifiedStreakDetail": "This server also keeps serving blocks this wallet then has to undo. Switch servers.",
   "@walletSyncUnverifiedStreakDetail": {
     "description": "Sync-detail line rendered directly under the grace line when the SDK reports streakReported: true on the grace claim (P3-12 fold, security review MEDIUM 1): the badge's screen-reader label is the headline plus the detail lines, so the streak the grace outranks reaches a user who never opens the sheet. Same next step, 'switch servers'; MUST NOT say 'update' or 'upgraded'."
   },
-  "walletSendFaultInsufficientCatchingUp": "Your balance is still catching up — more may become available as the wallet syncs.",
+  "walletSendFaultInsufficientCatchingUp": "Your balance is still catching up. More may become available as the wallet syncs.",
   "@walletSendFaultInsufficientCatchingUp": {
     "description": "Form fault detail under the insufficient-funds message while the wallet is still catching up (#381): the 'you have X' figure is the partial repopulating balance, not a final verdict. Hedged ('may') — it must not promise funds exist."
   },
@@ -2232,7 +2232,7 @@
   "@walletSendFaultMemoNotSendable": {
     "description": "Form fault: a reserved/invalid memo."
   },
-  "walletSendFaultMemoConflict": "Couldn't send this payment — the app attached two notes to it. Nothing was sent.",
+  "walletSendFaultMemoConflict": "Couldn't send this payment: the app attached two notes to it. Nothing was sent.",
   "@walletSendFaultMemoConflict": {
     "description": "Form fault: the app supplied BOTH a text memo and machine bytes on one payment. A programming error, not a user mistake — the copy must not tell the user to fix or remove their memo, and must say plainly that no money moved."
   },
@@ -2300,7 +2300,7 @@
   "@walletSwapUnavailableOff": {
     "description": "Honest state when swap is turned off at this build/instance (§3.5 host kill state)."
   },
-  "walletSwapUnavailableWatchOnly": "This wallet is view-only — it can't swap.",
+  "walletSwapUnavailableWatchOnly": "This wallet is view-only, so it can't swap.",
   "@walletSwapUnavailableWatchOnly": {
     "description": "Swap screen reached (host deep-link) on a watch-only wallet (#397 §3.7 D3): the condition is PERMANENT for this wallet, so no 'right now' transience — view-only framing, no retry invitation."
   },
@@ -2321,7 +2321,7 @@
       }
     }
   },
-  "walletSwapAvailableCatchingUp": "Available to swap: {amount} ZEC — your balance is still catching up",
+  "walletSwapAvailableCatchingUp": "Available to swap: {amount} ZEC (your balance is still catching up)",
   "@walletSwapAvailableCatchingUp": {
     "description": "Variant of walletSwapAvailable while the wallet is still catching up (#380): the spendable figure is the partial repopulating balance, so a low/zero figure must not read as final.",
     "placeholders": {
@@ -2359,7 +2359,7 @@
       }
     }
   },
-  "walletSwapDestinationHelperChain": "A {chain} address — where your swapped asset is sent. Double-check the chain is right.",
+  "walletSwapDestinationHelperChain": "A {chain} address, where your swapped asset is sent. Double-check the chain is right.",
   "@walletSwapDestinationHelperChain": {
     "description": "OutOfZec form: chain-aware helper for the destination field once a target asset is picked (cross-chain mistakes lose funds).",
     "placeholders": {
@@ -2388,7 +2388,7 @@
   "@walletSwapExecuting": {
     "description": "Busy label while registering the swap and queuing the deposit."
   },
-  "walletSwapExecuteStillWorking": "Still working — the swap is starting. This can take up to a minute.",
+  "walletSwapExecuteStillWorking": "Still working: the swap is starting. This can take up to a minute.",
   "@walletSwapExecuteStillWorking": {
     "description": "Snackbar when the user tries to leave (back gesture/button) while the swap execute is still running — the screen blocks leaving for this bounded step (#367 execute pop-guard). Money is being committed; every outcome screen is leavable."
   },
@@ -2424,7 +2424,7 @@
   "@walletSwapNetworkFeeValue": {
     "description": "Review line value for the network fee: the exact ZIP-317 fee is computed only when the deposit transaction is signed at execute (there is no swap fee-preview round-trip), so the review honestly discloses the fee's EXISTENCE and timing — never a fabricated number."
   },
-  "walletSwapQuoteExpiresIn": "Quote valid for about {time} — confirm before it expires.",
+  "walletSwapQuoteExpiresIn": "Quote valid for about {time}. Confirm before it expires.",
   "@walletSwapQuoteExpiresIn": {
     "description": "Review screen: the live quote countdown while time remains. Since #367 the SDK's expiresAt is the ACTIONABLE deadline (display and the execute gate share one number), so the sentence may promise confirmability up to it; 'about' hedges only device-clock skew. Do NOT use wording that guarantees the quote past the shown time.",
     "placeholders": {
@@ -2433,11 +2433,11 @@
       }
     }
   },
-  "walletSwapQuoteExpiresUnderMinute": "Quote valid for less than a minute — confirm before it expires.",
+  "walletSwapQuoteExpiresUnderMinute": "Quote valid for less than a minute. Confirm before it expires.",
   "@walletSwapQuoteExpiresUnderMinute": {
     "description": "Screen-reader label for the review quote countdown once under 60 seconds (review M4): a dedicated sentence — composing 'less than a minute' into the {time} slot of walletSwapQuoteExpiresIn double-hedged ('about less than a minute') in every locale at the most time-critical spoken moment."
   },
-  "walletSwapQuoteExpired": "This quote has expired. Go back and get a new one — its rate is no longer guaranteed, and sending now risks a refund.",
+  "walletSwapQuoteExpired": "This quote has expired. Go back and get a new one: its rate is no longer guaranteed, and sending now risks a refund.",
   "@walletSwapQuoteExpired": {
     "description": "Review screen: shown when the quote countdown reaches zero; Start swap is disabled."
   },
@@ -2479,7 +2479,7 @@
   "@walletSwapDeshieldTitle": {
     "description": "§2.6 disclosure heading: swapping out de-shields ZEC and exposes the provider legs."
   },
-  "walletSwapDeshieldBody": "Swapping out de-shields your ZEC — the deposit is a public transaction, and the provider's side is public on its network.",
+  "walletSwapDeshieldBody": "Swapping out de-shields your ZEC: the deposit is a public transaction, and the provider's side is public on its network.",
   "@walletSwapDeshieldBody": {
     "description": "§2.6 disclosure body — honest about the de-shield and the public provider legs."
   },
@@ -2535,7 +2535,7 @@
   "@walletSwapStatusCheckingTitle": {
     "description": "Tracking: the COLD-attach / first-load busy title, shown while the swap's status is being established and no answer has arrived yet — a fresh re-attach after process death (no carried state), or the moment just after execute before the first poll returns. Neutral BY DESIGN: 'Swap started' (walletSwapStatusPendingTitle) over-claims a state we have not confirmed (the swap may already be further along, or not yet started). The '…' is a real U+2026 ellipsis. (#347, cold-attach label)"
   },
-  "walletSwapStatusPendingBodyOutOfZec": "Your wallet is sending the ZEC deposit to the provider. If you're briefly offline it's sent automatically when you're back — but the sending window is short, and if it closes first the swap simply ends and nothing is exchanged. Your ZEC stays yours, and it can take up to an hour to show as spendable again.",
+  "walletSwapStatusPendingBodyOutOfZec": "Your wallet is sending the ZEC deposit to the provider. If you're briefly offline it's sent automatically when you're back. But the sending window is short, and if it closes first the swap simply ends and nothing is exchanged. Your ZEC stays yours, and it can take up to an hour to show as spendable again.",
   "@walletSwapStatusPendingBodyOutOfZec": {
     "description": "Tracking body for the pending-deposit state when the WALLET sends the deposit (OutOfZec). Honest across every state this screen can cover, tightened by #367 (UX MED-4 + reliability MED-2): 'briefly offline' + 'window is short' replace the old unbounded 'once you're back online' promise (false past ~11 min of the 15-min window), and 'stays yours … up to an hour to show as spendable' replaces 'stay in your wallet' (the locked-notes balance dip after a gate-caught miss). Keep both hedges."
   },
@@ -2543,7 +2543,7 @@
   "@walletSwapStatusPendingBodyIntoZec": {
     "description": "Tracking body for the pending-deposit state when the USER sends the deposit externally (IntoZec — a foreign coin from their own wallet, never ZEC from this one). Used ONLY within the issuing app run, where the deposit screen showed the instructions; a re-attached swap uses walletSwapStatusPendingBodyIntoZecReattached."
   },
-  "walletSwapStatusPendingBodyIntoZecReattached": "This swap is still waiting for its deposit. The deposit instructions aren't available on this device anymore — if you already sent the funds, they'll be detected; if you haven't, let this swap expire and start a new one.",
+  "walletSwapStatusPendingBodyIntoZecReattached": "This swap is still waiting for its deposit. The deposit instructions aren't available on this device anymore. If you already sent the funds, they'll be detected; if you haven't, let this swap expire and start a new one.",
   "@walletSwapStatusPendingBodyIntoZecReattached": {
     "description": "Tracking body for a RE-ATTACHED IntoZec pending-deposit swap (#367 — opened from the wallet-screen row after a restart or re-entry). The original body's 'send them before the quote expires' is impossible to follow here: the deposit address/memo are deliberately not stored, and they must NOT be re-shown (a memo-less deposit can lose funds on memo chains). Honest about both arms: already-sent (will be detected) and never-sent (let it expire, start fresh)."
   },
@@ -2560,7 +2560,7 @@
   "@walletSwapPendingWindowPassedOutOfZec": {
     "description": "Tracking detail when the pending-deposit window already lapsed and the WALLET was the deposit sender (OutOfZec) — the honest dead-quote line replacing an eternal 'swap started'. Hedged: a late-sent deposit is refunded provider-side, so the claim is only about the not-sent case."
   },
-  "walletSwapPendingWindowPassedIntoZec": "The deposit window has passed. If you haven't sent your deposit, this swap simply ends — get a fresh quote when you're ready.",
+  "walletSwapPendingWindowPassedIntoZec": "The deposit window has passed. If you haven't sent your deposit, this swap simply ends. Get a fresh quote when you're ready.",
   "@walletSwapPendingWindowPassedIntoZec": {
     "description": "Tracking detail when the pending-deposit window already lapsed and the USER was the deposit sender (IntoZec). No refund promise — a deposit that arrived late is the provider's refund flow, handled by other states."
   },
@@ -2585,15 +2585,15 @@
   "@walletSwapInFlightRowGeneric": {
     "description": "In-flight swap row line for an unrecognized direction (forward-compat) — neutral, never a guess about who sends what."
   },
-  "walletSwapInFlightRowPastWindow": "The deposit window has passed — check this swap's status.",
+  "walletSwapInFlightRowPastWindow": "The deposit window has passed. Check this swap's status.",
   "@walletSwapInFlightRowPastWindow": {
     "description": "In-flight swap row line once the record's deposit window has lapsed (#367, both directions): the present-tense motion lines ('on its way' / 'waiting for your deposit') would be false for the rest of the record's ~48 h life. Neutral — the swap may have settled, refunded, or expired; View swap shows the live truth."
   },
-  "walletSwapInFlightRowOverdue": "This swap hasn't reached a confirmed outcome here yet — open it to check. Any ZEC coming back to this wallet shows up in your balance after a sync.",
+  "walletSwapInFlightRowOverdue": "This swap hasn't reached a confirmed outcome here yet. Open it to check. Any ZEC coming back to this wallet shows up in your balance after a sync.",
   "@walletSwapInFlightRowOverdue": {
     "description": "In-flight swap row line for an UNRESOLVED record past its settlement window (#382 — such rows now list indefinitely instead of vanishing at 48 h; the wallet keeps watching every sync while unresolved), OUT-OF-ZEC + unknown-direction arm since #385 ('coming back' is refund-shaped, which is exactly the OutOfZec ZEC leg; the IntoZec row has its own delivery-shaped line). MUST stay outcome-neutral ('hasn't reached a confirmed outcome HERE' — review): the swap may in fact have SUCCEEDED unobserved, so 'taking longer than expected' would assert a falsehood over a completed swap. The second sentence is the money promise and covers only ZEC legs — it must not claim anything about a foreign-asset refund, which happens provider-side. ACCEPTED OVERCLAIM (#386, shared with the not-found body): for a pre-#368 upgrade-era record with no recorded watch leg, 'after a sync' is true only of a user-initiated full rescan — upgrade-era-only, shrinking population, documented rather than gated."
   },
-  "walletSwapInFlightRowOverdueIntoZec": "This swap hasn't reached a confirmed outcome here yet — open it to check. Any ZEC it delivers to this wallet shows up in your balance after a sync.",
+  "walletSwapInFlightRowOverdueIntoZec": "This swap hasn't reached a confirmed outcome here yet. Open it to check. Any ZEC it delivers to this wallet shows up in your balance after a sync.",
   "@walletSwapInFlightRowOverdueIntoZec": {
     "description": "The IntoZec arm of the overdue row line (#385 — 'any ZEC coming back' read refund-shaped for a swap whose ZEC leg is the incoming DELIVERY; delivered ZEC never left this wallet's side). Same outcome-neutrality contract as the OutOfZec arm; the money promise covers the ZEC delivery leg only — the foreign deposit's refund, if any, happens provider-side on the source chain. Shares the #386 accepted overclaim documented on the OutOfZec arm (a watchless pre-#368 record's late ZEC is full-rescan-only)."
   },
@@ -2617,15 +2617,15 @@
   "@walletSwapRemoveTitle": {
     "description": "Confirm-dialog title for removing an in-flight swap row (#367)."
   },
-  "walletSwapRemoveBodyInFlight": "This only removes the swap from this list — it doesn't cancel the swap, and this wallet will stop watching for its refund. ZEC refunded later still belongs to this wallet; a full rescan can find it.",
+  "walletSwapRemoveBodyInFlight": "This only removes the swap from this list. It doesn't cancel the swap, and this wallet will stop watching for its refund. ZEC refunded later still belongs to this wallet; a full rescan can find it.",
   "@walletSwapRemoveBodyInFlight": {
     "description": "Confirm-dialog body when the row being removed has NO observed terminal yet, OUT-OF-ZEC arm ONLY since #385 (#367 origin, hedge extended by #382): the watched leg IS this wallet's refund address, so 'stop watching for its refund' and the rescan-recovery claim are true. Removing drops the only re-attach handle AND stops the unresolved-swap watch (the per-sync re-arm keys off this record); a later refund is still recoverable by rescan — never silently lost (the refund address stays registered with the wallet's own engine). The IntoZec/unknown rows use their own bodies — every claim here is FALSE for IntoZec (UX HIGH-1)."
   },
-  "walletSwapRemoveBodyInFlightIntoZec": "This only removes the swap from this list — it doesn't cancel the swap, and this wallet will stop watching for its incoming ZEC. ZEC delivered later still belongs to this wallet; a full rescan can find it. If the swap is refunded instead, the refund goes back in the coin you sent, outside this wallet.",
+  "walletSwapRemoveBodyInFlightIntoZec": "This only removes the swap from this list. It doesn't cancel the swap, and this wallet will stop watching for its incoming ZEC. ZEC delivered later still belongs to this wallet; a full rescan can find it. If the swap is refunded instead, the refund goes back in the coin you sent, outside this wallet.",
   "@walletSwapRemoveBodyInFlightIntoZec": {
     "description": "Confirm-dialog body for removing an UNRESOLVED IntoZec row (#385, UX HIGH-1 — the shared body lied to IntoZec users): the watched leg is the DELIVERY destination (this wallet's own engine-minted address), so the watch/rescan claims are about the incoming ZEC delivery; an IntoZec refund is the user's FOREIGN deposit returned on the source chain — this wallet never sees it and rescanning here can never find it, so the copy says where it happens instead."
   },
-  "walletSwapRemoveBodyInFlightUnknown": "This only removes the swap from this list — it doesn't cancel the swap, and this wallet will stop watching for ZEC still arriving from it. ZEC that arrives later still belongs to this wallet; a full rescan can find it.",
+  "walletSwapRemoveBodyInFlightUnknown": "This only removes the swap from this list. It doesn't cancel the swap, and this wallet will stop watching for ZEC still arriving from it. ZEC that arrives later still belongs to this wallet; a full rescan can find it.",
   "@walletSwapRemoveBodyInFlightUnknown": {
     "description": "Confirm-dialog body for removing an UNRESOLVED row whose direction this build doesn't recognize (forward-compat, #385): makes only the direction-independent claims — a watched leg is always one of this wallet's own engine-registered addresses (so the rescan claim holds), and no refund-location claim is made (it differs per direction)."
   },
@@ -2729,7 +2729,7 @@
   "@walletSwapStatusRefundedBody": {
     "description": "Tracking body for the refunded state when the USER sent the deposit (IntoZec, #367): the refund goes to the user's own refund address on the SOURCE chain — this wallet never sees it, so the body says where to look instead of the old placeless 'your funds were refunded'."
   },
-  "walletSwapStatusRefundedBodyOutOfZec": "The swap didn't complete, so the provider sent your ZEC back to this wallet. It arrives as unshielded funds and shows up in your balance after the wallet next syncs — this can take a little while.",
+  "walletSwapStatusRefundedBodyOutOfZec": "The swap didn't complete, so the provider sent your ZEC back to this wallet. It arrives as unshielded funds and shows up in your balance after the wallet next syncs. This can take a little while.",
   "@walletSwapStatusRefundedBodyOutOfZec": {
     "description": "Tracking body for the refunded state when the WALLET sent the deposit (OutOfZec; #368 replaced the #367 'may not appear yet' interim): the refund address is watched (refund-index registration), viewing this screen re-arms the watch, and since #382 EVERY sync pass re-arms it while the swap is unresolved — so 'shows up in your balance after the wallet next syncs' is mechanical for ANY absence length, not only within 48 h of executing. Keep the timing hedge ('can take a little while') — the provider's refund transaction must mine and a sync pass must run before the balance moves; never promise instant."
   },
@@ -2745,7 +2745,7 @@
   "@walletSwapStatusNotFoundTitle": {
     "description": "Tracking: the SDK's poll policy concluded the provider no longer recognizes this swap (#367 — several consecutive definitive not-found answers; most likely the order expired and was cleaned up provider-side)."
   },
-  "walletSwapStatusNotFoundBody": "The provider no longer has a record of this swap — it most likely expired. If a deposit was made, the provider should refund it to the refund address. The swap stays in your list, and this wallet keeps watching for its ZEC in case it still arrives — you can remove it from the list anytime.",
+  "walletSwapStatusNotFoundBody": "The provider no longer has a record of this swap. It most likely expired. If a deposit was made, the provider should refund it to the refund address. The swap stays in your list, and this wallet keeps watching for its ZEC in case it still arrives. You can remove it from the list anytime.",
   "@walletSwapStatusNotFoundBody": {
     "description": "Tracking body for the not-found terminal (#367; last sentence added by #385, hedge sharpened by #386). Must NOT assert loss: a deposit that landed on an expired order is refunded provider-side to the recorded refund address; 'most likely expired' stays hedged (the provider can no longer tell us anything definitive). Since #385 this card's Done does NOT dismiss the still-unresolved record (MED-1ux — not-found is a heuristic, never pinned, and a silent dismiss voided the watch the overdue row had just promised), so the copy says the swap stays listed + watched and points at the list's Remove (which carries the full disclosure dialog). The watching claim is hedged 'in case it still arrives' (M-1, precision-fixed by #386: 'until it has arrived' PRESUPPOSED an arrival, but this card's own headline case — an expired order whose foreign-coin deposit is refunded provider-side on the source chain — never delivers ZEC here at all); a served leg (money arrived, then shielded/moved) stops the per-pass watch. ACCEPTED OVERCLAIM (#386, documented rather than gated): a pre-#368 upgrade-era record with no recorded watch leg (NULL watch columns, its one-shot backfill window spent) is NOT per-pass watched — its late ZEC is engine-registered and surfaces on a user-initiated full rescan only. That population is upgrade-era-only and shrinking; gating this sentence on watch presence would need a new DTO bit for a corner that retires itself. HEDGED (review M5): 'should refund' — this card's own premise is a GC'd order, the exact case that makes an unconditional refund promise false."
   },
@@ -2765,7 +2765,7 @@
   "@walletSwapTrackingUnavailableBody": {
     "description": "Tracking body when the host has killed swap (§3.5 — funds-safety honest). SINCE #382 UNREFERENCED by the package (both directions render their own honest kill body — the IntoZec/OutOfZec siblings); retained for the #347 l10n review to prune rather than churn 16 locales mid-GA."
   },
-  "walletSwapTrackingUnavailableBodyOutOfZec": "Swap is turned off here, so this swap can't be tracked right now. If it was refunded, the ZEC comes back to this wallet — it shows up in your balance after swap is turned back on and the wallet syncs.",
+  "walletSwapTrackingUnavailableBodyOutOfZec": "Swap is turned off here, so this swap can't be tracked right now. If it was refunded, the ZEC comes back to this wallet. It shows up in your balance after swap is turned back on and the wallet syncs.",
   "@walletSwapTrackingUnavailableBodyOutOfZec": {
     "description": "OutOfZec tracking: the honest killed-swap message (#382 — the OutOfZec mirror of the IntoZec L8 body). Pre-#382 this arm said funds 'settle or refund on the provider's side' — a misdirect once #368 made refunds land at THIS wallet's own address (the provider would truthfully answer 'we already sent it back'). Mechanics: the kill clears the detection watch, but the refund address stays engine-registered and the unresolved-swap re-arm restores the watch on the first sync after swap is re-enabled — so the promise is mechanical, conditioned on swap being turned back on."
   },
@@ -2773,7 +2773,7 @@
   "@walletSwapTrackingError": {
     "description": "Tracking: an establish-time typed failure (the stream can't be opened)."
   },
-  "walletSwapTrackingErrorBody": "We couldn't open tracking for this swap. The swap itself may still be going ahead — any deposited funds settle or refund on the provider's side.",
+  "walletSwapTrackingErrorBody": "We couldn't open tracking for this swap. The swap itself may still be going ahead: any deposited funds settle or refund on the provider's side.",
   "@walletSwapTrackingErrorBody": {
     "description": "Body of the tracking ESTABLISH-failure card (review M1): its own body — the failed-status body ('The swap couldn't be completed') contradicted the title on a money claim; an establish failure says nothing about the swap's outcome and must not read as a failure verdict."
   },
@@ -2817,19 +2817,19 @@
   "@walletSwapFaultDepositFailed": {
     "description": "Form fault: our side couldn't queue the deposit (no ZEC moved; re-quote)."
   },
-  "walletSwapFaultAlreadyInFlight": "A swap is already in progress. You can start a new one after it fully settles or its quote expires — this can take a while.",
+  "walletSwapFaultAlreadyInFlight": "A swap is already in progress. You can start a new one after it fully settles or its quote expires. This can take a while.",
   "@walletSwapFaultAlreadyInFlight": {
     "description": "Form fault: the SDK's one-deposit-in-flight guard refused a second swap while one is still queued/signing/sending/settling. Deliberately does NOT invite a re-quote (re-quoting is the double-deposit door). 'Fully settles … can take a while' is honest about the settlement tail: the guard clears at reorg-final burial (~2 h after the deposit mines) or after quote expiry + tx expiry (review NIT — the earlier copy implied an immediate clear)."
   },
-  "walletSwapFaultRefundUnavailable": "This wallet can't set up a refund address yet — that usually just means the first sync hasn't finished. Wait for the sync to complete, then try again.",
+  "walletSwapFaultRefundUnavailable": "This wallet can't set up a refund address yet. That usually just means the first sync hasn't finished. Wait for the sync to complete, then try again.",
   "@walletSwapFaultRefundUnavailable": {
     "description": "Form fault: our side couldn't mint a fresh refund address (#382 rewrite). The DOMINANT real cause since #368 is a pre-first-sync Sell — the refund mints through the engine, which needs the lazily-provisioned account, and the swap surface is activation-gated — so the copy names the wait-for-sync remedy instead of the pre-#382 bare 'try again' (which looped false hope while lightwalletd was down and the swap provider up). 'Usually' keeps the rare structural tail honest."
   },
-  "walletSwapFaultDestinationUnavailable": "This wallet can't set up a receiving address for this swap yet — that usually just means the first sync hasn't finished. Wait for the sync to complete, then try again.",
+  "walletSwapFaultDestinationUnavailable": "This wallet can't set up a receiving address for this swap yet. That usually just means the first sync hasn't finished. Wait for the sync to complete, then try again.",
   "@walletSwapFaultDestinationUnavailable": {
     "description": "Form fault: our side couldn't mint a fresh swap receiving address (IntoZec — the #382 mirror of walletSwapFaultRefundUnavailable; pre-#382 this kind fell through to the generic could-not-quote). Same pre-first-sync dominant cause, same wait-for-sync remedy. 'Receiving address' means the wallet-side ZEC delivery address, NOT the user's typed destination."
   },
-  "walletSwapFaultExecuteTimeout": "The swap couldn't start in time — the connection may be slow, or the wallet was busy. Get a new quote and try again.",
+  "walletSwapFaultExecuteTimeout": "The swap couldn't start in time. The connection may be slow, or the wallet was busy. Get a new quote and try again.",
   "@walletSwapFaultExecuteTimeout": {
     "description": "IntoZec execute overran the host-side timeout (#367, F5): the cause may be transport OR a local stall (a busy store consuming most of the window), so this HEDGES both — unlike walletSwapFaultConnection, it must not firmly blame the user's connection. Money-safe: an IntoZec execute moves no wallet funds; re-quoting is the remedy."
   },
@@ -2862,7 +2862,7 @@
       }
     }
   },
-  "walletSwapFaultInsufficientCatchingUp": "This swap needs about {needed} ZEC including the network fee, but only {spendable} ZEC is spendable right now. Your balance is still catching up — more may become spendable soon.",
+  "walletSwapFaultInsufficientCatchingUp": "This swap needs about {needed} ZEC including the network fee, but only {spendable} ZEC is spendable right now. Your balance is still catching up, so more may become spendable soon.",
   "@walletSwapFaultInsufficientCatchingUp": {
     "description": "The catching-up variant of walletSwapFaultInsufficient (#367): the wallet is mid catch-up/rescan, so the spendable figure may be partial — the closing hedge stops the refusal reading as a final verdict over a partial figure. Keep the hedge conditional ('may'), never a promise.",
     "placeholders": {
@@ -2906,7 +2906,7 @@
   "@walletSwapRefundHint": {
     "description": "IntoZec form: the refund address field hint."
   },
-  "walletSwapRefundHelper": "On the chain you're sending from — not a Zcash address.",
+  "walletSwapRefundHelper": "On the chain you're sending from. Not a Zcash address.",
   "@walletSwapRefundHelper": {
     "description": "IntoZec form: helper text clarifying the refund address is a foreign-chain address."
   },
@@ -2919,7 +2919,7 @@
       }
     }
   },
-  "walletSwapRefundHelperChain": "A {chain} address — where your coins return if the swap fails. Not a Zcash address.",
+  "walletSwapRefundHelperChain": "A {chain} address, where your coins return if the swap fails. Not a Zcash address.",
   "@walletSwapRefundHelperChain": {
     "description": "IntoZec form: chain-aware helper for the refund field once a source asset is picked.",
     "placeholders": {
@@ -2932,7 +2932,7 @@
   "@walletSwapRefundInfoTitle": {
     "description": "IntoZec form: title of the refund-address explainer dialog."
   },
-  "walletSwapRefundInfoBody": "If the swap can't complete, the provider sends your coins back to this address on the chain you paid from. Enter an address you control — the wallet can't check a foreign address for you, so verify it carefully.",
+  "walletSwapRefundInfoBody": "If the swap can't complete, the provider sends your coins back to this address on the chain you paid from. Enter an address you control. The wallet can't check a foreign address for you, so verify it carefully.",
   "@walletSwapRefundInfoBody": {
     "description": "IntoZec form: body of the refund-address explainer dialog (§3.3b D6)."
   },
@@ -3013,7 +3013,7 @@
   "@walletSwapPickerTitleReceive": {
     "description": "Token picker sheet title for the OutOfZec (Sell) direction — the TARGET asset the user receives (the shared picker is direction-neutral; the caller supplies the framing)."
   },
-  "walletSwapPickerStale": "Couldn't refresh the asset list — showing the last known list.",
+  "walletSwapPickerStale": "Couldn't refresh the asset list. Showing the last known list.",
   "@walletSwapPickerStale": {
     "description": "Token picker: the L6 serve-stale banner (the live fetch failed; cached data shown)."
   },
@@ -3063,7 +3063,7 @@
   "@walletSwapSlippageCustomLabel": {
     "description": "Swap form: the custom-slippage percent field label."
   },
-  "walletSwapSlippageMayFail": "Very low — the swap may fail if the price moves.",
+  "walletSwapSlippageMayFail": "Very low. The swap may fail if the price moves.",
   "@walletSwapSlippageMayFail": {
     "description": "Swap form: advisory for a too-tight slippage tolerance."
   },
@@ -3071,15 +3071,15 @@
   "@walletSwapSlippageNormal": {
     "description": "Swap form: advisory for a normal slippage tolerance."
   },
-  "walletSwapSlippageRisky": "High — you could receive noticeably less than quoted.",
+  "walletSwapSlippageRisky": "High. You could receive noticeably less than quoted.",
   "@walletSwapSlippageRisky": {
     "description": "Swap form: advisory for a wide slippage tolerance."
   },
-  "walletSwapSlippageTooHigh": "Too high — the swap will be rejected. Lower it to 10% or less.",
+  "walletSwapSlippageTooHigh": "Too high. The swap will be rejected. Lower it to 10% or less.",
   "@walletSwapSlippageTooHigh": {
     "description": "Swap form: advisory for a slippage beyond the SDK hard ceiling."
   },
-  "walletSwapIntoZecFloorNote": "You'll receive at least {zec} ZEC — your {slippage}% slippage floor. The final amount won't drop below this.",
+  "walletSwapIntoZecFloorNote": "You'll receive at least {zec} ZEC, your {slippage}% slippage floor. The final amount won't drop below this.",
   "@walletSwapIntoZecFloorNote": {
     "description": "IntoZec review: the honest guaranteed-minimum / max-cost line (§3.3b L8).",
     "placeholders": {
@@ -3095,7 +3095,7 @@
   "@walletSwapIntoZecShieldTitle": {
     "description": "IntoZec review: the positive end-state card title."
   },
-  "walletSwapIntoZecEndsShielded": "Until you shield it — one tap, nudged on arrival — the received amount is briefly public and visible on-chain. A small delivery may stay public until it accumulates.",
+  "walletSwapIntoZecEndsShielded": "Until you shield it (one tap, nudged on arrival), the received amount is briefly public and visible on-chain. A small delivery may stay public until it accumulates.",
   "@walletSwapIntoZecEndsShielded": {
     "description": "IntoZec review: the pinned ends-shielded honesty copy (§3.3b D1)."
   },
@@ -3103,7 +3103,7 @@
   "@walletSwapRefundVerifyTitle": {
     "description": "IntoZec review: the refund-address verification step title (§3.3b D6)."
   },
-  "walletSwapRefundVerifyBody": "Check it character by character — this is where your coins return if the swap fails. The wallet can't verify a foreign address for you.",
+  "walletSwapRefundVerifyBody": "Check it character by character: this is where your coins return if the swap fails. The wallet can't verify a foreign address for you.",
   "@walletSwapRefundVerifyBody": {
     "description": "IntoZec review: the refund-address verification instruction."
   },
@@ -3115,7 +3115,7 @@
   "@walletSwapPayoutVerifyTitle": {
     "description": "OutOfZec review: the payout-address verification step title — the user's own foreign address where the swapped asset is sent."
   },
-  "walletSwapPayoutVerifyBody": "Check it character by character — this is where you'll receive {asset}. The wallet can't verify a foreign address for you.",
+  "walletSwapPayoutVerifyBody": "Check it character by character: this is where you'll receive {asset}. The wallet can't verify a foreign address for you.",
   "@walletSwapPayoutVerifyBody": {
     "description": "OutOfZec review: the payout-address verification instruction. {asset} is the asset label, e.g. \"USDC on Ethereum\".",
     "placeholders": {
@@ -3172,7 +3172,7 @@
       }
     }
   },
-  "walletSwapDepositExpired": "This deposit window has closed. Don't send funds now — start a new swap. If you already sent, the provider should refund to your refund address.",
+  "walletSwapDepositExpired": "This deposit window has closed. Don't send funds now. Start a new swap. If you already sent, the provider should refund to your refund address.",
   "@walletSwapDepositExpired": {
     "description": "IntoZec deposit screen: the expired-window message. HEDGED (review MED): 'should refund', never 'will' — a below-minimum/dust late deposit or a GC'd order can make an unconditional promise false on a money screen."
   },
@@ -3196,7 +3196,7 @@
   "@walletSwapDepositMemoRequired": {
     "description": "IntoZec deposit screen: heading of the required-memo section (some source chains, e.g. XRP/Cosmos, require a destination tag or memo on the deposit)."
   },
-  "walletSwapDepositMemoWarning": "You MUST include this exact memo with your deposit. Sending without it — or with the wrong memo — can permanently lose your funds.",
+  "walletSwapDepositMemoWarning": "You MUST include this exact memo with your deposit. Sending without it, or with the wrong memo, can permanently lose your funds.",
   "@walletSwapDepositMemoWarning": {
     "description": "IntoZec deposit screen: the funds-loss warning above the required deposit memo."
   },
@@ -3220,11 +3220,11 @@
   "@walletSwapDepositBackTitle": {
     "description": "IntoZec deposit screen: back-press guard dialog title."
   },
-  "walletSwapDepositBackBody": "This won't cancel your swap — it continues in the background. But you'll need the deposit address to pay, so copy it first if you haven't.",
+  "walletSwapDepositBackBody": "This won't cancel your swap; it continues in the background. But you'll need the deposit address to pay, so copy it first if you haven't.",
   "@walletSwapDepositBackBody": {
     "description": "IntoZec deposit screen: back-press guard dialog body (the in-flight reassurance)."
   },
-  "walletSwapDepositBackBodyExpired": "This won't cancel your swap — it continues in the background. The deposit window has closed, so don't send funds to the deposit address now. If you already sent, the provider should refund to your refund address.",
+  "walletSwapDepositBackBodyExpired": "This won't cancel your swap; it continues in the background. The deposit window has closed, so don't send funds to the deposit address now. If you already sent, the provider should refund to your refund address.",
   "@walletSwapDepositBackBodyExpired": {
     "description": "Leave-screen dialog body ONCE THE DEPOSIT WINDOW HAS EXPIRED (#364 F11): the live-window body invites copying the address 'to pay', which post-expiry is exactly what the user must not do — this variant warns off sending instead. HEDGED (review MED): 'should refund', never 'will' — same rule as walletSwapDepositExpired."
   },
@@ -3264,7 +3264,7 @@
   "@walletReceivePreparing": {
     "description": "Receive screen: honest loading headline while the address derivation is in flight (replaces a bare spinner)."
   },
-  "walletReceivePreparingHint": "Your wallet prepares this address on your device — it can take a moment if the wallet is busy with other work.",
+  "walletReceivePreparingHint": "Your wallet prepares this address on your device. It can take a moment if the wallet is busy with other work.",
   "@walletReceivePreparingHint": {
     "description": "Receive screen: reassuring sub-line under the loading headline. CAUSE-HONEST since #385 (E2E-1): the derivation is LOCAL — the old 'catches up with the network' blamed the network on a fully-synced wallet; the honest cause is the derive queueing behind other wallet work (a heavy sync being one example, not the only one). Avoids 'first sync' since a restore also hits this on a fresh device."
   },
@@ -3300,7 +3300,7 @@
   "@walletReceiveFreshAddress": {
     "description": "Receive screen (shielded tab): button that mints a fresh diversified address — a new unlinkable address for a contact or invoice that still pays into this wallet."
   },
-  "walletReceiveFreshCaption": "Fresh address — can't be linked to your other addresses. Payments to it arrive in this wallet, and your earlier addresses keep working. It won't be shown here again — copy it now.",
+  "walletReceiveFreshCaption": "Fresh address: can't be linked to your other addresses. Payments to it arrive in this wallet, and your earlier addresses keep working. It won't be shown here again, so copy it now.",
   "@walletReceiveFreshCaption": {
     "description": "Receive screen: note shown with a freshly minted diversified address. Must convey all four facts: unlinkable; funds arrive in this wallet; earlier addresses stay valid; the display is one-time (copy before leaving)."
   },
@@ -3324,7 +3324,7 @@
   "@walletReceiveRequestAmountLabel": {
     "description": "Receive screen: label of the requested-amount field, in ZEC (S13, maintainer)."
   },
-  "walletReceiveFreshCopyNow": "It won't be shown here again — copy it now.",
+  "walletReceiveFreshCopyNow": "It won't be shown here again, so copy it now.",
   "@walletReceiveFreshCopyNow": {
     "description": "Receive screen: the fresh-address note's on-screen state, the last sentence of walletReceiveFreshCaption verbatim; the whole caption moved behind the note's (i) (S13 §1.7: the 'copy it now' state stays on screen)."
   },
@@ -3392,7 +3392,7 @@
   "@securityDeleteWalletSubtitle": {
     "description": "Security screen: subtitle under the delete-wallet button."
   },
-  "securityDeleteWalletSubtitleWatchOnly": "Delete this wallet and its key from this device. It holds no spending keys, so there is nothing to back up — re-add it anytime with its viewing key.",
+  "securityDeleteWalletSubtitleWatchOnly": "Delete this wallet and its key from this device. It holds no spending keys, so there is nothing to back up. Re-add it anytime with its viewing key.",
   "@securityDeleteWalletSubtitleWatchOnly": {
     "description": "Security screen delete subtitle for a WATCH-ONLY wallet (#397 §3.7 D5): it has no recovery phrase, so the copy must not claim 'restorable from your recovery phrase' — it re-imports from its viewing key instead."
   },
@@ -3400,11 +3400,11 @@
   "@securityDeleteDialogTitle": {
     "description": "Delete-wallet confirmation dialog: title."
   },
-  "securityDeleteDialogBody": "This removes the wallet and its key from this device. Make sure you've backed up your recovery phrase — it is the ONLY way to restore your funds.",
+  "securityDeleteDialogBody": "This removes the wallet and its key from this device. Make sure you've backed up your recovery phrase: it is the ONLY way to restore your funds.",
   "@securityDeleteDialogBody": {
     "description": "Delete-wallet confirmation dialog: body warning."
   },
-  "securityDeleteDialogBodyWatchOnly": "This removes the wallet and its key from this device. It holds no spending keys, so nothing needs backing up — you can re-add it later with its viewing key.",
+  "securityDeleteDialogBodyWatchOnly": "This removes the wallet and its key from this device. It holds no spending keys, so nothing needs backing up. You can re-add it later with its viewing key.",
   "@securityDeleteDialogBodyWatchOnly": {
     "description": "Delete-wallet confirmation dialog body for a WATCH-ONLY wallet (#397 §3.7 D5): no recovery phrase, so the copy must not warn about backing one up — it re-imports from its viewing key."
   },
@@ -3416,11 +3416,11 @@
   "@securityDeleteDialogCancel": {
     "description": "Delete-wallet confirmation dialog: the cancel action."
   },
-  "securityDeleteFailedSnack": "Couldn't delete the wallet — your wallet is unchanged. Try again.",
+  "securityDeleteFailedSnack": "Couldn't delete the wallet. Your wallet is unchanged. Try again.",
   "@securityDeleteFailedSnack": {
     "description": "Security screen: snackbar shown when a delete fault recovered the wallet (no data lost)."
   },
-  "securityDeleteRefusedBusySnack": "Finish the server switch first — it completes or stops within {seconds} seconds. Then try deleting the wallet again.",
+  "securityDeleteRefusedBusySnack": "Finish the server switch first. It completes or stops within {seconds} seconds. Then try deleting the wallet again.",
   "@securityDeleteRefusedBusySnack": {
     "description": "Security screen: snackbar shown when a delete is REFUSED because a sync-server switch is still in flight (S2 M01 — a delete never races a switch). Names the wait: {seconds} is the switch timeout, after which a delete is accepted again.",
     "placeholders": {
@@ -3434,7 +3434,7 @@
     "description": "Heading above the parked-sends section: EVERY queued send that has no on-chain transaction yet and so doesn't appear in the activity list — one-time-address (TEX) sends awaiting their window AND plainly-queued offline sends (#331). The copy is deliberately shape-agnostic; keep it honest for both."
   },
   "walletParkedSubtitle": "These payments haven't been sent yet. Their amounts are still part of your balance.",
-  "walletParkedSubtitlePreparing": "These payments haven't been sent yet. Their amounts are still part of your balance — except any your wallet is currently sending, which may already be set aside.",
+  "walletParkedSubtitlePreparing": "These payments haven't been sent yet. Their amounts are still part of your balance, except any your wallet is currently sending, which may already be set aside.",
   "@walletParkedSubtitlePreparing": {
     "description": "The parked-sends sub-heading when AT LEAST ONE row is mid-signature (#401 R2a). The plain sibling asserts the earmark unconditionally — 'their amounts are still part of your balance' — and that is FALSE for a claimed row: past the engine's create the notes are already locally spent, so the amount has left the spendable set. THE OPENER MUST STAY NEUTRAL (#407 R6 reverted #401 R8a's change to it): this heading renders over the WHOLE section whenever ANY row is sending, and that list may also hold PAUSED rows that never send on their own — 'haven't finished sending' told those users progress was underway and invited them to WAIT instead of tapping Send now, the abandoned-funds harm the paused copy exists to prevent. The progress claim belongs in the except-clause, scoped to the rows it is true of."
   },
@@ -3445,19 +3445,19 @@
   "@walletParkedCancel": {
     "description": "Per-row button to cancel (discard) a parked send. The safe counter-affordance — never a re-send."
   },
-  "walletParkedPausedHint": "Paused — this payment won't send on its own. Your funds are safe. Send it now, or cancel it.",
+  "walletParkedPausedHint": "Paused. This payment won't send on its own. Your funds are safe. Send it now, or cancel it.",
   "@walletParkedPausedHint": {
     "description": "Hint line under a PAUSED parked-send row (#315): the wallet stopped auto-retrying (each retry of a one-time-address send permanently uses up one of a small number of address slots). Must state (a) it will NOT send by itself, (b) funds are safe, (c) the two actions THAT ARE ON SCREEN. #400 R3: the old text said 'Retry it or cancel it' and rendered directly above a button labelled 'Send now' — since FR-23-b that one button both re-arms the row AND signs it, and the separate Retry button no longer exists. Name the visible buttons verbatim (walletParkedSendNow, walletParkedCancel). Never 'will send when ready'."
   },
   "walletParkedRetryStale": "This payment isn't waiting anymore. Check your pending payments and activity.",
-  "walletParkedAlreadyInProgress": "This payment is no longer waiting — your wallet may already be sending it. Check Saved & pending and your activity.",
+  "walletParkedAlreadyInProgress": "This payment is no longer waiting; your wallet may already be sending it. Check Saved & pending and your activity.",
   "@walletParkedAlreadyInProgress": {
     "description": "The notFound outcome of the FR-23-b authorize verb (#401 R2b), split off from walletParkedRetryStale. `notFound` means the row is no longer QUEUED — which is EITHER gone (cancelled, completed) OR claimed by the background drain that won the race. In the claimed case the previous copy ('isn't waiting anymore') contradicted the screen itself: the same payment re-renders as PREPARING two lines above, so the user was told a visible row does not exist. The expired outcome keeps walletParkedRetryStale, where 'isn't waiting anymore' is exactly true (the row was deleted). Hedged with 'may' because the surface cannot tell the two apart; points at the two surfaces that can. NEVER invites a re-send — the funds are committed either way and a second send would pay twice."
   },
   "@walletParkedRetryStale": {
     "description": "Snackbar when retry returned false (the row is gone / began sending / changed). Mirrors the cancel-false contract: never invite a re-send; point at the surfaces."
   },
-  "walletReclaimExplainer": "One-time-address sends are stuck. You can reopen them — it moves a small amount between your own addresses and returns it.",
+  "walletReclaimExplainer": "One-time-address sends are stuck. You can reopen them: it moves a small amount between your own addresses and returns it.",
   "@walletReclaimExplainer": {
     "description": "#315 slice 2: the line above the 'Reopen sending' button, shown under the parked list when a send is paused. Explains that reopening moves a small amount (your own, returned) — never a fee-only framing that hides the round-trip."
   },
@@ -3493,7 +3493,7 @@
   "@walletReclaimNothing": {
     "description": "Snackbar when the reclaim found no abandoned reservation to reclaim (ReclaimOutcome.NothingToReclaim) — the window is transient / already clear. No money moved."
   },
-  "walletReclaimNotBroadcast": "Couldn't confirm it reached the network. It may still go through — wait a moment before trying again.",
+  "walletReclaimNotBroadcast": "Couldn't confirm it reached the network. It may still go through, so wait a moment before trying again.",
   "@walletReclaimNotBroadcast": {
     "description": "Snackbar when the reclaim mint's broadcast was not acknowledged (ReclaimOutcome.NotBroadcast). Money-safe, but do NOT claim 'nothing was moved': a lost acknowledgement can mean the mint actually landed. Honest about that ambiguity and paces the retry so a rapid re-tap can't double-mint (an extra fee). The principal always returns via the sweep."
   },
@@ -3525,7 +3525,7 @@
   "@walletParkedCancelConfirmTitle": {
     "description": "Title of the confirm dialog before discarding a parked send."
   },
-  "walletParkedCancelConfirmBody": "This discards the saved payment. It hasn't been sent, so nothing leaves your wallet — but this can't be undone.",
+  "walletParkedCancelConfirmBody": "This discards the saved payment. It hasn't been sent, so nothing leaves your wallet, but this can't be undone.",
   "@walletParkedCancelConfirmBody": {
     "description": "Body of the cancel-parked confirm dialog. Reassures that a queued (not-yet-sent) send moves no funds, while flagging the action is irreversible."
   },
@@ -3541,7 +3541,7 @@
   "@walletParkedCancelDone": {
     "description": "Snackbar after a parked send was successfully cancelled."
   },
-  "walletParkedCancelAlreadySending": "This payment may already be on its way — check your activity.",
+  "walletParkedCancelAlreadySending": "This payment may already be on its way. Check your activity.",
   "@walletParkedCancelAlreadySending": {
     "description": "Snackbar when cancel returned false. The SDK can't yet distinguish 'already gone' from 'began sending', so the copy is hedged ('may') — honest in BOTH cases. NEVER present as cancelled; never invite a re-send — direct the user to the activity list (double-pay safety)."
   },
@@ -3582,7 +3582,7 @@
       }
     }
   },
-  "walletRecoverDonePartial": "Recovering {amount} — some funds still need another try.",
+  "walletRecoverDonePartial": "Recovering {amount}. Some funds still need another try.",
   "@walletRecoverDonePartial": {
     "description": "Snackbar after recovery accepted SOME funds but had per-address faults or hit the per-run cap (swept > 0 AND (failed > 0 OR truncated > 0)). Reports the provisional recovered amount AND honestly flags that work remains — never hides the remainder. amount is pre-formatted.",
     "placeholders": {
@@ -3591,8 +3591,8 @@
       }
     }
   },
-  "walletRecoverRetry": "Some funds need another try — run recovery again.",
-  "walletRecoverTruncated": "Not every one-time address was checked yet — run it again to check the rest.",
+  "walletRecoverRetry": "Some funds need another try. Run recovery again.",
+  "walletRecoverTruncated": "Not every one-time address was checked yet. Run it again to check the rest.",
   "@walletRecoverTruncated": {
     "description": "Sweep outcome when the per-invocation cap left addresses UNCHECKED and nothing was swept or failed — honest 'incomplete check', never a claim that funds exist (distinct from walletRecoverRetry, which is for per-address faults)."
   },
@@ -3655,11 +3655,11 @@
       }
     }
   },
-  "walletParkedPreparingHint": "Your wallet is getting this payment ready — its amount may already be set aside. Your funds are safe. If it doesn't finish, it returns to the list on its own.",
+  "walletParkedPreparingHint": "Your wallet is getting this payment ready, and its amount may already be set aside. Your funds are safe. If it doesn't finish, it returns to the list on its own.",
   "@walletParkedPreparingHint": {
     "description": "Hint line under a MID-SIGNATURE parked row (#400 R2) when a sync pass WILL run (`walletSyncPassesRunProvider` — #407 R10d corrected this line, which still said 'the host's sync policy is ON' after #401 R5 / #403 R4 re-keyed the site onto the drive-aware SSOT; a FAILED sync start reads policy-ON and runs no passes). Must state (a) work is in progress, (b) the amount may ALREADY be out of the spendable balance — unlike every other row in this section, whose amount is an earmark over the balance, this row can be past the point where the wallet committed the transaction locally and marked its notes spent, so the section's 'their amounts are still part of your balance' is not true of it — (c) funds are safe, (d) it self-recovers: the wallet re-queues an unfinished claim on its next completed sync pass, so the user has nothing to do and must NOT re-enter the payment. Deliberately unspecific about WHEN. Normally NO action is offered on this row (every verb that could act on it requires a still-queued row), so the copy must not name one — with ONE exception (#403 R9e, correcting a claim this file stated absolutely): while the user's OWN authorization bracket is what claimed the row, the section keeps rendering its spinnered Send now, because deleting the cue mid-proof is the dead-app shape the cue exists to prevent. When no pass will run — host policy off OR a failed start — use walletParkedPreparingHintSyncPaused."
   },
-  "walletParkedPreparingHintSyncPaused": "Your wallet is getting this payment ready — its amount may already be set aside. Your funds are safe, but it can only finish once your wallet is syncing again.",
+  "walletParkedPreparingHintSyncPaused": "Your wallet is getting this payment ready, and its amount may already be set aside. Your funds are safe, but it can only finish once your wallet is syncing again.",
   "@walletParkedPreparingHintSyncPaused": {
     "description": "The MID-SIGNATURE row's hint when NO background sync pass will run (#400 R2, re-keyed by #401 R5). Its sibling promises the row 'returns to the list on its own' — true only where sync passes happen, because that self-recovery IS a sync pass. Without passes the row sits there indefinitely and a user told to wait for a self-heal that cannot come re-enters the payment: the double pay this whole section exists to prevent. Renamed from ...SyncOff because it is keyed on the sync DRIVE, not the host policy: a FAILED sync start has the same consequence and 'turn syncing back on' would be the wrong instruction there — so the promise is replaced by a cause-agnostic condition and the screen's own notice carries the remedy. Keep the same first two clauses as the sibling (work in progress; the amount may already be set aside; funds safe). Never phrase it as a failure — nothing failed."
   },
@@ -3707,7 +3707,7 @@
   "@walletParkedAuthorizeStillWaiting": {
     "description": "Snackbar when the authorization signed NOTHING and the payment stays saved (not enough spendable balance at this moment, a full one-time-address window, or the wallet's own background pass claimed the row first). MONEY-CRITICAL COPY RULE: this is NOT a failure — never translate it as one. A user who believes the payment failed re-enters it and BOTH send: a double pay. Deliberately promises no retry timing (background retries ride sync passes, which a host may have turned off). Only for a row that was NOT paused — see walletParkedAuthorizeRearmed."
   },
-  "walletParkedAuthorizeRearmed": "Not ready to send yet. Your payment is saved and no longer paused — try Send now again later, or cancel it.",
+  "walletParkedAuthorizeRearmed": "Not ready to send yet. Your payment is saved and no longer paused. Try Send now again later, or cancel it.",
   "@walletParkedAuthorizeRearmed": {
     "description": "The same not-ready outcome as walletParkedAuthorizeStillWaiting, but for a row that was PAUSED when the user tapped (#400 R5). The authorization re-arms a paused row's retry budget before signing, so even when nothing is signed the row DID change: it is no longer paused, its icon and label change, the paused hint disappears and the reopen-sending prompt may vanish with it. Telling that user their payment is 'unchanged' while the row visibly re-shapes reads as a bug and is simply untrue — so state the re-arm, which is what actually happened. THE SIXTH QUEUE-DRAIN STRING (#403 R3): the previous ending, 'it will be tried again', is the same automatic-drain promise #401 R1(a) swept from five siblings and missed here. A re-armed row is a QUEUED intent, so a background retry needs a sync pass AND a signing credential, and at host custody the unattended pass holds neither. It is the ONLY member of that family a user reaches BY TAPPING THE MONEY BUTTON, and it lands on top of a section whose own note may say these do not send on their own — a promise and its negation four lines apart about one payment. Same rule as walletSendQueuedBody / walletSendQueueHint: promise NO schedule, name the two real actions. Both are on screen by construction here (the re-arm leaves the row Queued, so it renders Send now and Cancel). 'Send now' must match walletParkedSendNow verbatim."
   },
@@ -3723,7 +3723,7 @@
   "@walletTransparentFundsTitle": {
     "description": "Title of the transparent-funds policy sheet."
   },
-  "walletTransparentFundsIntro": "Public funds are publicly visible on the blockchain — the amount, the addresses, and the history of the coins.",
+  "walletTransparentFundsIntro": "Public funds are publicly visible on the blockchain: the amount, the addresses, and the history of the coins.",
   "@walletTransparentFundsIntro": {
     "description": "Plain-factual intro of the transparent-funds sheet: the visibility facts ONLY. The auto-shield claim is the separate CONDITIONAL sentence (walletTransparentFundsAutoOn/Off) so the sheet never states automation that is switched off."
   },
@@ -3756,15 +3756,15 @@
   "@walletSettingsSaveFailed": {
     "description": "Snackbar shown when persisting a settings toggle failed; the switch stays at its saved value."
   },
-  "walletAutoShieldIncomplete": "Automatic shielding didn’t complete — these funds are still publicly visible. You can shield them now.",
+  "walletAutoShieldIncomplete": "Automatic shielding didn’t complete, so these funds are still publicly visible. You can shield them now.",
   "@walletAutoShieldIncomplete": {
     "description": "Balance-card cue under the transparent line when the auto-shield loop failed or was denied; the manual Shield button sits right below it."
   },
-  "walletSendPrivacyShielded": "Shielded payment — the amount and recipient stay private on-chain.",
+  "walletSendPrivacyShielded": "Shielded payment. The amount and recipient stay private on-chain.",
   "@walletSendPrivacyShielded": {
     "description": "Send-review visibility statement for a fully shielded payment."
   },
-  "walletSendPrivacyTransparent": "Public payment — the amount and addresses are visible on the blockchain.",
+  "walletSendPrivacyTransparent": "Public payment. The amount and addresses are visible on the blockchain.",
   "@walletSendPrivacyTransparent": {
     "description": "Send-review visibility statement when any output is transparent; compact restatement of the de-shield warning."
   },
@@ -3785,7 +3785,7 @@
       }
     }
   },
-  "walletTransparentFundsAutoOff": "Automatic shielding is off — public funds stay publicly visible until you shield them.",
+  "walletTransparentFundsAutoOff": "Automatic shielding is off. Public funds stay publicly visible until you shield them.",
   "@walletTransparentFundsAutoOff": {
     "description": "The sheet’s conditional automation sentence while auto-shield is OFF (shown even when the expert gate hides the switch, so a persisted OFF is never invisible)."
   },
@@ -3793,7 +3793,7 @@
   "@walletMoveAutoShieldNote": {
     "description": "Orange note on the move-to-transparent confirm when auto-shield is ON — without it the loop silently reverts the deliberate unshield and burns a second fee."
   },
-  "walletMoveBelowFloorNote": "After this move your public balance will be {amount} ZEC — under the {floor} ZEC needed to shield it back. It stays public until more arrives.",
+  "walletMoveBelowFloorNote": "After this move your public balance will be {amount} ZEC, under the {floor} ZEC needed to shield it back. It stays public until more arrives.",
   "@walletMoveBelowFloorNote": {
     "description": "Orange note on the move-to-transparent review when the move leaves the PUBLIC balance (what is already public at the shield source plus this move) under the core's shield floor (stage S14, maintainer copy): no Shield, manual or automatic, can take it until more arrives. Replaces the auto-shield note in that case.",
     "placeholders": {
@@ -3813,7 +3813,7 @@
   "@walletTxDetailVisibility": {
     "description": "Label of the tx-detail row stating the transparency fact (value: walletActivityPublicBadge). Rendered only for transactions with a publicly visible output."
   },
-  "walletTransparentFundsAutoDenied": "Automatic shielding is paused for this session — it wasn’t approved. You can still shield manually.",
+  "walletTransparentFundsAutoDenied": "Automatic shielding is paused for this session because it wasn’t approved. You can still shield manually.",
   "@walletTransparentFundsAutoDenied": {
     "description": "The sheet’s automation sentence while the host authorizer has declined automatic shielding for this session (the switch is ON but the loop is paused). Plain-factual; the manual Shield button on the balance card remains the recovery."
   },
@@ -3829,7 +3829,7 @@
   "@walletDeepScanTitle": {
     "description": "#390 deep-scan sheet title."
   },
-  "walletDeepScanBody": "If you restored this wallet and it once used swaps a lot, money from its oldest swaps can take an extra step to find. This checks for it — anything found appears in your balance as your wallet syncs.",
+  "walletDeepScanBody": "If you restored this wallet and it once used swaps a lot, money from its oldest swaps can take an extra step to find. This checks for it. Anything found appears in your balance as your wallet syncs.",
   "@walletDeepScanBody": {
     "description": "#390 deep-scan sheet explanation. Honest: it CHECKS (does not itself find); results appear via the normal balance as sync proceeds."
   },
@@ -3837,7 +3837,7 @@
   "@walletDeepScanCoverage": {
     "description": "#390 sheet coverage line when a range is fully checked (covered > 0, pending == 0). NO count — the address index is not a swap tally, so any number would be false (B2). Offers going deeper."
   },
-  "walletDeepScanCoveragePending": "Still checking the current range — anything found appears in your balance. This can take a little while.",
+  "walletDeepScanCoveragePending": "Still checking the current range. Anything found appears in your balance. This can take a little while.",
   "@walletDeepScanCoveragePending": {
     "description": "#390 sheet coverage line while the current range is still registering + polling (pending > 0). Sync-NEUTRAL — no ‘while your wallet syncs’ claim, which is false when offline/stalled (B3)."
   },
@@ -3869,15 +3869,15 @@
   "@walletDeepScanRescanBusy": {
     "description": "#390 sheet note while a rescan is running/rebuilding — the deep scan and a rescan both re-poll the transparent set, so they are mutually exclusive."
   },
-  "walletDeepScanRan": "Checking older swap addresses — anything found will appear in your balance.",
+  "walletDeepScanRan": "Checking older swap addresses. Anything found will appear in your balance.",
   "@walletDeepScanRan": {
     "description": "#390 inline confirmation after an accepted scan. Honest: it does NOT claim ‘found X’ — money surfaces via the normal balance. Sync-NEUTRAL (no ‘as your wallet syncs’, false when offline; B3)."
   },
-  "walletDeepScanFailed": "Couldn’t start the check. Nothing changed — try again.",
+  "walletDeepScanFailed": "Couldn’t start the check. Nothing changed. Try again.",
   "@walletDeepScanFailed": {
     "description": "#390 snackbar when the scan could not start (a transient fault). Reassures nothing changed."
   },
-  "walletDeepScanSlow": "This is taking longer than usual. If your older swap addresses were checked, anything found appears in your balance — check back shortly.",
+  "walletDeepScanSlow": "This is taking longer than usual. If your older swap addresses were checked, anything found appears in your balance. Check back shortly.",
   "@walletDeepScanSlow": {
     "description": "#390 rel-H1 inline message when the check exceeds the FFI wedge timeout. The widen MAY have committed (a durable local write), so this must NOT claim 'nothing changed' — it's neutral and says money appears in the balance if it did."
   },
@@ -3885,7 +3885,7 @@
   "@walletDeepScanRefusedDisabled": {
     "description": "#390 snackbar for the swapDisabled refusal (a host kill switch stopped the polling the check depends on)."
   },
-  "walletDeepScanRefusedOutstanding": "Still checking the last range — this can take up to a couple of days, but usually much less. It finishes on its own; check again later.",
+  "walletDeepScanRefusedOutstanding": "Still checking the last range. This can take up to a couple of days, but usually much less. It finishes on its own; check again later.",
   "@walletDeepScanRefusedOutstanding": {
     "description": "#390 inline message for the checkOutstanding refusal (a prior check is still registering/polling — at most one per ~48h settlement window). B4: names the real horizon (‘up to a couple of days’) instead of ‘a little while’."
   },
@@ -3893,11 +3893,11 @@
   "@walletDeepScanTorUnknownHint": {
     "description": "#390 B5 — softer privacy nudge shown when the connection/transport state hasn’t loaded yet (Tor status unknown), so the privacy hint is never silently dropped. Distinct from walletDeepScanTorHint (a CONFIRMED Tor fallback)."
   },
-  "walletDeepScanBannerChecking": "Still checking your older swap addresses — anything found appears in your balance.",
+  "walletDeepScanBannerChecking": "Still checking your older swap addresses. Anything found appears in your balance.",
   "@walletDeepScanBannerChecking": {
     "description": "#390 C1 — a dismissible banner on the wallet home while a deep scan the user ran is still surfacing money (pending > 0). Sync-NEUTRAL wording (‘as it’s found’, not ‘as your wallet syncs’) so it stays honest while offline; survives closing the sheet."
   },
-  "walletRescanSwapPointer": "Looking for money from an old swap? A rescan won’t find that — use “Check older swap addresses” instead.",
+  "walletRescanSwapPointer": "Looking for money from an old swap? A rescan won’t find that. Use “Check older swap addresses” instead.",
   "@walletRescanSwapPointer": {
     "description": "#390 cross-pointer on the Rescan sheet: a rescan re-scans compact blocks (no transparent outputs) and keeps the restore ceiling, so it cannot surface old-swap funds; point the affected user at the deep scan."
   },
@@ -3943,7 +3943,7 @@
   "@walletTorHostDirect": {
     "description": "Transport chip: the host app's registered dialer declared its path EXPOSED (ADR-0547 exposure = exposed: a plain direct connection, or a forward proxy that passes the client address) — not private, the server sees the IP, whatever the host named it and whatever the isolation says. Neutral tone, paired with walletTransportExplainDirect."
   },
-  "walletSyncServerFallbackRefusedByTransport": "Your saved server uses an unencrypted address, which your app's private path cannot carry — using {host}.",
+  "walletSyncServerFallbackRefusedByTransport": "Your saved server uses an unencrypted address, which your app's private path cannot carry. Using {host}.",
   "@walletSyncServerFallbackRefusedByTransport": {
     "description": "Banner for SyncServerFallback.choiceRefusedByTransport (FR-29 E12): the remembered CUSTOM server is an unencrypted http:// address, which only the SDK's own direct connection may carry — under the app's private path the default is in use, the choice is kept. host = the server now in use.",
     "placeholders": {
@@ -4041,7 +4041,7 @@
   "@walletMoveUnknownBody": {
     "description": "Body for walletMoveUnknownTitle. Must never say whether funds moved. Points at Activity, where the move's real state is shown."
   },
-  "walletTxExplainRetryingExpired": "This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don't send it again yourself.",
+  "walletTxExplainRetryingExpired": "This attempt expired before the network confirmed it. Your wallet will send the payment again by itself, so don't send it again yourself.",
   "@walletTxExplainRetryingExpired": {
     "description": "Detail-sheet explanation for a wallet-created row that reads Expired while the wallet still owes the payment (TxSummary.delivery == retryPending, S7 C1): the old transaction expired unmined and the wallet will re-send it once the expiry is safely buried. The row label stays 'Retrying'. The 'don't send it again yourself' clause is the point: a manual re-send pays twice."
   }

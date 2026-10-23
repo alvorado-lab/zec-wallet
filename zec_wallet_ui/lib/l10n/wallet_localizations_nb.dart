@@ -19,14 +19,14 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletNotSetUpBody =>
-      'Oppsett av lommebok kommer i en senere versjon. Oppsettet vil lede deg gjennom å skrive ned gjenopprettingsfrasen din før du kan motta midler — slik at ingenting noensinne er i fare uten en sikkerhetskopi.';
+      'Oppsett av lommebok kommer i en senere versjon. Oppsettet vil lede deg gjennom å skrive ned gjenopprettingsfrasen din før du kan motta midler, slik at ingenting noensinne er i fare uten en sikkerhetskopi.';
 
   @override
   String get walletStartupFailedTitle => 'Lommeboken kunne ikke starte';
 
   @override
   String get walletStartupFailedBody =>
-      'Noe hindret lommeboken i å lastes på denne enheten. Hvis du allerede har en lommebok, er midlene i den ikke i fare — de finnes på Zcash-nettverket og kan gjenopprettes med gjenopprettingsfrasen din. Prøv igjen. Hvis dette fortsetter å skje, lukk appen og åpne den på nytt.';
+      'Noe hindret lommeboken i å lastes på denne enheten. Hvis du allerede har en lommebok, er midlene i den ikke i fare. De finnes på Zcash-nettverket og kan gjenopprettes med gjenopprettingsfrasen din. Prøv igjen. Hvis dette fortsetter å skje, lukk appen og åpne den på nytt.';
 
   @override
   String get walletBalanceLabel => 'Saldo';
@@ -147,11 +147,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'Lagret på denne enheten, under Lagret og under behandling — der kan du sende den eller avbryte den.';
+      'Lagret på denne enheten, under Lagret og under behandling. Der kan du sende den eller avbryte den.';
 
   @override
   String get walletTxExplainPending =>
-      'Sendt til Zcash-nettverket — venter på å bli bekreftet i en blokk.';
+      'Sendt til Zcash-nettverket. Venter på å bli bekreftet i en blokk.';
 
   @override
   String get walletTxExplainRetrying =>
@@ -197,7 +197,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletRescanRangeAll =>
-      'Skann hele historikken din — tregest, men gjenoppretter alt.';
+      'Skann hele historikken din: tregest, men gjenoppretter alt.';
 
   @override
   String get walletRescanRangeDefault =>
@@ -230,11 +230,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletRescanWarning =>
-      'Dette skanner blokkjeden på nytt. Nylige datoer tar minutter; å skanne langt tilbake kan ta timer. Synkroniseringen kjører i bakgrunnen — du kan fortsette å bruke lommeboken.';
+      'Dette skanner blokkjeden på nytt. Nylige datoer tar minutter; å skanne langt tilbake kan ta timer. Synkroniseringen kjører i bakgrunnen, så du kan fortsette å bruke lommeboken.';
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'En betaling fra denne lommeboken blir fremdeles bekreftet. Lommeboken avslår vanligvis skanning på nytt før den er fullført — du kan prøve, men du må regne med å bli avvist.';
+      'En betaling fra denne lommeboken blir fremdeles bekreftet. Lommeboken avslår vanligvis skanning på nytt før den er fullført. Du kan prøve, men du må regne med å bli avvist.';
 
   @override
   String get walletRescanConfirm => 'Start ny skanning';
@@ -247,40 +247,40 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletRescanRebuildingAll =>
-      'Bygger opp historikken din igjen — skanner hele kjeden. Saldo og aktivitet fylles inn etter hvert som den tar igjen.';
+      'Bygger opp historikken din igjen og skanner hele kjeden. Saldo og aktivitet fylles inn etter hvert som den tar igjen.';
 
   @override
   String walletRescanRebuildingFrom(String date) {
-    return 'Bygger opp historikken din igjen fra $date — saldo og aktivitet fylles inn etter hvert som den tar igjen.';
+    return 'Bygger opp historikken din igjen fra $date. Saldo og aktivitet fylles inn etter hvert som den tar igjen.';
   }
 
   @override
   String get walletRescanRebuildingDefault =>
-      'Bygger opp historikken din igjen fra starten av lommeboken din — saldo og aktivitet fylles inn etter hvert som den tar igjen.';
+      'Bygger opp historikken din igjen fra starten av lommeboken din. Saldo og aktivitet fylles inn etter hvert som den tar igjen.';
 
   @override
   String get walletCatchUpBanner =>
-      'Tar igjen — saldo og aktivitet fylles inn mens lommeboken synkroniserer. Alt du har mottatt, er trygt.';
+      'Tar igjen. Saldo og aktivitet fylles inn mens lommeboken synkroniserer. Alt du har mottatt, er trygt.';
 
   @override
   String get walletCatchUpRescanBanner =>
-      'Bygger opp historikken din igjen etter en ny skanning — saldo og aktivitet fylles inn etter hvert som den tar igjen. Alt du har mottatt, er trygt.';
+      'Bygger opp historikken din igjen etter en ny skanning. Saldo og aktivitet fylles inn etter hvert som den tar igjen. Alt du har mottatt, er trygt.';
 
   @override
   String get walletRescanFailedNotice =>
-      'Kunne ikke skanne på nytt akkurat nå — midlene dine er trygge, men saldoen og historikken din kan trenge litt tid på å ta igjen. Prøv igjen om et øyeblikk.';
+      'Kunne ikke skanne på nytt akkurat nå. Midlene dine er trygge, men saldoen og historikken din kan trenge litt tid på å ta igjen. Prøv igjen om et øyeblikk.';
 
   @override
   String get walletRescanBlockedSettlingNotice =>
-      'En betaling blir fremdeles bekreftet, så skanning på nytt er satt på pause for å beskytte midlene dine. Lommeboken din er uendret — prøv igjen om et par timer, og hold appen åpen og tilkoblet i mellomtiden.';
+      'En betaling blir fremdeles bekreftet, så skanning på nytt er satt på pause for å beskytte midlene dine. Lommeboken din er uendret. Prøv igjen om et par timer, og hold appen åpen og tilkoblet i mellomtiden.';
 
   @override
   String get walletRescanBlockedSyncNotRunningNotice =>
-      'Skanning på nytt gjenoppbygger historikken din mens lommeboken din synkroniserer, og synkronisering kjører ikke akkurat nå. Lommeboken din er uendret — prøv igjen når synkronisering kjører.';
+      'Skanning på nytt gjenoppbygger historikken din mens lommeboken din synkroniserer, og synkronisering kjører ikke akkurat nå. Lommeboken din er uendret. Prøv igjen når synkronisering kjører.';
 
   @override
   String get walletRescanNeedsSpaceNotice =>
-      'Det er ikke nok ledig plass til å gjenoppbygge lommebokhistorikken — midlene dine er trygge, men saldoen og historikken din kan trenge litt tid på å ta igjen. Frigjør litt plass og prøv igjen.';
+      'Det er ikke nok ledig plass til å gjenoppbygge lommebokhistorikken. Midlene dine er trygge, men saldoen og historikken din kan trenge litt tid på å ta igjen. Frigjør litt plass og prøv igjen.';
 
   @override
   String get walletRescanFailedDismiss => 'Lukk';
@@ -290,7 +290,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletActivityCatchingUp =>
-      'Tar fortsatt igjen — alt du har mottatt, vises her.';
+      'Tar fortsatt igjen. Alt du har mottatt, vises her.';
 
   @override
   String get walletActivitySyncNotRunning =>
@@ -307,7 +307,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTransparentNote =>
-      'Ikke inkludert i «Tilgjengelig nå» — skjerm disse midlene for å kunne bruke dem. Inntil da forblir de offentlig synlige på kjeden.';
+      'Ikke inkludert i «Tilgjengelig nå». Skjerm disse midlene for å kunne bruke dem. Inntil da forblir de offentlig synlige på kjeden.';
 
   @override
   String get walletTransparentNoteWatchOnly =>
@@ -367,7 +367,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletInFlightReadError =>
-      'Kunne ikke sjekke om en betaling fortsatt fullføres. Prøver igjen – inntil da, se etter en ventende betaling i aktiviteten din før du sender på nytt.';
+      'Kunne ikke sjekke om en betaling fortsatt fullføres. Prøver igjen. Inntil da, se etter en ventende betaling i aktiviteten din før du sender på nytt.';
 
   @override
   String walletRecoverableEphemeralConfirmingNote(String amount) {
@@ -407,7 +407,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletShieldNothingBody =>
-      'Disse midlene er under beløpet det er verdt å skjerme akkurat nå — nettverksgebyret ville overstige fordelen. De kan skjermes når litt mer kommer inn.';
+      'Disse midlene er under beløpet det er verdt å skjerme akkurat nå, fordi nettverksgebyret ville overstige fordelen. De kan skjermes når litt mer kommer inn.';
 
   @override
   String get walletShieldDoneTitle => 'Skjerming sendt inn';
@@ -417,7 +417,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
       'Midlene dine er på vei inn i den skjermede saldoen. Dette bekreftes på kjeden om kort tid.';
 
   @override
-  String get walletShieldSavedTitle => 'Lagret — vi fullfører skjermingen';
+  String get walletShieldSavedTitle => 'Lagret, vi fullfører skjermingen';
 
   @override
   String get walletShieldSavedBody =>
@@ -455,7 +455,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletMoveSheetSubtitle =>
-      'Send skjermet ZEC til din egen offentlige adresse — nyttig for en børs som ikke godtar skjermede innskudd.';
+      'Send skjermet ZEC til din egen offentlige adresse. Nyttig for en børs som ikke godtar skjermede innskudd.';
 
   @override
   String get walletMoveDestinationLabel => 'Din offentlige adresse';
@@ -467,7 +467,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'Tilgjengelig å flytte: $amount ZEC — saldoen tar fortsatt igjen';
+    return 'Tilgjengelig å flytte: $amount ZEC (saldoen tar fortsatt igjen)';
   }
 
   @override
@@ -476,7 +476,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletMoveDeshieldBody =>
-      'Å flytte til en offentlig adresse tar disse midlene ut av den skjermede saldoen din — beløpet og din offentlige adresse blir offentlig synlige på Zcash-blokkjeden.';
+      'Å flytte til en offentlig adresse tar disse midlene ut av den skjermede saldoen din. Beløpet og din offentlige adresse blir offentlig synlige på Zcash-blokkjeden.';
 
   @override
   String get walletMoveWalletEnded =>
@@ -518,7 +518,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
       'Midlene dine er på vei til din offentlige adresse. De bekreftes på kjeden om kort tid.';
 
   @override
-  String get walletMoveSavedTitle => 'Lagret — vi fullfører flyttingen';
+  String get walletMoveSavedTitle => 'Lagret, vi fullfører flyttingen';
 
   @override
   String get walletMoveSavedBody =>
@@ -543,7 +543,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'Lommeboken tar fortsatt igjen — alt du har mottatt, blir tilgjengelig å flytte når synkroniseringen er fullført.';
+      'Lommeboken tar fortsatt igjen. Alt du har mottatt, blir tilgjengelig å flytte når synkroniseringen er fullført.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -561,7 +561,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletBalanceStale =>
-      'Kunne ikke oppdatere — viser din sist kjente saldo.';
+      'Kunne ikke oppdatere. Viser din sist kjente saldo.';
 
   @override
   String get walletSyncStartFailed =>
@@ -631,7 +631,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncCatchingUp =>
-      'Tar igjen nettverket — en grundig førstegangssynkronisering kan ta en stund. Du kan fortsette å bruke appen mens den fullføres';
+      'Tar igjen nettverket. En grundig førstegangssynkronisering kan ta en stund. Du kan fortsette å bruke appen mens den fullføres';
 
   @override
   String walletSyncScanRemaining(String count) {
@@ -656,7 +656,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletStallEndpoint =>
-      'Får ikke kontakt med Zcash-nettverket akkurat nå. Vi fortsetter å prøve automatisk — sjekk internettforbindelsen din, eller serveren kan være midlertidig utilgjengelig.';
+      'Får ikke kontakt med Zcash-nettverket akkurat nå. Vi fortsetter å prøve automatisk. Sjekk internettforbindelsen din, eller serveren kan være midlertidig utilgjengelig.';
 
   @override
   String get walletStallTor =>
@@ -676,7 +676,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletStallEndpointMisbehaving =>
-      'Denne serveren sendte data som ikke kan stemme, så synkroniseringen stoppet. Dette er ikke et tilkoblingsproblem – bytt til en annen server. Hvis alle servere avvises, skann historikken på nytt: lommeboken kan sitte med en feil oppføring fra en tidligere server.';
+      'Denne serveren sendte data som ikke kan stemme, så synkroniseringen stoppet. Dette er ikke et tilkoblingsproblem, så bytt til en annen server. Hvis alle servere avvises, skann historikken på nytt: lommeboken kan sitte med en feil oppføring fra en tidligere server.';
 
   @override
   String get walletStallBirthdayInFuture =>
@@ -717,11 +717,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncExplainIdle =>
-      'Synkroniseringen har ikke startet ennå — den starter automatisk. Ingen handling nødvendig.';
+      'Synkroniseringen har ikke startet ennå, men den starter automatisk. Ingen handling nødvendig.';
 
   @override
   String get walletSyncExplainStartFailed =>
-      'Synkroniseringen kunne ikke starte. Midlene dine er trygge — lommeboken sjekker bare ikke etter ny aktivitet akkurat nå. Prøv igjen nedenfor, eller åpne appen på nytt.';
+      'Synkroniseringen kunne ikke starte. Midlene dine er trygge; lommeboken sjekker bare ikke etter ny aktivitet akkurat nå. Prøv igjen nedenfor, eller åpne appen på nytt.';
 
   @override
   String get walletSyncExplainStarting =>
@@ -733,7 +733,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncExplainScanning =>
-      'Lommeboken sjekker blokker på blokkjeden for midlene dine. Saldo og aktivitet oppdateres etter hvert som nye transaksjoner blir funnet — du kan fortsette å bruke appen mens den fullføres.';
+      'Lommeboken sjekker blokker på blokkjeden for midlene dine. Saldo og aktivitet oppdateres etter hvert som nye transaksjoner blir funnet. Du kan fortsette å bruke appen mens den fullføres.';
 
   @override
   String get walletSyncExplainUpToDate =>
@@ -745,11 +745,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'Får ikke kontakt med Zcash-nettverket — det er normalt hvis du er frakoblet, eller serveren kan være midlertidig utilgjengelig. Midlene dine er trygge: saldoen viser den sist synkroniserte tilstanden, og sendinger i kø forblir lagret under Lagret og under behandling. Tilkoblingen prøver på nytt av seg selv.';
+      'Får ikke kontakt med Zcash-nettverket. Det er normalt hvis du er frakoblet, eller serveren kan være midlertidig utilgjengelig. Midlene dine er trygge: saldoen viser den sist synkroniserte tilstanden, og sendinger i kø forblir lagret under Lagret og under behandling. Tilkoblingen prøver på nytt av seg selv.';
 
   @override
   String get walletSyncExplainOffline =>
-      'Ingen nettverkstilkobling. Midlene dine er trygge — saldoen viser den sist synkroniserte tilstanden, og sendinger i kø forblir lagret under Lagret og under behandling.';
+      'Ingen nettverkstilkobling. Midlene dine er trygge: saldoen viser den sist synkroniserte tilstanden, og sendinger i kø forblir lagret under Lagret og under behandling.';
 
   @override
   String get walletSyncExplainUnknown =>
@@ -779,42 +779,42 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTorFellBack =>
-      'Tor utilgjengelig — bruker direkte tilkobling';
+      'Tor utilgjengelig, bruker direkte tilkobling';
 
   @override
   String get walletTorUnavailable =>
-      'Privat rute utilgjengelig — ikke tilkoblet';
+      'Privat rute utilgjengelig, ikke tilkoblet';
 
   @override
   String walletTorUnavailableNamed(String transport) {
-    return '$transport utilgjengelig — ikke tilkoblet';
+    return '$transport utilgjengelig, ikke tilkoblet';
   }
 
   @override
   String get walletTorUnanswered =>
-      'Privat rute tilkoblet — ingenting kommer tilbake';
+      'Privat rute tilkoblet, men ingenting kommer tilbake';
 
   @override
   String get walletTorUnansweredUnattested =>
-      'Privat rute tilkoblet — ingenting kommer tilbake (personvern ikke bekreftet)';
+      'Privat rute tilkoblet, men ingenting kommer tilbake (personvern ikke bekreftet)';
 
   @override
   String walletTorUnansweredNamed(String transport) {
-    return '$transport tilkoblet — ingenting kommer tilbake';
+    return '$transport tilkoblet, men ingenting kommer tilbake';
   }
 
   @override
   String get walletTorUnansweredDirect =>
-      'Ikke privat (appens direkte tilkobling) — ingenting kommer tilbake';
+      'Ikke privat (appens direkte tilkobling), og ingenting kommer tilbake';
 
   @override
   String walletTorUnansweredLinkable(String transport) {
-    return 'Tilkoblet via $transport — ingenting kommer tilbake; tilkoblinger kan knyttes sammen av proxyen';
+    return 'Tilkoblet via $transport, men ingenting kommer tilbake; tilkoblinger kan knyttes sammen av proxyen';
   }
 
   @override
   String get walletTorUnknown =>
-      'Tor-status ukjent — behandles som ikke beskyttet';
+      'Tor-status ukjent, behandles som ikke beskyttet';
 
   @override
   String walletBalanceHeaderAsOf(String height) {
@@ -919,7 +919,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncServerUnreachable =>
-      'Fikk ikke kontakt med denne serveren. Sjekk adressen — og hvis den stemmer, svarer enten ikke denne serveren, eller appen din når den ikke akkurat nå. Prøv igjen, eller velg en annen server.';
+      'Fikk ikke kontakt med denne serveren. Sjekk adressen. Hvis den stemmer, svarer enten ikke denne serveren, eller appen din når den ikke akkurat nå. Prøv igjen, eller velg en annen server.';
 
   @override
   String get walletSyncServerUnreachableOffered =>
@@ -953,7 +953,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSyncServerSwitchFailedRecovered(String host) {
-    return 'Kunne ikke bytte – bruker fortsatt $host.';
+    return 'Kunne ikke bytte. Bruker fortsatt $host.';
   }
 
   @override
@@ -988,24 +988,24 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTransportExplainUnanswered =>
-      'Den private ruten tok imot tilkoblingen, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren — lommeboken kan ikke skille dem. Den fortsetter å prøve; hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
+      'Den private ruten tok imot tilkoblingen, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren; lommeboken kan ikke skille dem. Den fortsetter å prøve. Hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
 
   @override
   String walletTransportExplainUnansweredNamed(String transport) {
-    return '$transport tok imot tilkoblingen, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren — lommeboken kan ikke skille dem. Den fortsetter å prøve; hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
+    return '$transport tok imot tilkoblingen, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren; lommeboken kan ikke skille dem. Den fortsetter å prøve. Hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
   }
 
   @override
   String get walletTransportExplainUnansweredDirect =>
-      'Lommebok-trafikken kobler direkte til serveren. Serveren kan se IP-adressen din. Tilkoblingen ble tatt imot, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren — lommeboken kan ikke skille dem. Den fortsetter å prøve; hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
+      'Lommebok-trafikken kobler direkte til serveren. Serveren kan se IP-adressen din. Tilkoblingen ble tatt imot, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren; lommeboken kan ikke skille dem. Den fortsetter å prøve. Hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
 
   @override
   String get walletTransportExplainUnansweredUnverified =>
-      'Personvernet til denne tilkoblingen kan ikke bekreftes — behandle den som ikke privat. Tilkoblingen ble tatt imot, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren — lommeboken kan ikke skille dem. Den fortsetter å prøve; hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
+      'Personvernet til denne tilkoblingen kan ikke bekreftes, så behandle den som ikke privat. Tilkoblingen ble tatt imot, men det har ikke kommet noe tilbake på et minutt. Det kan være ruten eller lommebokserveren; lommeboken kan ikke skille dem. Den fortsetter å prøve. Hvis det ikke gir seg, prøv en annen server eller sjekk nettverksinnstillingene i appen din.';
 
   @override
   String get walletTransportExplainUnverified =>
-      'Personvernet til denne tilkoblingen kan ikke bekreftes — behandle den som ikke privat.';
+      'Personvernet til denne tilkoblingen kan ikke bekreftes, så behandle den som ikke privat.';
 
   @override
   String get walletTransportExplainHostProxy =>
@@ -1016,7 +1016,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletOnboardingWelcomeBody =>
-      'Opprett en ny lommebok for å motta og oppbevare ZEC. Vi genererer en gjenopprettingsfrase og leder deg gjennom å ta sikkerhetskopi av den før midler kan komme inn — slik at ingenting noensinne er i fare uten en sikkerhetskopi.';
+      'Opprett en ny lommebok for å motta og oppbevare ZEC. Vi genererer en gjenopprettingsfrase og leder deg gjennom å ta sikkerhetskopi av den før midler kan komme inn, slik at ingenting noensinne er i fare uten en sikkerhetskopi.';
 
   @override
   String get walletCreateButton => 'Opprett en ny lommebok';
@@ -1069,7 +1069,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletWatchOnlyBirthdayChosen(String date) {
-    return 'Skanner fra $date og fremover — midler mottatt før dette vises ikke. Eldre lommebok? Velg en tidligere dato.';
+    return 'Skanner fra $date og fremover. Midler mottatt før dette vises ikke. Eldre lommebok? Velg en tidligere dato.';
   }
 
   @override
@@ -1105,7 +1105,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletRestoreBody =>
-      'Skriv inn gjenopprettingsfrasen din for å gjenopprette lommeboken — skriv eller lim inn ordene i riktig rekkefølge, atskilt med mellomrom. Kun standardfraser: hvis lommeboken din brukte en ekstra passordfrase (et «25. ord»), kan ikke denne appen gjenopprette den ennå — du vil se en tom lommebok, ikke en feilmelding.';
+      'Skriv inn gjenopprettingsfrasen din for å gjenopprette lommeboken. Skriv eller lim inn ordene i riktig rekkefølge, atskilt med mellomrom. Kun standardfraser: hvis lommeboken din brukte en ekstra passordfrase (et «25. ord»), kan ikke denne appen gjenopprette den ennå. Du vil da se en tom lommebok, ikke en feilmelding.';
 
   @override
   String get walletRestorePhraseHint => 'ord én  ord to  ord tre  …';
@@ -1131,8 +1131,8 @@ class WalletLocalizationsNb extends WalletLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ord er ikke gjenopprettingsord — rett de uthevede',
-      one: '1 ord er ikke et gjenopprettingsord — rett det uthevede',
+      other: '$count ord er ikke gjenopprettingsord. Rett de uthevede',
+      one: '1 ord er ikke et gjenopprettingsord. Rett det uthevede',
     );
     return '$_temp0';
   }
@@ -1163,11 +1163,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletRestoreBirthdayNone =>
-      'Vi skanner hele historikken din — tregere, men ingenting hoppes over.';
+      'Vi skanner hele historikken din. Det går tregere, men ingenting hoppes over.';
 
   @override
   String walletRestoreBirthdayChosen(String date) {
-    return 'Skanner fra $date og fremover — midler mottatt før dette vises ikke. Eldre lommebok? Velg en tidligere dato, eller Skann hele historikken.';
+    return 'Skanner fra $date og fremover. Midler mottatt før dette vises ikke. Eldre lommebok? Velg en tidligere dato, eller Skann hele historikken.';
   }
 
   @override
@@ -1212,7 +1212,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletBackupBody =>
-      'Disse ordene er den ENESTE måten å gjenopprette lommeboken og midlene dine på. Skriv dem ned i riktig rekkefølge, og oppbevar dem på et trygt og privat sted. Del dem aldri, og lagre dem aldri på nett — hvem som helst med disse ordene kan ta midlene dine.';
+      'Disse ordene er den ENESTE måten å gjenopprette lommeboken og midlene dine på. Skriv dem ned i riktig rekkefølge, og oppbevar dem på et trygt og privat sted. Del dem aldri, og lagre dem aldri på nett. Hvem som helst med disse ordene kan ta midlene dine.';
 
   @override
   String get walletBackupSecureNoteAndroid =>
@@ -1259,7 +1259,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletBackupStartOverConfirmBody =>
-      'Dette sletter denne lommeboken fra enheten og fører deg tilbake til starten. Ingenting kan settes inn via denne appen før oppsettet er fullført.\n\nHvis denne lommeboken noen gang har inneholdt midler — eller ble gjenopprettet fra en gjenopprettingsfrase — kan bare den frasen gjenopprette den.';
+      'Dette sletter denne lommeboken fra enheten og fører deg tilbake til starten. Ingenting kan settes inn via denne appen før oppsettet er fullført.\n\nHvis denne lommeboken noen gang har inneholdt midler, eller ble gjenopprettet fra en gjenopprettingsfrase, kan bare den frasen gjenopprette den.';
 
   @override
   String get walletBackupStartOverConfirm => 'Slett og start på nytt';
@@ -1289,7 +1289,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletBackupManagedBody =>
-      'Denne lommeboken ble satt opp med kontoen din fra appen som installerte den, så den har ingen egen gjenopprettingsfrase. Midlene dine gjenopprettes sammen med den kontoen — bruk kontoens sikkerhetskopi for å holde dem trygge.';
+      'Denne lommeboken ble satt opp med kontoen din fra appen som installerte den, så den har ingen egen gjenopprettingsfrase. Midlene dine gjenopprettes sammen med den kontoen. Bruk kontoens sikkerhetskopi for å holde dem trygge.';
 
   @override
   String get walletExportViewingKeyTitle => 'Eksporter innsynsnøkkelen din';
@@ -1299,15 +1299,15 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyTileSubtitle =>
-      'Del en innsynskopi av lommeboken din — den kan se historikken din, men kan ikke sende midler.';
+      'Del en innsynskopi av lommeboken din. Den kan se historikken din, men kan ikke sende midler.';
 
   @override
   String get walletExportViewingKeyWarning =>
-      'Denne nøkkelen lar den som har den, se alt denne lommeboken noensinne har mottatt og sendt — og alt den kommer til å motta og sende i fremtiden. Den kan ikke bruke midlene dine, og den kan ikke gjenopprette lommeboken din. Del den bare med noen du stoler på til å se hele historikken din, for eksempel en regnskapsfører eller din egen andre enhet. Den eneste måten å oppheve delingen senere på, er å flytte midlene dine til en ny lommebok.';
+      'Denne nøkkelen lar den som har den, se alt denne lommeboken noensinne har mottatt og sendt, og alt den kommer til å motta og sende i fremtiden. Den kan ikke bruke midlene dine, og den kan ikke gjenopprette lommeboken din. Del den bare med noen du stoler på til å se hele historikken din, for eksempel en regnskapsfører eller din egen andre enhet. Den eneste måten å oppheve delingen senere på, er å flytte midlene dine til en ny lommebok.';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'Denne nøkkelen lar den som har den, se alt denne lommeboken noensinne har mottatt og sendt — og alt den kommer til å motta og sende i fremtiden. Den kan ikke bruke midlene dine, og den kan ikke gjenopprette lommeboken din. Del den bare med noen du stoler på til å se hele historikken din, for eksempel en regnskapsfører eller din egen andre enhet. Når den først er delt, kan delingen ikke oppheves.';
+      'Denne nøkkelen lar den som har den, se alt denne lommeboken noensinne har mottatt og sendt, og alt den kommer til å motta og sende i fremtiden. Den kan ikke bruke midlene dine, og den kan ikke gjenopprette lommeboken din. Del den bare med noen du stoler på til å se hele historikken din, for eksempel en regnskapsfører eller din egen andre enhet. Når den først er delt, kan delingen ikke oppheves.';
 
   @override
   String get walletExportViewingKeyReveal => 'Vis innsynsnøkkel';
@@ -1348,7 +1348,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletWatchOnlyAboutBody =>
-      'Dette er en innsynslommebok. Den ble satt opp fra en innsynsnøkkel, så den kan se saldoen og historikken din, men har ingen sendenøkler — det er ingenting å ta sikkerhetskopi av her, og den kan ikke sende midler.';
+      'Dette er en innsynslommebok. Den ble satt opp fra en innsynsnøkkel, så den kan se saldoen og historikken din, men har ingen sendenøkler. Det er ingenting å ta sikkerhetskopi av her, og den kan ikke sende midler.';
 
   @override
   String get walletWatchOnlyBadge => 'Kun innsyn';
@@ -1366,11 +1366,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedAlreadyOpen =>
-      'Denne lommeboken er åpen i et annet vindu eller en annen app, eller fullfører fortsatt en tidligere operasjon. Lukk andre vinduer som bruker den — eller vent et øyeblikk — og prøv igjen.';
+      'Denne lommeboken er åpen i et annet vindu eller en annen app, eller fullfører fortsatt en tidligere operasjon. Lukk andre vinduer som bruker den (eller vent et øyeblikk), og prøv igjen.';
 
   @override
   String get walletOnboardingFailedNeedsRecovery =>
-      'Denne lommebokens sikre nøkkel er ikke lenger tilgjengelig, så den kan ikke åpnes på denne enheten. Midlene dine er trygge — gjenopprett fra gjenopprettingsfrasen din for å få dem tilbake.';
+      'Denne lommebokens sikre nøkkel er ikke lenger tilgjengelig, så den kan ikke åpnes på denne enheten. Midlene dine er trygge. Gjenopprett fra gjenopprettingsfrasen din for å få dem tilbake.';
 
   @override
   String get walletOnboardingFailedRestoreAction =>
@@ -1382,7 +1382,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletOnboardingRecoverConfirmBody =>
-      'Sørg for at du har gjenopprettingsfrasen din før du fortsetter — du trenger den på neste skjerm for å få tilbake midlene dine. Midlene dine er trygge på blokkjeden og kontrolleres av denne frasen. Dette fjerner den uleselige lommebokdataen fra denne enheten, slik at den kan bygges opp igjen.';
+      'Sørg for at du har gjenopprettingsfrasen din før du fortsetter. Du trenger den på neste skjerm for å få tilbake midlene dine. Midlene dine er trygge på blokkjeden og kontrolleres av denne frasen. Dette fjerner den uleselige lommebokdataen fra denne enheten, slik at den kan bygges opp igjen.';
 
   @override
   String get walletOnboardingRecoverConfirmCancel => 'Avbryt';
@@ -1401,7 +1401,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedInterruptedSetup =>
-      'Oppsettet av lommeboken ble ikke fullført. Prøv igjen for å fullføre det — ingenting gikk tapt.';
+      'Oppsettet av lommeboken ble ikke fullført. Prøv igjen for å fullføre det; ingenting gikk tapt.';
 
   @override
   String get walletOnboardingFailedUnknown =>
@@ -1409,18 +1409,18 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletOnboardingFailedConfiguration =>
-      'Denne appens lommebokoppsett er feilkonfigurert, så lommeboken kan ikke starte. Å prøve på nytt vil ikke hjelpe — rapporter dette til appens utvikler. Midlene dine er ikke i fare.';
+      'Denne appens lommebokoppsett er feilkonfigurert, så lommeboken kan ikke starte. Å prøve på nytt vil ikke hjelpe, så rapporter dette til appens utvikler. Midlene dine er ikke i fare.';
 
   @override
   String get walletSendButton => 'Send';
 
   @override
   String get walletSendSyncNotRunning =>
-      'Synkronisering kjører ikke — den tilgjengelige saldoen din kan ikke oppdateres';
+      'Synkronisering kjører ikke, så den tilgjengelige saldoen din kan ikke oppdateres';
 
   @override
   String get walletSendWaitingForFunds =>
-      'Synkroniserer fortsatt — du kan sende når du har tilgjengelig saldo';
+      'Synkroniserer fortsatt. Du kan sende når du har tilgjengelig saldo';
 
   @override
   String get walletSendNoSpendableYet => 'Ingen brukbar saldo ennå';
@@ -1438,7 +1438,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'Dette er en lommebok med kun innsyn. Den kan vise saldo og motta betalinger, men den har ingen sendenøkler — så den kan ikke sende.';
+      'Dette er en lommebok med kun innsyn. Den kan vise saldo og motta betalinger, men den har ingen sendenøkler, så den kan ikke sende.';
 
   @override
   String get walletSendExpiredTitle => 'Denne betalingsforespørselen utløp';
@@ -1449,7 +1449,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'Dette er en lommebok med kun innsyn — den har ingen sendenøkler, så den kan ikke sende.';
+      'Dette er en lommebok med kun innsyn. Den har ingen sendenøkler, så den kan ikke sende.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1458,7 +1458,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'Tilgjengelig å sende: $amount ZEC — saldoen tar fortsatt igjen';
+    return 'Tilgjengelig å sende: $amount ZEC (saldoen tar fortsatt igjen)';
   }
 
   @override
@@ -1583,7 +1583,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSendLargeConfirmBoth =>
-      'Dette er en stor betaling — nesten hele saldoen din. En sendt betaling kan ikke reverseres.';
+      'Dette er en stor betaling, nesten hele saldoen din. En sendt betaling kan ikke reverseres.';
 
   @override
   String walletSendLargeConfirmAction(String amount) {
@@ -1600,11 +1600,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
   String get walletSendSentBody => 'Betalingen din er sendt til nettverket.';
 
   @override
-  String get walletSendSavedTitle => 'Lagret — vi fullfører sendingen';
+  String get walletSendSavedTitle => 'Lagret, vi fullfører sendingen';
 
   @override
   String get walletSendSavedBody =>
-      'Betalingen din kunne ikke sendes akkurat nå, så den er lagret — lommeboken din sender den ved en senere synkronisering. Ingenting går tapt.';
+      'Betalingen din kunne ikke sendes akkurat nå, så den er lagret. Lommeboken din sender den ved en senere synkronisering. Ingenting går tapt.';
 
   @override
   String get walletSendKeptTitle => 'Lagret';
@@ -1629,7 +1629,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSendAlreadyBody =>
-      'Denne betalingen ble allerede sendt inn — den sendes ikke to ganger.';
+      'Denne betalingen ble allerede sendt inn, og den sendes ikke to ganger.';
 
   @override
   String get walletSendFailedTitle => 'Kunne ikke fullføre betalingen';
@@ -1656,7 +1656,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSendFaultInsufficient(String available, String required) {
-    return 'Ikke nok brukbar saldo — du har $available ZEC, og dette krever $required ZEC.';
+    return 'Ikke nok brukbar saldo: du har $available ZEC, og dette krever $required ZEC.';
   }
 
   @override
@@ -1677,7 +1677,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUpToDateDegraded =>
-      'Denne serveren avviser, holder tilbake eller rapporterer feil om en av Zcashs skjermede pooler. Midler mottatt i den poolen kan ikke brukes via denne serveren, og saldoen som vises er et minimum. Bytt til en annen server for å bruke dem – dette er ikke et tilkoblingsproblem.';
+      'Denne serveren avviser, holder tilbake eller rapporterer feil om en av Zcashs skjermede pooler. Midler mottatt i den poolen kan ikke brukes via denne serveren, og saldoen som vises er et minimum. Bytt til en annen server for å bruke dem. Dette er ikke et tilkoblingsproblem.';
 
   @override
   String walletSyncPoolUnsupported(String pool) {
@@ -1714,19 +1714,19 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncExplainEndpointBehind =>
-      'Kjeden til denne serveren stopper ved en blokk nettverket allerede hadde passert før denne versjonen av appen ble bygget, så saldoen din er bare oppdatert til den blokken. Nye betalinger til deg vises kanskje ikke ennå, og en betaling sendt herfra kommer kanskje ikke fram. Bytt til en annen server for å komme à jour – dette er ikke et tilkoblingsproblem.';
+      'Kjeden til denne serveren stopper ved en blokk nettverket allerede hadde passert før denne versjonen av appen ble bygget, så saldoen din er bare oppdatert til den blokken. Nye betalinger til deg vises kanskje ikke ennå, og en betaling sendt herfra kommer kanskje ikke fram. Bytt til en annen server for å komme à jour. Dette er ikke et tilkoblingsproblem.';
 
   @override
   String get walletParkedBlockedByNetworkUpgrade =>
-      'Venter på en appoppdatering — midlene dine er trygge, og ingenting er sendt.';
+      'Venter på en appoppdatering. Midlene dine er trygge, og ingenting er sendt.';
 
   @override
   String get walletParkedBlockedByServerSilent =>
-      'Venter på en server som oppgir nettverksversjonen — bytt server. Midlene dine er trygge, og ingenting er sendt.';
+      'Venter på en server som oppgir nettverksversjonen. Bytt server. Midlene dine er trygge, og ingenting er sendt.';
 
   @override
   String get walletParkedBlockedByServerSilentClock =>
-      'Venter på en server som oppgir nettverksversjonen. Hvis dato og klokkeslett på denne enheten er feil, retter du dem først – og bytter deretter server. Midlene dine er trygge, og ingenting er sendt.';
+      'Venter på en server som oppgir nettverksversjonen. Hvis dato og klokkeslett på denne enheten er feil, retter du dem først og bytter deretter server. Midlene dine er trygge, og ingenting er sendt.';
 
   @override
   String get walletSyncUnverified =>
@@ -1738,17 +1738,17 @@ class WalletLocalizationsNb extends WalletLocalizations {
       hours,
       locale: localeName,
       other:
-          'Sending fungerer fortsatt i omtrent $hours timer til — bytt server etterpå.',
+          'Sending fungerer fortsatt i omtrent $hours timer til. Bytt server etterpå.',
       one:
-          'Sending fungerer fortsatt i omtrent 1 time til — bytt server etterpå.',
-      zero: 'Sending fungerer fortsatt i under en time — bytt server etterpå.',
+          'Sending fungerer fortsatt i omtrent 1 time til. Bytt server etterpå.',
+      zero: 'Sending fungerer fortsatt i under en time. Bytt server etterpå.',
     );
     return '$_temp0';
   }
 
   @override
   String walletSyncGraceLeftBlocks(String blocks) {
-    return 'Sending fungerer fortsatt i omtrent $blocks blokker til — bytt server etterpå.';
+    return 'Sending fungerer fortsatt i omtrent $blocks blokker til. Bytt server etterpå.';
   }
 
   @override
@@ -1758,7 +1758,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncGraceEndedClock =>
-      'Denne serveren har ikke oppgitt nettverksversjonen på en dag, så denne appen kan ikke bekrefte at det er trygt å sende. Hvis dato og klokkeslett på denne enheten er feil, retter du dem først – og bytter deretter til en server som oppgir nettverksversjonen.';
+      'Denne serveren har ikke oppgitt nettverksversjonen på en dag, så denne appen kan ikke bekrefte at det er trygt å sende. Hvis dato og klokkeslett på denne enheten er feil, retter du dem først og bytter deretter til en server som oppgir nettverksversjonen.';
 
   @override
   String get walletSyncGraceNeverConfirmed =>
@@ -1766,19 +1766,19 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSyncExplainUnverified =>
-      'Denne serveren sier ikke hvilken versjon av Zcash-nettverket den er på, så denne appen kan ikke bekrefte at en betaling den signerer blir godtatt. Saldoen din er oppdatert. Bytt til en annen server — dette er ikke et tilkoblingsproblem.';
+      'Denne serveren sier ikke hvilken versjon av Zcash-nettverket den er på, så denne appen kan ikke bekrefte at en betaling den signerer blir godtatt. Saldoen din er oppdatert. Bytt til en annen server. Dette er ikke et tilkoblingsproblem.';
 
   @override
   String get walletSyncExplainUnverifiedStreak =>
-      'Denne serveren sier ikke hvilken versjon av Zcash-nettverket den er på, så denne appen kan ikke bekrefte at en betaling den signerer blir godtatt. Den har også fortsatt å levere blokker som denne lommeboken siden måtte angre, så saldoen din er kanskje ikke oppdatert. Bytt til en annen server — dette er ikke et tilkoblingsproblem.';
+      'Denne serveren sier ikke hvilken versjon av Zcash-nettverket den er på, så denne appen kan ikke bekrefte at en betaling den signerer blir godtatt. Den har også fortsatt å levere blokker som denne lommeboken siden måtte angre, så saldoen din er kanskje ikke oppdatert. Bytt til en annen server. Dette er ikke et tilkoblingsproblem.';
 
   @override
   String get walletSyncUnverifiedStreakDetail =>
-      'Denne serveren fortsetter også å levere blokker som denne lommeboken siden må angre — bytt server.';
+      'Denne serveren fortsetter også å levere blokker som denne lommeboken siden må angre. Bytt server.';
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'Saldoen tar fortsatt igjen — mer kan bli tilgjengelig mens lommeboken synkroniserer.';
+      'Saldoen tar fortsatt igjen. Mer kan bli tilgjengelig mens lommeboken synkroniserer.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1826,7 +1826,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSendFaultMemoConflict =>
-      'Kunne ikke sende denne betalingen – appen la ved to notater. Ingenting ble sendt.';
+      'Kunne ikke sende denne betalingen fordi appen la ved to notater. Ingenting ble sendt.';
 
   @override
   String get walletSendFaultNetworkMismatch =>
@@ -1892,7 +1892,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'Dette er en lommebok med kun innsyn — den kan ikke bytte.';
+      'Dette er en lommebok med kun innsyn, så den kan ikke bytte.';
 
   @override
   String get walletSwapDone => 'Ferdig';
@@ -1907,7 +1907,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'Tilgjengelig å bytte: $amount ZEC — saldoen tar fortsatt igjen';
+    return 'Tilgjengelig å bytte: $amount ZEC (saldoen tar fortsatt igjen)';
   }
 
   @override
@@ -1933,7 +1933,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSwapDestinationHelperChain(String chain) {
-    return 'En $chain-adresse — dit den byttede eiendelen din sendes. Dobbeltsjekk at kjeden stemmer.';
+    return 'En $chain-adresse, dit den byttede eiendelen din sendes. Dobbeltsjekk at kjeden stemmer.';
   }
 
   @override
@@ -1954,7 +1954,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapExecuteStillWorking =>
-      'Fortsatt i gang — byttet starter. Dette kan ta opptil ett minutt.';
+      'Fortsatt i gang, byttet starter. Dette kan ta opptil ett minutt.';
 
   @override
   String get walletSwapReviewTitle => 'Bekreft bytte';
@@ -1978,16 +1978,16 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'Kursen er gyldig i omtrent $time til — bekreft før den utløper.';
+    return 'Kursen er gyldig i omtrent $time til. Bekreft før den utløper.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'Kursen er gyldig i mindre enn ett minutt til — bekreft før den utløper.';
+      'Kursen er gyldig i mindre enn ett minutt til. Bekreft før den utløper.';
 
   @override
   String get walletSwapQuoteExpired =>
-      'Denne kursen har utløpt. Gå tilbake og hent en ny — kursen er ikke lenger garantert, og å sende nå kan føre til refusjon.';
+      'Denne kursen har utløpt. Gå tilbake og hent en ny. Kursen er ikke lenger garantert, og å sende nå kan føre til refusjon.';
 
   @override
   String get walletCountdownUnderMinute => 'mindre enn ett minutt';
@@ -2012,7 +2012,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapDeshieldBody =>
-      'Å bytte ut avskjermer ZEC-en din — innskuddet er en offentlig transaksjon, og leverandørens side er offentlig på sitt nettverk.';
+      'Å bytte ut avskjermer ZEC-en din: innskuddet er en offentlig transaksjon, og leverandørens side er offentlig på sitt nettverk.';
 
   @override
   String get walletSwapDiscloseTitle => 'Hva byttleverandøren vil se';
@@ -2059,7 +2059,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'Lommeboken din sender ZEC-innskuddet til leverandøren. Er du kort offline, sendes det automatisk så snart du er tilkoblet igjen — men sendevinduet er kort, og lukkes det først, avsluttes byttet rett og slett, og ingenting byttes. ZEC-en din forblir din, og det kan ta opptil en time før den vises som tilgjengelig igjen.';
+      'Lommeboken din sender ZEC-innskuddet til leverandøren. Er du kort offline, sendes det automatisk så snart du er tilkoblet igjen. Men sendevinduet er kort, og lukkes det først, avsluttes byttet rett og slett, og ingenting byttes. ZEC-en din forblir din, og det kan ta opptil en time før den vises som tilgjengelig igjen.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2067,7 +2067,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'Dette byttet venter fortsatt på innskuddet sitt. Innskuddsinstruksjonene er ikke lenger tilgjengelige på denne enheten — hvis du allerede har sendt midlene, blir de oppdaget; hvis ikke, la dette byttet utløpe og start et nytt.';
+      'Dette byttet venter fortsatt på innskuddet sitt. Innskuddsinstruksjonene er ikke lenger tilgjengelige på denne enheten. Hvis du allerede har sendt midlene, blir de oppdaget; hvis ikke, la dette byttet utløpe og start et nytt.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2080,7 +2080,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'Innskuddsvinduet er utløpt. Hvis du ikke har sendt innskuddet ditt, avsluttes dette byttet rett og slett — hent en ny kurs når du er klar.';
+      'Innskuddsvinduet er utløpt. Hvis du ikke har sendt innskuddet ditt, avsluttes dette byttet rett og slett. Hent en ny kurs når du er klar.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2106,15 +2106,15 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'Innskuddsvinduet er utløpt — sjekk statusen til dette byttet.';
+      'Innskuddsvinduet er utløpt. Sjekk statusen til dette byttet.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'Dette byttet har ikke nådd et bekreftet utfall her ennå — åpne det for å sjekke. ZEC som kommer tilbake til denne lommeboken, vises i saldoen din etter en synkronisering.';
+      'Dette byttet har ikke nådd et bekreftet utfall her ennå. Åpne det for å sjekke. ZEC som kommer tilbake til denne lommeboken, vises i saldoen din etter en synkronisering.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'Dette byttet har ikke nådd et bekreftet utfall her ennå — åpne det for å sjekke. ZEC som dette byttet leverer til denne lommeboken, vises i saldoen din etter en synkronisering.';
+      'Dette byttet har ikke nådd et bekreftet utfall her ennå. Åpne det for å sjekke. ZEC som dette byttet leverer til denne lommeboken, vises i saldoen din etter en synkronisering.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'Bytte fullført.';
@@ -2133,15 +2133,15 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'Dette fjerner bare byttet fra denne listen — det avbryter ikke byttet, og denne lommeboken slutter å spore refusjonen. ZEC som refunderes senere, tilhører fortsatt denne lommeboken; en full ny skanning kan finne den.';
+      'Dette fjerner bare byttet fra denne listen. Det avbryter ikke byttet, og denne lommeboken slutter å spore refusjonen. ZEC som refunderes senere, tilhører fortsatt denne lommeboken; en full ny skanning kan finne den.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'Dette fjerner bare byttet fra denne listen — det avbryter ikke byttet, og denne lommeboken slutter å spore innkommende ZEC. ZEC som leveres senere, tilhører fortsatt denne lommeboken; en full ny skanning kan finne den. Hvis byttet i stedet refunderes, går refusjonen tilbake i eiendelen du sendte, utenfor denne lommeboken.';
+      'Dette fjerner bare byttet fra denne listen. Det avbryter ikke byttet, og denne lommeboken slutter å spore innkommende ZEC. ZEC som leveres senere, tilhører fortsatt denne lommeboken; en full ny skanning kan finne den. Hvis byttet i stedet refunderes, går refusjonen tilbake i eiendelen du sendte, utenfor denne lommeboken.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'Dette fjerner bare byttet fra denne listen — det avbryter ikke byttet, og denne lommeboken slutter å spore ZEC som fortsatt kommer inn fra det. ZEC som kommer inn senere, tilhører fortsatt denne lommeboken; en full ny skanning kan finne den.';
+      'Dette fjerner bare byttet fra denne listen. Det avbryter ikke byttet, og denne lommeboken slutter å spore ZEC som fortsatt kommer inn fra det. ZEC som kommer inn senere, tilhører fortsatt denne lommeboken; en full ny skanning kan finne den.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2223,7 +2223,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'Byttet ble ikke fullført, så leverandøren sendte ZEC-en din tilbake til denne lommeboken. Den kommer inn som uskjermede midler og vises i saldoen din etter at lommeboken synkroniserer neste gang — dette kan ta litt tid.';
+      'Byttet ble ikke fullført, så leverandøren sendte ZEC-en din tilbake til denne lommeboken. Den kommer inn som uskjermede midler og vises i saldoen din etter at lommeboken synkroniserer neste gang. Dette kan ta litt tid.';
 
   @override
   String get walletSwapStatusFailedTitle => 'Bytte mislyktes';
@@ -2237,7 +2237,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapStatusNotFoundBody =>
-      'Leverandøren har ikke lenger noen registrering av dette byttet — det har mest sannsynlig utløpt. Hvis et innskudd ble gjort, bør leverandøren refundere det til refusjonsadressen. Byttet blir værende i listen din, og denne lommeboken fortsetter å spore ZEC-en dens i tilfelle den fortsatt kommer fram; du kan fjerne det fra listen når som helst.';
+      'Leverandøren har ikke lenger noen registrering av dette byttet. Det har mest sannsynlig utløpt. Hvis et innskudd ble gjort, bør leverandøren refundere det til refusjonsadressen. Byttet blir værende i listen din, og denne lommeboken fortsetter å spore ZEC-en dens i tilfelle den fortsatt kommer fram; du kan fjerne det fra listen når som helst.';
 
   @override
   String get walletSwapStatusUnknownTitle => 'Status utilgjengelig';
@@ -2255,14 +2255,14 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'Bytte er slått av her, så dette byttet kan ikke spores akkurat nå. Hvis det ble refundert, kommer ZEC-en tilbake til denne lommeboken — den vises i saldoen din etter at bytte slås på igjen og lommeboken synkroniseres.';
+      'Bytte er slått av her, så dette byttet kan ikke spores akkurat nå. Hvis det ble refundert, kommer ZEC-en tilbake til denne lommeboken. Den vises i saldoen din etter at bytte slås på igjen og lommeboken synkroniseres.';
 
   @override
   String get walletSwapTrackingError => 'Vi kunne ikke spore dette byttet.';
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'Vi kunne ikke åpne sporing for dette byttet. Selve byttet kan fortsatt være i gang — eventuelle innskutte midler gjøres opp eller refunderes hos leverandøren.';
+      'Vi kunne ikke åpne sporing for dette byttet. Selve byttet kan fortsatt være i gang. Eventuelle innskutte midler gjøres opp eller refunderes hos leverandøren.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2305,19 +2305,19 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapFaultAlreadyInFlight =>
-      'Et bytte pågår allerede. Du kan starte et nytt etter at det er fullstendig gjort opp eller kursen utløper – dette kan ta en stund.';
+      'Et bytte pågår allerede. Du kan starte et nytt etter at det er fullstendig gjort opp eller kursen utløper. Dette kan ta en stund.';
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'Denne lommeboken kan ikke sette opp en refusjonsadresse ennå — det betyr som regel bare at den første synkroniseringen ikke er ferdig. Vent til synkroniseringen er fullført, og prøv igjen.';
+      'Denne lommeboken kan ikke sette opp en refusjonsadresse ennå. Det betyr som regel bare at den første synkroniseringen ikke er ferdig. Vent til synkroniseringen er fullført, og prøv igjen.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'Denne lommeboken kan ikke sette opp en mottaksadresse for dette byttet ennå — det betyr som regel bare at den første synkroniseringen ikke er ferdig. Vent til synkroniseringen er fullført, og prøv igjen.';
+      'Denne lommeboken kan ikke sette opp en mottaksadresse for dette byttet ennå. Det betyr som regel bare at den første synkroniseringen ikke er ferdig. Vent til synkroniseringen er fullført, og prøv igjen.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'Byttet kunne ikke starte i tide — tilkoblingen kan ha vært treg, eller lommeboken var opptatt. Hent en ny kurs og prøv igjen.';
+      'Byttet kunne ikke starte i tide. Tilkoblingen kan ha vært treg, eller lommeboken var opptatt. Hent en ny kurs og prøv igjen.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2342,7 +2342,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'Dette byttet krever omtrent $needed ZEC inkludert nettverksgebyret, men bare $spendable ZEC er tilgjengelig akkurat nå. Saldoen din tar fortsatt igjen — mer kan bli tilgjengelig snart.';
+    return 'Dette byttet krever omtrent $needed ZEC inkludert nettverksgebyret, men bare $spendable ZEC er tilgjengelig akkurat nå. Saldoen din tar fortsatt igjen, så mer kan bli tilgjengelig snart.';
   }
 
   @override
@@ -2376,7 +2376,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapRefundHelper =>
-      'På kjeden du sender fra — ikke en Zcash-adresse.';
+      'På kjeden du sender fra, ikke en Zcash-adresse.';
 
   @override
   String walletSwapRefundLabelChain(String chain) {
@@ -2385,7 +2385,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSwapRefundHelperChain(String chain) {
-    return 'En $chain-adresse — dit myntene dine returneres hvis byttet mislykkes. Ikke en Zcash-adresse.';
+    return 'En $chain-adresse, dit myntene dine returneres hvis byttet mislykkes. Ikke en Zcash-adresse.';
   }
 
   @override
@@ -2393,7 +2393,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapRefundInfoBody =>
-      'Hvis byttet ikke kan fullføres, sender leverandøren myntene dine tilbake til denne adressen på kjeden du betalte fra. Skriv inn en adresse du kontrollerer — lommeboken kan ikke sjekke en fremmed adresse for deg, så verifiser den nøye.';
+      'Hvis byttet ikke kan fullføres, sender leverandøren myntene dine tilbake til denne adressen på kjeden du betalte fra. Skriv inn en adresse du kontrollerer. Lommeboken kan ikke sjekke en fremmed adresse for deg, så verifiser den nøye.';
 
   @override
   String get walletSwapRefundScanTooltip =>
@@ -2448,7 +2448,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapPickerStale =>
-      'Kunne ikke oppdatere eiendelslisten — viser den sist kjente listen.';
+      'Kunne ikke oppdatere eiendelslisten. Viser den sist kjente listen.';
 
   @override
   String get walletSwapPickerEmpty =>
@@ -2485,22 +2485,22 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapSlippageMayFail =>
-      'Svært lav — byttet kan mislykkes hvis prisen endrer seg.';
+      'Svært lav. Byttet kan mislykkes hvis prisen endrer seg.';
 
   @override
   String get walletSwapSlippageNormal => 'En trygg toleranse.';
 
   @override
   String get walletSwapSlippageRisky =>
-      'Høy — du kan motta merkbart mindre enn oppgitt.';
+      'Høy. Du kan motta merkbart mindre enn oppgitt.';
 
   @override
   String get walletSwapSlippageTooHigh =>
-      'For høy — byttet vil bli avvist. Sett den til 10 % eller lavere.';
+      'For høy, byttet vil bli avvist. Sett den til 10 % eller lavere.';
 
   @override
   String walletSwapIntoZecFloorNote(String zec, String slippage) {
-    return 'Du vil motta minst $zec ZEC — din slippasjegrense på $slippage%. Sluttbeløpet vil ikke falle under dette.';
+    return 'Du vil motta minst $zec ZEC (din slippasjegrense på $slippage%). Sluttbeløpet vil ikke falle under dette.';
   }
 
   @override
@@ -2509,14 +2509,14 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapIntoZecEndsShielded =>
-      'Inntil du skjermer det — ett trykk, du blir varslet ved ankomst — er det mottatte beløpet kortvarig offentlig og synlig på kjeden. En liten levering kan forbli offentlig til den akkumuleres.';
+      'Inntil du skjermer det (ett trykk, du blir varslet ved ankomst), er det mottatte beløpet kortvarig offentlig og synlig på kjeden. En liten levering kan forbli offentlig til den akkumuleres.';
 
   @override
   String get walletSwapRefundVerifyTitle => 'Verifiser refusjonsadressen din';
 
   @override
   String get walletSwapRefundVerifyBody =>
-      'Sjekk den tegn for tegn — dette er hvor myntene dine returneres hvis byttet mislykkes. Lommeboken kan ikke verifisere en fremmed adresse for deg.';
+      'Sjekk den tegn for tegn. Dette er hvor myntene dine returneres hvis byttet mislykkes. Lommeboken kan ikke verifisere en fremmed adresse for deg.';
 
   @override
   String get walletSwapRefundVerifyAck =>
@@ -2527,7 +2527,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletSwapPayoutVerifyBody(String asset) {
-    return 'Sjekk den tegn for tegn — det er her du mottar $asset. Lommeboken kan ikke verifisere en fremmed adresse for deg.';
+    return 'Sjekk den tegn for tegn. Det er her du mottar $asset. Lommeboken kan ikke verifisere en fremmed adresse for deg.';
   }
 
   @override
@@ -2569,7 +2569,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapDepositExpired =>
-      'Dette innskuddsvinduet er stengt. Ikke send midler nå — start et nytt bytte. Hvis du allerede har sendt, bør leverandøren refundere til refusjonsadressen din.';
+      'Dette innskuddsvinduet er stengt. Ikke send midler nå, men start et nytt bytte. Hvis du allerede har sendt, bør leverandøren refundere til refusjonsadressen din.';
 
   @override
   String get walletSwapDepositQrLabel => 'QR-kode for innskuddsadressen';
@@ -2589,7 +2589,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapDepositMemoWarning =>
-      'Du MÅ inkludere nøyaktig dette memoet med innskuddet ditt. Å sende uten det — eller med feil memo — kan føre til at du mister midlene dine permanent.';
+      'Du MÅ inkludere nøyaktig dette memoet med innskuddet ditt. Å sende uten det, eller med feil memo, kan føre til at du mister midlene dine permanent.';
 
   @override
   String get walletSwapDepositMemoLabel => 'Innskuddsmemo/tag';
@@ -2608,11 +2608,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletSwapDepositBackBody =>
-      'Dette avbryter ikke byttet ditt — det fortsetter i bakgrunnen. Men du trenger innskuddsadressen for å betale, så kopier den først hvis du ikke allerede har gjort det.';
+      'Dette avbryter ikke byttet ditt; det fortsetter i bakgrunnen. Men du trenger innskuddsadressen for å betale, så kopier den først hvis du ikke allerede har gjort det.';
 
   @override
   String get walletSwapDepositBackBodyExpired =>
-      'Dette avbryter ikke byttet ditt — det fortsetter i bakgrunnen. Innskuddsvinduet er stengt. Ikke send midler til innskuddsadressen nå. Hvis du allerede har sendt, bør leverandøren refundere til refusjonsadressen din.';
+      'Dette avbryter ikke byttet ditt; det fortsetter i bakgrunnen. Innskuddsvinduet er stengt. Ikke send midler til innskuddsadressen nå. Hvis du allerede har sendt, bør leverandøren refundere til refusjonsadressen din.';
 
   @override
   String get walletSwapDepositBackStay => 'Bli';
@@ -2645,7 +2645,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'Lommeboken din forbereder denne adressen på enheten din — dette kan ta et øyeblikk hvis lommeboken er opptatt med annet arbeid.';
+      'Lommeboken din forbereder denne adressen på enheten din. Dette kan ta et øyeblikk hvis lommeboken er opptatt med annet arbeid.';
 
   @override
   String get walletReceiveRetry => 'Prøv igjen';
@@ -2676,7 +2676,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'Ny adresse — kan ikke kobles til dine andre adresser. Betalinger hit havner fortsatt i denne lommeboken, og de tidligere adressene dine fungerer fremdeles. Den vises ikke her igjen — kopier den nå.';
+      'Ny adresse som ikke kan kobles til dine andre adresser. Betalinger hit havner fortsatt i denne lommeboken, og de tidligere adressene dine fungerer fremdeles. Den vises ikke her igjen, så kopier den nå.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2697,7 +2697,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCopyNow =>
-      'Den vises ikke her igjen — kopier den nå.';
+      'Den vises ikke her igjen, så kopier den nå.';
 
   @override
   String get walletSecurityMenuItem => 'Sikkerhet…';
@@ -2754,18 +2754,18 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'Slett denne lommeboken og nøkkelen dens fra denne enheten. Den har ingen sendenøkler, så det er ingenting å ta sikkerhetskopi av — legg den til igjen når som helst med innsynsnøkkelen.';
+      'Slett denne lommeboken og nøkkelen dens fra denne enheten. Den har ingen sendenøkler, så det er ingenting å ta sikkerhetskopi av. Legg den til igjen når som helst med innsynsnøkkelen.';
 
   @override
   String get securityDeleteDialogTitle => 'Slette denne lommeboken?';
 
   @override
   String get securityDeleteDialogBody =>
-      'Dette fjerner lommeboken og nøkkelen dens fra denne enheten. Sørg for at du har tatt sikkerhetskopi av gjenopprettingsfrasen din — det er den ENESTE måten å gjenopprette midlene dine på.';
+      'Dette fjerner lommeboken og nøkkelen dens fra denne enheten. Sørg for at du har tatt sikkerhetskopi av gjenopprettingsfrasen din. Det er den ENESTE måten å gjenopprette midlene dine på.';
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'Dette fjerner lommeboken og nøkkelen dens fra denne enheten. Den har ingen sendenøkler, så ingenting trenger sikkerhetskopiering — du kan legge den til igjen senere med innsynsnøkkelen.';
+      'Dette fjerner lommeboken og nøkkelen dens fra denne enheten. Den har ingen sendenøkler, så ingenting trenger sikkerhetskopiering. Du kan legge den til igjen senere med innsynsnøkkelen.';
 
   @override
   String get securityDeleteDialogConfirm => 'Slett';
@@ -2775,11 +2775,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get securityDeleteFailedSnack =>
-      'Kunne ikke slette lommeboken — lommeboken din er uendret. Prøv igjen.';
+      'Kunne ikke slette lommeboken. Lommeboken din er uendret. Prøv igjen.';
 
   @override
   String securityDeleteRefusedBusySnack(int seconds) {
-    return 'Fullfør byttet av server først — det fullføres eller stopper innen $seconds sekunder. Prøv deretter å slette lommeboken igjen.';
+    return 'Fullfør byttet av server først. Det fullføres eller stopper innen $seconds sekunder. Prøv deretter å slette lommeboken igjen.';
   }
 
   @override
@@ -2791,14 +2791,14 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'Disse betalingene er ikke sendt ennå. Beløpene deres er fortsatt en del av saldoen din — bortsett fra dem lommeboken din holder på å sende, der beløpet kan allerede være reservert.';
+      'Disse betalingene er ikke sendt ennå. Beløpene deres er fortsatt en del av saldoen din, bortsett fra dem lommeboken din holder på å sende, der beløpet kan allerede være reservert.';
 
   @override
   String get walletParkedCancel => 'Avbryt';
 
   @override
   String get walletParkedPausedHint =>
-      'Pauset — denne betalingen sendes ikke av seg selv. Midlene dine er trygge. Send den nå, eller avbryt den.';
+      'Pauset. Denne betalingen sendes ikke av seg selv. Midlene dine er trygge. Send den nå, eller avbryt den.';
 
   @override
   String get walletParkedRetryStale =>
@@ -2806,11 +2806,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'Denne betalingen venter ikke lenger — lommeboken din sender den kanskje allerede. Sjekk Lagret og under behandling og aktiviteten din.';
+      'Denne betalingen venter ikke lenger. Lommeboken din sender den kanskje allerede. Sjekk Lagret og under behandling og aktiviteten din.';
 
   @override
   String get walletReclaimExplainer =>
-      'Sendinger gjennom engangsadresse sitter fast. Du kan gjenåpne dem — det flytter et lite beløp mellom dine egne adresser og fører det tilbake.';
+      'Sendinger gjennom engangsadresse sitter fast. Du kan gjenåpne dem. Det flytter et lite beløp mellom dine egne adresser og fører det tilbake.';
 
   @override
   String get walletReclaimButton => 'Gjenåpne sending';
@@ -2841,7 +2841,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletReclaimNotBroadcast =>
-      'Kunne ikke bekrefte at sendingen nådde nettverket. Den kan likevel ha gått gjennom — vent litt før du prøver igjen.';
+      'Kunne ikke bekrefte at sendingen nådde nettverket. Den kan likevel ha gått gjennom, så vent litt før du prøver igjen.';
 
   @override
   String get walletReclaimNeedsFunds =>
@@ -2871,7 +2871,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletParkedCancelConfirmBody =>
-      'Dette forkaster den lagrede betalingen. Den er ikke sendt, så ingenting forlater lommeboken — men dette kan ikke angres.';
+      'Dette forkaster den lagrede betalingen. Den er ikke sendt, så ingenting forlater lommeboken. Men dette kan ikke angres.';
 
   @override
   String get walletParkedCancelConfirmKeep => 'Behold den';
@@ -2884,7 +2884,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletParkedCancelAlreadySending =>
-      'Denne betalingen kan allerede være på vei — sjekk aktiviteten din.';
+      'Denne betalingen kan allerede være på vei. Sjekk aktiviteten din.';
 
   @override
   String get walletParkedCancelFailed =>
@@ -2917,16 +2917,16 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletRecoverDonePartial(String amount) {
-    return 'Gjenoppretter $amount — noen midler trenger fortsatt et nytt forsøk.';
+    return 'Gjenoppretter $amount. Noen midler trenger fortsatt et nytt forsøk.';
   }
 
   @override
   String get walletRecoverRetry =>
-      'Noen midler trenger et nytt forsøk — kjør gjenoppretting på nytt.';
+      'Noen midler trenger et nytt forsøk. Kjør gjenoppretting på nytt.';
 
   @override
   String get walletRecoverTruncated =>
-      'Ikke alle engangsadresser ble sjekket ennå — kjør det på nytt for å sjekke resten.';
+      'Ikke alle engangsadresser ble sjekket ennå. Kjør det på nytt for å sjekke resten.';
 
   @override
   String get walletRecoverNothing => 'Ingenting å gjenopprette akkurat nå.';
@@ -2957,11 +2957,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'Lommeboken din forbereder denne betalingen — beløpet kan allerede være reservert. Midlene dine er trygge. Hvis den ikke fullføres, går den tilbake til listen av seg selv.';
+      'Lommeboken din forbereder denne betalingen, og beløpet kan allerede være reservert. Midlene dine er trygge. Hvis den ikke fullføres, går den tilbake til listen av seg selv.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'Lommeboken din forbereder denne betalingen — beløpet kan allerede være reservert. Midlene dine er trygge, men betalingen kan først fullføres når lommeboken din synkroniserer igjen.';
+      'Lommeboken din forbereder denne betalingen, og beløpet kan allerede være reservert. Midlene dine er trygge, men betalingen kan først fullføres når lommeboken din synkroniserer igjen.';
 
   @override
   String get walletParkedSendNow => 'Send nå';
@@ -2995,7 +2995,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'Ikke klar til å sendes ennå. Betalingen din er lagret og ikke lenger pauset — prøv Send nå på nytt senere, eller avbryt den.';
+      'Ikke klar til å sendes ennå. Betalingen din er lagret og ikke lenger pauset. Prøv Send nå på nytt senere, eller avbryt den.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -3009,7 +3009,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsIntro =>
-      'Offentlige midler er offentlig synlige på blokkjeden — beløpet, adressene og myntenes historie.';
+      'Offentlige midler er offentlig synlige på blokkjeden: beløpet, adressene og myntenes historie.';
 
   @override
   String get walletExpertToggleLabel => 'Avansert: offentlige midler';
@@ -3036,15 +3036,15 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletAutoShieldIncomplete =>
-      'Automatisk skjerming ble ikke fullført — disse midlene er fortsatt offentlig synlige. Du kan skjerme dem nå.';
+      'Automatisk skjerming ble ikke fullført, så disse midlene er fortsatt offentlig synlige. Du kan skjerme dem nå.';
 
   @override
   String get walletSendPrivacyShielded =>
-      'Skjermet betaling — beløpet og mottakeren forblir private på kjeden.';
+      'Skjermet betaling: beløpet og mottakeren forblir private på kjeden.';
 
   @override
   String get walletSendPrivacyTransparent =>
-      'Offentlig betaling — beløpet og adressene er synlige på blokkjeden.';
+      'Offentlig betaling: beløpet og adressene er synlige på blokkjeden.';
 
   @override
   String get walletActivityPublicBadge => 'Offentlig synlig på kjeden';
@@ -3060,7 +3060,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoOff =>
-      'Automatisk skjerming er av — offentlige midler forblir offentlig synlige til du skjermer dem.';
+      'Automatisk skjerming er av. Offentlige midler forblir offentlig synlige til du skjermer dem.';
 
   @override
   String get walletMoveAutoShieldNote =>
@@ -3068,7 +3068,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String walletMoveBelowFloorNote(String amount, String floor) {
-    return 'Etter denne flyttingen blir den offentlige saldoen din $amount ZEC — under de $floor ZEC som trengs for å skjerme den igjen. Den forblir offentlig til mer kommer inn.';
+    return 'Etter denne flyttingen blir den offentlige saldoen din $amount ZEC, under de $floor ZEC som trengs for å skjerme den igjen. Den forblir offentlig til mer kommer inn.';
   }
 
   @override
@@ -3080,7 +3080,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTransparentFundsAutoDenied =>
-      'Automatisk skjerming er satt på pause for denne økten — den ble ikke godkjent. Du kan fortsatt skjerme midlene manuelt.';
+      'Automatisk skjerming er satt på pause for denne økten fordi den ikke ble godkjent. Du kan fortsatt skjerme midlene manuelt.';
 
   @override
   String get walletDeepScanMenuItem => 'Sjekk eldre bytteadresser…';
@@ -3094,7 +3094,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'Hvis du gjenopprettet denne lommeboken og den tidligere brukte bytte mye, kan midler fra de eldste byttene ta et ekstra steg å finne. Dette sjekker for det — alt som blir funnet, vises i saldoen din etter hvert som lommeboken synkroniserer.';
+      'Hvis du gjenopprettet denne lommeboken og den tidligere brukte bytte mye, kan midler fra de eldste byttene ta et ekstra steg å finne. Dette sjekker for det. Alt som blir funnet, vises i saldoen din etter hvert som lommeboken synkroniserer.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3102,7 +3102,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'Sjekker fortsatt det gjeldende intervallet — alt som blir funnet, vises i saldoen din. Dette kan ta en liten stund.';
+      'Sjekker fortsatt det gjeldende intervallet. Alt som blir funnet, vises i saldoen din. Dette kan ta en liten stund.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3130,15 +3130,15 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'Sjekker eldre bytteadresser — alt som blir funnet, vises i saldoen din.';
+      'Sjekker eldre bytteadresser. Alt som blir funnet, vises i saldoen din.';
 
   @override
   String get walletDeepScanFailed =>
-      'Kunne ikke starte sjekken. Ingenting ble endret — prøv igjen.';
+      'Kunne ikke starte sjekken. Ingenting ble endret. Prøv igjen.';
 
   @override
   String get walletDeepScanSlow =>
-      'Dette tar lengre tid enn vanlig. Hvis dine eldre bytteadresser ble sjekket, vises alt som blir funnet i saldoen din — sjekk igjen om en liten stund.';
+      'Dette tar lengre tid enn vanlig. Hvis dine eldre bytteadresser ble sjekket, vises alt som blir funnet i saldoen din. Sjekk igjen om en liten stund.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3146,7 +3146,7 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'Sjekker fortsatt det siste intervallet — dette kan ta opptil et par dager, men vanligvis mye mindre. Det fullføres av seg selv — sjekk igjen senere.';
+      'Sjekker fortsatt det siste intervallet. Dette kan ta opptil et par dager, men vanligvis mye mindre. Det fullføres av seg selv, så sjekk igjen senere.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3154,11 +3154,11 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'Sjekker fortsatt eldre bytteadresser — alt som blir funnet, vises i saldoen din.';
+      'Sjekker fortsatt eldre bytteadresser. Alt som blir funnet, vises i saldoen din.';
 
   @override
   String get walletRescanSwapPointer =>
-      'Leter du etter midler fra et gammelt bytte? En ny skanning finner ikke det — bruk «Sjekk eldre bytteadresser» i stedet.';
+      'Leter du etter midler fra et gammelt bytte? En ny skanning finner ikke det. Bruk «Sjekk eldre bytteadresser» i stedet.';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3242,15 +3242,15 @@ class WalletLocalizationsNb extends WalletLocalizations {
   String get walletLoadingLabel => 'Laster inn';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'Sjekk før du sender igjen';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'Vi kunne ikke bekrefte denne betalingen. Se Aktivitet før du sender den igjen.';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'Vi kunne ikke bekrefte at denne betalingen ble lagret. Sjekk betalingene dine under behandling før du sender den igjen.';
 
   @override
   String get walletShieldUnknownTitle => 'Sjekk før du skjermer igjen';
@@ -3268,5 +3268,5 @@ class WalletLocalizationsNb extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'Dette forsøket utløp før nettverket bekreftet det. Lommeboken din sender betalingen på nytt av seg selv, så ikke send den på nytt selv.';
 }

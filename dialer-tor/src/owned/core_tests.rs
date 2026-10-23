@@ -345,7 +345,23 @@ impl AsyncWrite for OwnedTimerStream {
 }
 
 fn not_connected<T: std::fmt::Debug>(r: io::Result<T>) -> bool {
-    matches!(r, Err(e) if e.kind() == io::ErrorKind::NotConnected)
+    matches!(r, Err(e) if is_client_shut_down(&e))
+}
+
+#[test]
+fn only_the_shutdown_marker_reads_as_a_shut_down_client() {
+    let marked = closed_stream();
+    assert!(is_client_shut_down(&marked));
+    assert_eq!(marked.to_string(), "the Tor client was shut down");
+    // The same kind from the network, or the same text without the marker,
+    // is not a shutdown.
+    for other in [
+        io::Error::from(io::ErrorKind::NotConnected),
+        io::Error::new(io::ErrorKind::NotConnected, "the Tor client was shut down"),
+        io::Error::new(io::ErrorKind::BrokenPipe, ClientShutDown),
+    ] {
+        assert!(!is_client_shut_down(&other), "{other:?}");
+    }
 }
 
 #[test]

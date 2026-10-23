@@ -453,7 +453,7 @@ with the first host that needs two wallets open at once.
   because it cannot yet find the actual fork point. A server that does this
   can make the wallet misjudge which funds are spendable: a note can be
   offered before it is safe to spend, or funds can look stuck. The server
-  cannot take funds. Until this is fixed, 0.0.1 is not ready to hold large
+  cannot take funds. Until this is fixed, the SDK is not ready to hold large
   amounts; use it with small amounts and a light server you trust.
   [Issue #1](https://github.com/alvorado-lab/zec-wallet/issues/1) tracks it.
 

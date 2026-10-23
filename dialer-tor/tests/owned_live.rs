@@ -20,7 +20,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
-use dialer_tor::{ClientLedger, OwnedOptions, Shutdown, TorClientConfig, TorDialer, arti_client};
+use dialer_tor::{
+    ClientLedger, OwnedOptions, Shutdown, TorClientConfig, TorDialer, arti_client,
+    is_client_shut_down,
+};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 const REAL_HOST: &str = "zec.rocks";
@@ -114,10 +117,14 @@ async fn real_stream_after_shutdown_errors_never_panics() {
         .await
         .expect("the parked reader was woken")
         .expect("the reader did not panic");
-    assert!(read.is_err(), "a read across Stopped must fail: {read:?}");
     assert!(
-        write_half.write_all(b"x").await.is_err(),
-        "a write after Stopped must fail"
+        read.as_ref().is_err_and(is_client_shut_down),
+        "a read across Stopped must fail as a shut-down client: {read:?}"
+    );
+    let write = write_half.write_all(b"x").await;
+    assert!(
+        write.as_ref().is_err_and(is_client_shut_down),
+        "a write after Stopped must fail as a shut-down client: {write:?}"
     );
 
     // The whole Tor directory: `state/` (guards) and `cache/` (the directory

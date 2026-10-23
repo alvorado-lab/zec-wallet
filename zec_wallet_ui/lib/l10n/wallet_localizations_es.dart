@@ -147,7 +147,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletTxExplainQueued =>
-      'Guardado en este dispositivo, en \"Guardado y pendiente\" — puede enviarlo o cancelarlo allí.';
+      'Guardado en este dispositivo, en \"Guardado y pendiente\". Puede enviarlo o cancelarlo allí.';
 
   @override
   String get walletTxExplainPending =>
@@ -235,7 +235,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletRescanSettlingAdvisory =>
-      'Un pago de esta billetera aún se está confirmando. La billetera suele rechazar el reescaneo hasta que se complete — puede intentarlo, pero espere que se rechace.';
+      'Un pago de esta billetera aún se está confirmando. La billetera suele rechazar el reescaneo hasta que se complete. Puede intentarlo, pero espere que se rechace.';
 
   @override
   String get walletRescanConfirm => 'Iniciar reescaneo';
@@ -468,7 +468,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String walletMoveAvailableCatchingUp(String amount) {
-    return 'Disponible para mover: $amount ZEC — su saldo todavía se está poniendo al día';
+    return 'Disponible para mover: $amount ZEC (su saldo todavía se está poniendo al día)';
   }
 
   @override
@@ -544,7 +544,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletMoveNothingCatchingUpBody =>
-      'Su billetera todavía se está poniendo al día — todo lo que haya recibido estará disponible para mover una vez que la sincronización se complete.';
+      'Su billetera todavía se está poniendo al día. Todo lo que haya recibido estará disponible para mover una vez que la sincronización se complete.';
 
   @override
   String get walletMoveCouldNotLoad =>
@@ -748,7 +748,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSyncExplainStalledOffline =>
-      'No se puede conectar con la red de Zcash — es normal si está sin conexión, o es posible que el servidor no esté disponible temporalmente. Sus fondos están seguros: el saldo muestra el último estado sincronizado, y los envíos en cola permanecen guardados en \"Guardado y pendiente\". La conexión vuelve a intentarlo por sí sola.';
+      'No se puede conectar con la red de Zcash. Es normal si está sin conexión, o es posible que el servidor no esté disponible temporalmente. Sus fondos están seguros: el saldo muestra el último estado sincronizado, y los envíos en cola permanecen guardados en \"Guardado y pendiente\". La conexión vuelve a intentarlo por sí sola.';
 
   @override
   String get walletSyncExplainOffline =>
@@ -1304,11 +1304,11 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletExportViewingKeyWarning =>
-      'Esta clave permite que quien la tenga vea todo lo que esta billetera ha recibido y enviado hasta ahora — y todo lo que recibirá y enviará en el futuro. No permite gastar sus fondos ni recuperar su billetera. Compártala únicamente con alguien de su confianza a quien desee mostrarle su historial completo, como un contador o su propio segundo dispositivo. La única forma de dejar de compartirla más adelante es trasladar sus fondos a una billetera nueva.';
+      'Esta clave permite que quien la tenga vea todo lo que esta billetera ha recibido y enviado hasta ahora, y también todo lo que recibirá y enviará en el futuro. No permite gastar sus fondos ni recuperar su billetera. Compártala únicamente con alguien de su confianza a quien desee mostrarle su historial completo, como un contador o su propio segundo dispositivo. La única forma de dejar de compartirla más adelante es trasladar sus fondos a una billetera nueva.';
 
   @override
   String get walletExportViewingKeyWarningWatchOnly =>
-      'Esta clave permite que quien la tenga vea todo lo que esta billetera ha recibido y enviado hasta ahora — y todo lo que recibirá y enviará en el futuro. No permite gastar sus fondos ni recuperar su billetera. Compártala únicamente con alguien de su confianza a quien desee mostrarle su historial completo, como un contador o su propio segundo dispositivo. Una vez compartida, no podrá dejar de compartirla.';
+      'Esta clave permite que quien la tenga vea todo lo que esta billetera ha recibido y enviado hasta ahora, y también todo lo que recibirá y enviará en el futuro. No permite gastar sus fondos ni recuperar su billetera. Compártala únicamente con alguien de su confianza a quien desee mostrarle su historial completo, como un contador o su propio segundo dispositivo. Una vez compartida, no podrá dejar de compartirla.';
 
   @override
   String get walletExportViewingKeyReveal => 'Mostrar clave de visualización';
@@ -1442,7 +1442,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSendWatchOnly =>
-      'Esta es una billetera de solo visualización. Puede mostrar saldos y recibir pagos, pero no tiene claves de gasto — así que no puede enviar.';
+      'Esta es una billetera de solo visualización. Puede mostrar saldos y recibir pagos, pero no tiene claves de gasto, así que no puede enviar.';
 
   @override
   String get walletSendExpiredTitle => 'Esta solicitud de pago expiró';
@@ -1453,7 +1453,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSendFaultWatchOnly =>
-      'Esta es una billetera de solo visualización — no tiene claves de gasto, así que no puede enviar.';
+      'Esta es una billetera de solo visualización: no tiene claves de gasto, así que no puede enviar.';
 
   @override
   String walletSendAvailable(String amount) {
@@ -1462,7 +1462,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String walletSendAvailableCatchingUp(String amount) {
-    return 'Disponible para enviar: $amount ZEC — su saldo todavía se está poniendo al día';
+    return 'Disponible para enviar: $amount ZEC (su saldo todavía se está poniendo al día)';
   }
 
   @override
@@ -1784,7 +1784,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSendFaultInsufficientCatchingUp =>
-      'Su saldo todavía se está poniendo al día — es posible que haya más disponible a medida que la billetera se sincroniza.';
+      'Su saldo todavía se está poniendo al día. Es posible que haya más disponible a medida que la billetera se sincroniza.';
 
   @override
   String walletSendFaultInsufficientPending(String pending) {
@@ -1899,7 +1899,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapUnavailableWatchOnly =>
-      'Esta es una billetera de solo visualización — no puede intercambiar.';
+      'Esta es una billetera de solo visualización, así que no puede intercambiar.';
 
   @override
   String get walletSwapDone => 'Listo';
@@ -1914,7 +1914,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String walletSwapAvailableCatchingUp(String amount) {
-    return 'Disponible para intercambiar: $amount ZEC — su saldo todavía se está poniendo al día';
+    return 'Disponible para intercambiar: $amount ZEC (su saldo todavía se está poniendo al día)';
   }
 
   @override
@@ -1985,12 +1985,12 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String walletSwapQuoteExpiresIn(String time) {
-    return 'Cotización válida por unos $time — confirme antes de que expire.';
+    return 'Cotización válida por unos $time. Confirme antes de que expire.';
   }
 
   @override
   String get walletSwapQuoteExpiresUnderMinute =>
-      'Cotización válida por menos de un minuto — confirme antes de que expire.';
+      'Cotización válida por menos de un minuto. Confirme antes de que expire.';
 
   @override
   String get walletSwapQuoteExpired =>
@@ -2067,7 +2067,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyOutOfZec =>
-      'Su billetera está enviando el depósito de ZEC al proveedor. Si está brevemente sin conexión, se envía automáticamente en cuanto vuelva a conectarse — pero la ventana de envío es corta, y si se cierra antes, el intercambio simplemente termina y no se intercambia nada. Su ZEC sigue siendo suyo, y puede tardar hasta una hora en volver a aparecer como disponible.';
+      'Su billetera está enviando el depósito de ZEC al proveedor. Si está brevemente sin conexión, se envía automáticamente en cuanto vuelva a conectarse. Pero la ventana de envío es corta, y si se cierra antes, el intercambio simplemente termina y no se intercambia nada. Su ZEC sigue siendo suyo, y puede tardar hasta una hora en volver a aparecer como disponible.';
 
   @override
   String get walletSwapStatusPendingBodyIntoZec =>
@@ -2075,7 +2075,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapStatusPendingBodyIntoZecReattached =>
-      'Este intercambio todavía está esperando su depósito. Las instrucciones de depósito ya no están disponibles en este dispositivo — si ya envió los fondos, se detectarán; si no lo ha hecho, deje que este intercambio expire e inicie uno nuevo.';
+      'Este intercambio todavía está esperando su depósito. Las instrucciones de depósito ya no están disponibles en este dispositivo. Si ya envió los fondos, se detectarán; si no lo ha hecho, deje que este intercambio expire e inicie uno nuevo.';
 
   @override
   String walletSwapPendingWindowEndsAt(String time) {
@@ -2088,7 +2088,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapPendingWindowPassedIntoZec =>
-      'La ventana de depósito ha pasado. Si aún no ha enviado su depósito, este intercambio simplemente termina — obtenga una nueva cotización cuando esté listo.';
+      'La ventana de depósito ha pasado. Si aún no ha enviado su depósito, este intercambio simplemente termina. Obtenga una nueva cotización cuando esté listo.';
 
   @override
   String walletSwapsInFlightTitle(int count) {
@@ -2114,15 +2114,15 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapInFlightRowPastWindow =>
-      'La ventana de depósito ha pasado — verifique el estado de este intercambio.';
+      'La ventana de depósito ha pasado. Verifique el estado de este intercambio.';
 
   @override
   String get walletSwapInFlightRowOverdue =>
-      'Este intercambio aún no ha alcanzado un resultado confirmado aquí — ábralo para verificarlo. Cualquier ZEC que regrese a esta billetera aparecerá en su saldo después de una sincronización.';
+      'Este intercambio aún no ha alcanzado un resultado confirmado aquí. Ábralo para verificarlo. Cualquier ZEC que regrese a esta billetera aparecerá en su saldo después de una sincronización.';
 
   @override
   String get walletSwapInFlightRowOverdueIntoZec =>
-      'Este intercambio aún no ha alcanzado un resultado confirmado aquí — ábralo para verificarlo. Cualquier ZEC que este intercambio entregue a esta billetera aparecerá en su saldo después de una sincronización.';
+      'Este intercambio aún no ha alcanzado un resultado confirmado aquí. Ábralo para verificarlo. Cualquier ZEC que este intercambio entregue a esta billetera aparecerá en su saldo después de una sincronización.';
 
   @override
   String get walletSwapRowOutcomeSuccess => 'Intercambio completado.';
@@ -2141,15 +2141,15 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapRemoveBodyInFlight =>
-      'Esto solo quita el intercambio de esta lista — no cancela el intercambio, y esta billetera dejará de hacer seguimiento de su reembolso. El ZEC reembolsado más adelante sigue perteneciendo a esta billetera; un reescaneo completo puede encontrarlo.';
+      'Esto solo quita el intercambio de esta lista: no cancela el intercambio, y esta billetera dejará de hacer seguimiento de su reembolso. El ZEC reembolsado más adelante sigue perteneciendo a esta billetera; un reescaneo completo puede encontrarlo.';
 
   @override
   String get walletSwapRemoveBodyInFlightIntoZec =>
-      'Esto solo quita el intercambio de esta lista — no cancela el intercambio, y esta billetera dejará de hacer seguimiento del ZEC entrante. El ZEC que llegue más adelante sigue perteneciendo a esta billetera; un reescaneo completo puede encontrarlo. Si el intercambio se reembolsa en su lugar, el reembolso vuelve en el activo que envió, fuera de esta billetera.';
+      'Esto solo quita el intercambio de esta lista: no cancela el intercambio, y esta billetera dejará de hacer seguimiento del ZEC entrante. El ZEC que llegue más adelante sigue perteneciendo a esta billetera; un reescaneo completo puede encontrarlo. Si el intercambio se reembolsa en su lugar, el reembolso vuelve en el activo que envió, fuera de esta billetera.';
 
   @override
   String get walletSwapRemoveBodyInFlightUnknown =>
-      'Esto solo quita el intercambio de esta lista — no cancela el intercambio, y esta billetera dejará de hacer seguimiento del ZEC que aún pueda estar llegando de él. El ZEC que llegue más adelante sigue perteneciendo a esta billetera; un reescaneo completo puede encontrarlo.';
+      'Esto solo quita el intercambio de esta lista: no cancela el intercambio, y esta billetera dejará de hacer seguimiento del ZEC que aún pueda estar llegando de él. El ZEC que llegue más adelante sigue perteneciendo a esta billetera; un reescaneo completo puede encontrarlo.';
 
   @override
   String get walletSwapRemoveBodyDone =>
@@ -2232,7 +2232,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapStatusRefundedBodyOutOfZec =>
-      'El intercambio no se completó, por lo que el proveedor devolvió su ZEC a esta billetera. Llega como fondos sin blindar y aparece en su saldo después de la próxima sincronización de la billetera — esto puede tardar un poco.';
+      'El intercambio no se completó, por lo que el proveedor devolvió su ZEC a esta billetera. Llega como fondos sin blindar y aparece en su saldo después de la próxima sincronización de la billetera. Esto puede tardar un poco.';
 
   @override
   String get walletSwapStatusFailedTitle => 'Intercambio fallido';
@@ -2264,7 +2264,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingUnavailableBodyOutOfZec =>
-      'El intercambio está desactivado aquí, por lo que no se puede hacer seguimiento a este intercambio en este momento. Si se reembolsó, el ZEC regresa a esta billetera — aparecerá en su saldo después de que se reactive el intercambio y la billetera se sincronice.';
+      'El intercambio está desactivado aquí, por lo que no se puede hacer seguimiento a este intercambio en este momento. Si se reembolsó, el ZEC regresa a esta billetera y aparecerá en su saldo después de que se reactive el intercambio y la billetera se sincronice.';
 
   @override
   String get walletSwapTrackingError =>
@@ -2272,7 +2272,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapTrackingErrorBody =>
-      'No pudimos abrir el seguimiento de este intercambio. Es posible que el intercambio en sí siga en curso — cualquier fondo depositado se liquida o se reembolsa del lado del proveedor.';
+      'No pudimos abrir el seguimiento de este intercambio. Es posible que el intercambio en sí siga en curso: cualquier fondo depositado se liquida o se reembolsa del lado del proveedor.';
 
   @override
   String get walletSwapFaultDestinationRequired =>
@@ -2320,15 +2320,15 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletSwapFaultRefundUnavailable =>
-      'Esta billetera aún no puede configurar una dirección de reembolso — esto suele significar solo que la primera sincronización no ha terminado. Espere a que la sincronización se complete y vuelva a intentarlo.';
+      'Esta billetera aún no puede configurar una dirección de reembolso. Esto suele significar solo que la primera sincronización no ha terminado. Espere a que la sincronización se complete y vuelva a intentarlo.';
 
   @override
   String get walletSwapFaultDestinationUnavailable =>
-      'Esta billetera aún no puede configurar una dirección de recepción para este intercambio — esto suele significar solo que la primera sincronización no ha terminado. Espere a que la sincronización se complete y vuelva a intentarlo.';
+      'Esta billetera aún no puede configurar una dirección de recepción para este intercambio. Esto suele significar solo que la primera sincronización no ha terminado. Espere a que la sincronización se complete y vuelva a intentarlo.';
 
   @override
   String get walletSwapFaultExecuteTimeout =>
-      'El intercambio no pudo iniciarse a tiempo — la conexión pudo ser lenta, o la billetera estaba ocupada. Obtenga una nueva cotización e intente de nuevo.';
+      'El intercambio no pudo iniciarse a tiempo. La conexión pudo ser lenta, o la billetera estaba ocupada. Obtenga una nueva cotización e intente de nuevo.';
 
   @override
   String get walletSwapFaultStoreBusyRetry =>
@@ -2353,7 +2353,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
     String needed,
     String spendable,
   ) {
-    return 'Este intercambio necesita aproximadamente $needed ZEC, incluida la comisión de red, pero solo $spendable ZEC está disponible para gastar en este momento. Su saldo todavía se está poniendo al día — es posible que pronto haya más disponible.';
+    return 'Este intercambio necesita aproximadamente $needed ZEC, incluida la comisión de red, pero solo $spendable ZEC está disponible para gastar en este momento. Su saldo todavía se está poniendo al día; es posible que pronto haya más disponible.';
   }
 
   @override
@@ -2660,7 +2660,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletReceivePreparingHint =>
-      'Su billetera prepara esta dirección en su dispositivo — esto puede tardar un momento si la billetera está ocupada con otro trabajo.';
+      'Su billetera prepara esta dirección en su dispositivo. Esto puede tardar un momento si la billetera está ocupada con otro trabajo.';
 
   @override
   String get walletReceiveRetry => 'Intentar de nuevo';
@@ -2691,7 +2691,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCaption =>
-      'Dirección nueva — no se puede vincular con sus otras direcciones. Los pagos a ella igual llegan a esta billetera, y sus direcciones anteriores siguen funcionando. No volverá a mostrarse aquí — cópiela ahora.';
+      'Dirección nueva: no se puede vincular con sus otras direcciones. Los pagos a ella igual llegan a esta billetera, y sus direcciones anteriores siguen funcionando. No volverá a mostrarse aquí, así que cópiela ahora.';
 
   @override
   String get walletReceiveFreshError =>
@@ -2712,7 +2712,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletReceiveFreshCopyNow =>
-      'No volverá a mostrarse aquí — cópiela ahora.';
+      'No volverá a mostrarse aquí, así que cópiela ahora.';
 
   @override
   String get walletSecurityMenuItem => 'Seguridad…';
@@ -2769,7 +2769,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get securityDeleteWalletSubtitleWatchOnly =>
-      'Elimine esta billetera y su clave de este dispositivo. No contiene claves de gasto, por lo que no hay nada que respaldar — puede volver a añadirla en cualquier momento con su clave de visualización.';
+      'Elimine esta billetera y su clave de este dispositivo. No contiene claves de gasto, por lo que no hay nada que respaldar. Puede volver a añadirla en cualquier momento con su clave de visualización.';
 
   @override
   String get securityDeleteDialogTitle => '¿Eliminar esta billetera?';
@@ -2780,7 +2780,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get securityDeleteDialogBodyWatchOnly =>
-      'Esto elimina la billetera y su clave de este dispositivo. No contiene claves de gasto, por lo que no es necesario respaldar nada — puede volver a añadirla más adelante con su clave de visualización.';
+      'Esto elimina la billetera y su clave de este dispositivo. No contiene claves de gasto, por lo que no es necesario respaldar nada. Puede volver a añadirla más adelante con su clave de visualización.';
 
   @override
   String get securityDeleteDialogConfirm => 'Eliminar';
@@ -2806,7 +2806,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletParkedSubtitlePreparing =>
-      'Estos pagos aún no se han enviado. Sus montos siguen siendo parte de su saldo — excepto los que su billetera está enviando, cuyo monto es posible que ya esté reservado.';
+      'Estos pagos aún no se han enviado. Sus montos siguen siendo parte de su saldo, excepto los que su billetera está enviando, cuyo monto es posible que ya esté reservado.';
 
   @override
   String get walletParkedCancel => 'Cancelar';
@@ -2821,7 +2821,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletParkedAlreadyInProgress =>
-      'Este pago ya no está en espera — es posible que su billetera ya lo esté enviando. Revise \"Guardado y pendiente\" y su actividad.';
+      'Este pago ya no está en espera. Es posible que su billetera ya lo esté enviando. Revise \"Guardado y pendiente\" y su actividad.';
 
   @override
   String get walletReclaimExplainer =>
@@ -2970,11 +2970,11 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletParkedPreparingHint =>
-      'Su billetera está preparando este pago — es posible que su monto ya esté reservado. Sus fondos están seguros. Si no termina, vuelve a la lista por sí solo.';
+      'Su billetera está preparando este pago, y es posible que su monto ya esté reservado. Sus fondos están seguros. Si no termina, vuelve a la lista por sí solo.';
 
   @override
   String get walletParkedPreparingHintSyncPaused =>
-      'Su billetera está preparando este pago — es posible que su monto ya esté reservado. Sus fondos están seguros, pero solo podrá completarse cuando su billetera vuelva a sincronizar.';
+      'Su billetera está preparando este pago, y es posible que su monto ya esté reservado. Sus fondos están seguros, pero solo podrá completarse cuando su billetera vuelva a sincronizar.';
 
   @override
   String get walletParkedSendNow => 'Enviar ahora';
@@ -3008,7 +3008,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletParkedAuthorizeRearmed =>
-      'Aún no está listo para enviarse. Su pago está guardado y ya no está pausado — vuelva a intentarlo más tarde con \"Enviar ahora\", o cancélelo.';
+      'Aún no está listo para enviarse. Su pago está guardado y ya no está pausado. Vuelva a intentarlo más tarde con \"Enviar ahora\", o cancélelo.';
 
   @override
   String get walletParkedAuthorizeFailed =>
@@ -3109,7 +3109,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletDeepScanBody =>
-      'Si restauró esta billetera y esta usaba intercambios con frecuencia, el dinero de sus intercambios más antiguos puede necesitar un paso adicional para encontrarse. Esto lo revisa — cualquier fondo que se encuentre aparecerá en su saldo a medida que su billetera se sincroniza.';
+      'Si restauró esta billetera y esta usaba intercambios con frecuencia, el dinero de sus intercambios más antiguos puede necesitar un paso adicional para encontrarse. Esto lo revisa: cualquier fondo que se encuentre aparecerá en su saldo a medida que su billetera se sincroniza.';
 
   @override
   String get walletDeepScanCoverage =>
@@ -3117,7 +3117,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletDeepScanCoveragePending =>
-      'Aún se está revisando el rango actual — cualquier fondo que se encuentre aparecerá en su saldo. Esto puede tardar un poco.';
+      'Aún se está revisando el rango actual. Cualquier fondo que se encuentre aparecerá en su saldo. Esto puede tardar un poco.';
 
   @override
   String get walletDeepScanCoverageUnknown =>
@@ -3146,15 +3146,15 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletDeepScanRan =>
-      'Se están revisando direcciones de intercambio anteriores — cualquier fondo que se encuentre aparecerá en su saldo.';
+      'Se están revisando direcciones de intercambio anteriores. Cualquier fondo que se encuentre aparecerá en su saldo.';
 
   @override
   String get walletDeepScanFailed =>
-      'No se pudo iniciar la revisión. Nada cambió — vuelva a intentarlo.';
+      'No se pudo iniciar la revisión. Nada cambió. Vuelva a intentarlo.';
 
   @override
   String get walletDeepScanSlow =>
-      'Esto está tardando más de lo habitual. Si se revisaron sus direcciones de intercambio anteriores, cualquier fondo que se encuentre aparecerá en su saldo — vuelva a revisar en breve.';
+      'Esto está tardando más de lo habitual. Si se revisaron sus direcciones de intercambio anteriores, cualquier fondo que se encuentre aparecerá en su saldo. Vuelva a revisar en breve.';
 
   @override
   String get walletDeepScanRefusedDisabled =>
@@ -3162,7 +3162,7 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletDeepScanRefusedOutstanding =>
-      'Aún se está revisando el último rango — esto puede tardar hasta un par de días, aunque normalmente mucho menos. Termina por sí solo; vuelva a revisar más tarde.';
+      'Aún se está revisando el último rango. Esto puede tardar hasta un par de días, aunque normalmente mucho menos. Termina por sí solo; vuelva a revisar más tarde.';
 
   @override
   String get walletDeepScanTorUnknownHint =>
@@ -3170,11 +3170,11 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletDeepScanBannerChecking =>
-      'Aún se están revisando direcciones de intercambio anteriores — cualquier fondo que se encuentre aparecerá en su saldo.';
+      'Aún se están revisando direcciones de intercambio anteriores. Cualquier fondo que se encuentre aparecerá en su saldo.';
 
   @override
   String get walletRescanSwapPointer =>
-      '¿Busca fondos de un intercambio antiguo? Un reescaneo no los encontrará — use “Revisar direcciones de intercambio anteriores” en su lugar.';
+      '¿Busca fondos de un intercambio antiguo? Un reescaneo no los encontrará. Use “Revisar direcciones de intercambio anteriores” en su lugar.';
 
   @override
   String get walletDeepScanRestoreNoteTitle =>
@@ -3259,15 +3259,15 @@ class WalletLocalizationsEs extends WalletLocalizations {
   String get walletLoadingLabel => 'Cargando';
 
   @override
-  String get walletSendUnknownTitle => 'Check before sending again';
+  String get walletSendUnknownTitle => 'Compruebe antes de volver a enviar';
 
   @override
   String get walletSendUnknownBody =>
-      'We couldn\'t confirm this payment. Check Activity before sending it again.';
+      'No pudimos confirmar este pago. Consulte Actividad antes de volver a enviarlo.';
 
   @override
   String get walletSendUnknownQueuedBody =>
-      'We couldn\'t confirm this payment was saved. Check your pending payments before sending it again.';
+      'No pudimos confirmar que este pago se guardó. Revise sus pagos pendientes antes de volver a enviarlo.';
 
   @override
   String get walletShieldUnknownTitle => 'Compruebe antes de volver a blindar';
@@ -3285,5 +3285,5 @@ class WalletLocalizationsEs extends WalletLocalizations {
 
   @override
   String get walletTxExplainRetryingExpired =>
-      'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself — don\'t send it again yourself.';
+      'Este intento venció antes de que la red lo confirmara. Su billetera volverá a enviar el pago por sí sola, así que no lo envíe usted de nuevo.';
 }

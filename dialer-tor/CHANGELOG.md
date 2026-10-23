@@ -1,4 +1,19 @@
-# Changelog — dialer-tor
+# Changelog: dialer-tor
+
+## 0.1.3
+
+- `ClientShutDown` and `is_client_shut_down(&io::Error)`. An `OwnedStream`
+  read or write after its client was shut down still fails with
+  `NotConnected` and the same text, and the error now carries
+  `ClientShutDown`, so a caller can tell that local, retryable end from a
+  connection the network closed. `TorDialError` is unchanged.
+- `rustls` is pinned at `=0.23.46` (RUSTSEC-2026-0346 to -0349). If your crate
+  also pins `rustls` exactly, move it to `=0.23.46` in the same step: two exact
+  pins on one semver line do not resolve together. arti's own TLS turns
+  session resumption off and uses none of the affected features.
+- Otherwise only the README, the CHANGELOG, the `deny.toml` advisory floors
+  and the crate's own lock (`rustls-webpki` 0.103.16) changed. Version 0.1.2
+  was prepared with the `ClientShutDown` change and never published.
 
 ## 0.1.1
 
@@ -55,8 +70,8 @@ lines, and no clearnet path of any kind (see `README.md`).
   dormancy.
 - A bad exit is left, not reused (ADR-0567): when a dial fails at or near
   the exit (the exit could not resolve or reach the destination, timed out,
-  refused, was busy), that isolation key's group — the unkeyed one included
-  — gets a fresh token, so the next dial cannot join the circuit that
+  refused, was busy), that isolation key's group (the unkeyed one included)
+  gets a fresh token, so the next dial cannot join the circuit that
   failed. arti 0.45 alone keeps handing that circuit to the group for up to
   ten minutes. Bounded per key: at most once per `EXIT_ROTATION_INTERVAL`
   (60 s), backing off to `EXIT_ROTATION_INTERVAL_MAX` (600 s). The failed
