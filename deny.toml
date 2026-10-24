@@ -127,6 +127,7 @@ deny = [
   # Root CA - G3 admits the distrusted emSign intermediates; removed in 1.0.10.
   { name = "webpki-roots", version = "<1.0.10" },
   { name = "webpki-root-certs", version = "<1.0.10" },
+  { name = "tokio", version = "<1.53.3" }, # RUSTSEC-2026-0386 (AsyncFd's safe constructors accept any AsRawFd; fixed 1.53.3)
 ]
 # arti and its LGPL carve-out (`equix`/`hashx`) are NOT this lock's concern:
 # `sdk/dialer-tor` is its own workspace (its manifest says why) with its own

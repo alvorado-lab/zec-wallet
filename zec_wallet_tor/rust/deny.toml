@@ -54,6 +54,11 @@ ignore = [
   # remote-chosen input — re-derive before enabling any arti relay or
   # onion-service feature.
   { id = "RUSTSEC-2023-0071", reason = "advisory names no [affected.functions]; it scopes the leak to PRIVATE-key timing observable over the network, and no RSA private-key op is reachable from a Tor CLIENT: the funnel tor_llcrypto::pk::rsa::KeyPair::{sign,generate} has callers only behind tor-proto's relay feature (not set here), in directory-authority signing called from cfg(test), and in a cfg(test)-only macro expansion; the second path, ssh-key-fork-arti's RsaPrivateKey via tor-key-forge/tor-keymgr keystores, signs over LOCAL keystore files only, never remote-chosen input; the client reaches PublicKey::verify and RsaIdentity (SHA-1 of DER) only. Mirrors Relim's root deny.toml. EXPIRES if tor-proto gains the relay feature or a keystore path signs remote-chosen input" },
+  # NOT ignored here, on purpose: `crypto-bigint 0.5.5` (RUSTSEC-2026-0387) is in
+  # the LOCK but compiled into no build, so cargo-deny's graph walk reports nothing
+  # and stays the tripwire for the day it becomes reachable. The reasoning and the
+  # 12-target measurement sit in sdk/dialer-tor/deny.toml (this lock resolves arti
+  # identically); cargo-audit, which reads the raw lock, gets the `--ignore`.
   # Two UNMAINTAINED transitive helpers arti's graph carries. cargo-audit
   # reports them as allowed warnings; cargo-deny's v2 default (`unmaintained =
   # "all"`) reports them as errors. Named by id rather than widening the
@@ -118,6 +123,7 @@ deny = [
   { name = "rustls-webpki", version = "<0.103.16" }, # RUSTSEC-2026-0382 (mirrors sdk/)
   { name = "webpki-roots", version = "<1.0.10" }, # RUSTSEC-2026-0381 (mirrors sdk/)
   { name = "webpki-root-certs", version = "<1.0.10" }, # RUSTSEC-2026-0383 (mirrors sdk/)
+  { name = "tokio", version = "<1.53.3" }, # RUSTSEC-2026-0386 (mirrors sdk/)
   # LGPL-3.0-only, and they must never enter a graph that ships inside a
   # third-party product — which this crate exists to be consumed from.
   # Reachable from arti only through `tor-hscrypto/hs-pow-full`, i.e. arti's

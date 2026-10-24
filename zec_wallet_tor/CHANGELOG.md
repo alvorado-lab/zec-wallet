@@ -10,6 +10,8 @@
   web certificate roots, and turns TLS session resumption off. The wallet's
   traffic over Tor still runs its own TLS inside `zec_wallet`, so update that
   package too.
+- The plugin's lock moves to `tokio` 1.53.3 (RUSTSEC-2026-0386). Nothing in its
+  graph builds an `AsyncFd`, so the plugin was not exposed.
 - Version 0.0.2 was prepared on `dialer-tor` 0.1.2 and never published.
 
 ## 0.0.1

@@ -113,18 +113,22 @@ jobs:
       - name: cargo audit (root)
         if: ${{ !cancelled() }}
         run: cargo audit --deny unsound
-      # RUSTSEC-2023-0071 (rsa, the Marvin timing attack) is ignored in the
-      # Tor locks only: no fix exists upstream and a Tor client performs no
-      # RSA private-key operation. The reasoning sits beside the same entry in
-      # each deny.toml; cargo audit does not read deny.toml, hence the repeat.
+      # Two advisories are ignored in the Tor locks only. RUSTSEC-2023-0071
+      # (rsa, the Marvin timing attack): no fix exists upstream and a Tor client
+      # performs no RSA private-key operation; deny.toml ignores it too, and
+      # cargo audit does not read deny.toml, hence the repeat. RUSTSEC-2026-0387
+      # (crypto-bigint 0.5.5): in the lock but compiled into no build, and its
+      # fix needs elliptic-curve to move. cargo audit reads the raw lock, so it
+      # gets the ignore; cargo deny walks the built graph, sees nothing, and is
+      # left un-ignored so it goes red if the crate ever becomes reachable.
       - name: cargo audit (dialer-tor)
         if: ${{ !cancelled() }}
         working-directory: dialer-tor
-        run: cargo audit --deny unsound --ignore RUSTSEC-2023-0071
+        run: cargo audit --deny unsound --ignore RUSTSEC-2023-0071 --ignore RUSTSEC-2026-0387
       - name: cargo audit (zec_wallet_tor/rust)
         if: ${{ !cancelled() }}
         working-directory: zec_wallet_tor/rust
-        run: cargo audit --deny unsound --ignore RUSTSEC-2023-0071
+        run: cargo audit --deny unsound --ignore RUSTSEC-2023-0071 --ignore RUSTSEC-2026-0387
       - name: cargo audit (fuzz locks)
         if: ${{ !cancelled() }}
         run: |

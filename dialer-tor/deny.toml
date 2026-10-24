@@ -49,6 +49,24 @@ ignore = [
   # remote-chosen input — re-derive before enabling any arti relay or
   # onion-service feature.
   { id = "RUSTSEC-2023-0071", reason = "advisory names no [affected.functions]; it scopes the leak to PRIVATE-key timing observable over the network, and no RSA private-key op is reachable from a Tor CLIENT: the funnel tor_llcrypto::pk::rsa::KeyPair::{sign,generate} has callers only behind tor-proto's relay feature (not set here), in directory-authority signing called from cfg(test), and in a cfg(test)-only macro expansion; the second path, ssh-key-fork-arti's RsaPrivateKey via tor-key-forge/tor-keymgr keystores, signs over LOCAL keystore files only, never remote-chosen input; the client reaches PublicKey::verify and RsaIdentity (SHA-1 of DER) only. Mirrors Relim's root deny.toml. EXPIRES if tor-proto gains the relay feature or a keystore path signs remote-chosen input" },
+  # NOT ignored here, on purpose: `crypto-bigint 0.5.5` (RUSTSEC-2026-0387,
+  # 2026-10-23: subtraction, division, zero counting and Montgomery
+  # multiplication can branch on secrets; patched only in 0.7.6, which
+  # `elliptic-curve 0.13` cannot take) is in the LOCK but compiled into no build.
+  # Its only path is `ssh-key-fork-arti`'s OPTIONAL `p256`/`p384`/`p521` features
+  # (-> elliptic-curve -> crypto-bigint). arti turns on `alloc`, `rsa`, `std`,
+  # `ecdsa` and `rand_core` (`cargo tree -e features -i ssh-key-fork-arti`), never
+  # those three; `ecdsa` pulls only `sec1`, which has no crypto-bigint edge.
+  # Measured 2026-10-24 with `cargo tree -e normal,build --target <t>`: no
+  # crypto-bigint, elliptic-curve, p256, p384 or p521 on any of 12 targets (the
+  # four Android ABIs, iOS device and simulator, macOS arm64 and x86_64, Linux
+  # arm64 and x86_64, Windows x86_64), here and in the Tor plugin's lock, and
+  # none with `--all-features --target all`. cargo-deny walks that resolved
+  # graph, so it reports nothing today, and leaving the id OUT of this list
+  # keeps it the tripwire: the day an arti bump or a feature makes p256/p384/p521
+  # reachable, this check goes red. cargo-audit scans the raw lock instead, so
+  # `just sdk-audit` and the public CI pass `--ignore RUSTSEC-2026-0387` to it,
+  # for the Tor locks only.
   # Two UNMAINTAINED transitive helpers arti's graph carries. cargo-audit
   # reports them as allowed warnings; cargo-deny's v2 default (`unmaintained =
   # "all"`) reports them as errors. Named by id rather than widening the
@@ -113,6 +131,7 @@ deny = [
   { name = "rustls-webpki", version = "<0.103.16" }, # RUSTSEC-2026-0382 (mirrors sdk/)
   { name = "webpki-roots", version = "<1.0.10" }, # RUSTSEC-2026-0381 (mirrors sdk/)
   { name = "webpki-root-certs", version = "<1.0.10" }, # RUSTSEC-2026-0383 (mirrors sdk/)
+  { name = "tokio", version = "<1.53.3" }, # RUSTSEC-2026-0386 (mirrors sdk/)
   # LGPL-3.0-only, and they must never enter a graph that ships inside a
   # third-party product — which this crate exists to be consumed from.
   # Reachable from arti only through `tor-hscrypto/hs-pow-full`, i.e. arti's

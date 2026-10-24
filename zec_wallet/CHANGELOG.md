@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- The lock moves to `tokio` 1.53.3 (RUSTSEC-2026-0386). 0.0.4 ships 1.52.3,
+  but nothing in the wallet's graph builds an `AsyncFd`, so 0.0.4 is not
+  exposed.
+
 ## 0.0.4
 
 A security release. Update: every wallet reaches its light server through
