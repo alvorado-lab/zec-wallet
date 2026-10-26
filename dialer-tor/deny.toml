@@ -132,6 +132,11 @@ deny = [
   { name = "webpki-roots", version = "<1.0.10" }, # RUSTSEC-2026-0381 (mirrors sdk/)
   { name = "webpki-root-certs", version = "<1.0.10" }, # RUSTSEC-2026-0383 (mirrors sdk/)
   { name = "tokio", version = "<1.53.3" }, # RUSTSEC-2026-0386 (mirrors sdk/)
+  # arti decompresses Tor directory documents with zstd (`compression`), so
+  # these sit on network input. Only this lock and the Tor plugin's carry zstd.
+  { name = "zstd", version = "<0.14.3" }, # RUSTSEC-2026-0391
+  { name = "zstd-safe", version = "<8.2.0" }, # RUSTSEC-2026-0395 to -0406
+  { name = "zstd-sys", version = "<2.1.2" }, # RUSTSEC-2026-0410
   # LGPL-3.0-only, and they must never enter a graph that ships inside a
   # third-party product — which this crate exists to be consumed from.
   # Reachable from arti only through `tor-hscrypto/hs-pow-full`, i.e. arti's

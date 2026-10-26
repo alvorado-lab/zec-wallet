@@ -1,5 +1,14 @@
 # Changelog: dialer-tor
 
+## Unreleased
+
+- RUSTSEC-2026-0391, -0395 to -0406 and -0410 need no new version of this
+  crate: Cargo does not use a dependency's lock, so your own lock decides which
+  `zstd` you build. If it holds versions older than the ones this repository's
+  lock now uses, `zstd` 0.14.3, `zstd-safe` 8.2.0 and `zstd-sys` 2.1.2, run
+  `cargo update -p zstd -p zstd-safe -p zstd-sys`. `deny.toml` gains matching
+  floors.
+
 ## 0.1.3
 
 - `ClientShutDown` and `is_client_shut_down(&io::Error)`. An `OwnedStream`

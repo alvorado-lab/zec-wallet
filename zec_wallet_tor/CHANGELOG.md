@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.4
+
+A security release. Update: the plugin's lock moves to `zstd` 0.14.3,
+`zstd-safe` 8.2.0 and `zstd-sys` 2.1.2, which fix RUSTSEC-2026-0391, -0395 to
+-0406 and -0410. arti uses zstd to decompress the Tor directory documents it
+downloads, so the decoder sees data from the network. The plugin's API and
+behaviour do not change.
+
 ## 0.0.3
 
 - Built on `dialer-tor` 0.1.3. The plugin's lock moves to `rustls` 0.23.46
