@@ -3785,10 +3785,12 @@ async fn a_behind_pass_does_not_stamp_the_wallet_as_ever_synced() {
 /// driven first through the same seam against `tip = newest bundled row` with
 /// the same fixture, its birthday read back the same way — and is never at (or
 /// one above) activation. The number this clause first asked for, `≥ row −
-/// lag`, was unbuildable on either network: `bundled_treestate`'s anchor
-/// ceiling flattens every request above the newest activation this build
-/// knows onto one row (the T0-1c-R2 ruling, VERDICT row 2 (b)) — so the row
-/// now asks the mechanism's own question: does a lying-low tip provision the
+/// lag`, was unbuildable on either network: then, `bundled_treestate`'s anchor
+/// ceiling flattened every request above the newest activation this build
+/// knew onto one row (the T0-1c-R2 ruling, VERDICT row 2 (b)); since the NU7
+/// wave's step 3 the ceiling sits above the whole bundle, and the strict-below
+/// rule keeps it unbuildable, because the bundle's rows are spaced wider than
+/// the lag — so the row now asks the mechanism's own question: does a lying-low tip provision the
 /// SAME birthday a truthful one does? **A clamped birthday sits ABOVE this
 /// endpoint's tip**, so the clamp arm also asserts that the pass CONTINUES — a
 /// typed status that is one of §4n-R Q-R5's two cells ([`q_r5_cell`]:
@@ -3834,7 +3836,7 @@ async fn a_lying_low_provisioning_tip_cannot_floor_the_birthday_below_the_bundle
     // CURRENT server exactly at the row — the birthday a truthful tip
     // provisions, read back the same way. Driven FIRST, so its record line is
     // in the artifact even when the liar's pass panics (the red-first shape on
-    // the T0-1c-R2 join). It scans the gap the anchor ceiling leaves below the
+    // the T0-1c-R2 join). It scans the gap the strict-below rule leaves below the
     // row over [`fixture_block`]s (E6's shape); the roots are bound BEFORE that
     // scan, so the post-scan harness limit (module doc) is not in play.
     let dir_control = tempfile::tempdir().expect("tempdir");
@@ -4724,17 +4726,19 @@ fn q_r5_cell(s: &SyncStatus) -> Option<&'static str> {
 /// The born-above plant above stands for the fresh eager create, anchored
 /// SYNTHETICALLY at the tail (birthday = tail + 1 — a number no shipped
 /// resolver writes: FR-24's `estimate_birthday(created_at)` goes through
-/// `bundled_treestate`'s anchor ceiling and is born at 3,427,311 on mainnet,
-/// measured through `create_with_vault` at the T0-1c-R3 adjudication; the
+/// `bundled_treestate`'s strict-below rule and is born at 3,457,281 on mainnet
+/// since the NU7 wave's step 3, 3,427,311 under the Nu6_3 ceiling when the
+/// T0-1c-R3 adjudication measured it through `create_with_vault`; the
 /// plant reproduces the CLASS, this row the shipped configured arm). This is
 /// the OTHER eager arm of the shipped create: `config.birthday` AT the bundle's
 /// tree-state tail — a configured birthday at or below the tail is imported
 /// OFFLINE by `provision::resolve_offline_birthday`, so the account exists
 /// before any pass, and G6's `BirthdayInFuture` clamp (which needs a live tip
 /// and runs only on a PROVISIONING pass) never sees this wallet. The birthday
-/// read back is whatever `bundled_treestate`'s anchor ceiling makes of the
-/// request (the ruling's 3,427,311 on mainnet — asserted as the observed value
-/// against the tip, never assumed). The server is then FAR below it: a tip one
+/// read back is whatever `bundled_treestate` makes of the request (the newest
+/// row strictly below it, plus one: 3,457,281 on mainnet since the NU7 wave's
+/// step 3, the ruling's 3,427,311 under the Nu6_3 ceiling — asserted as the
+/// observed value against the tip, never assumed). The server is then FAR below it: a tip one
 /// under Sapling's first subtree completion — at or above activation, so
 /// upstream's `update_chain_tip` does not early-return; below every pool's
 /// first completion, so no shard row exists at it and upstream takes its

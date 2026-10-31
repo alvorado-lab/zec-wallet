@@ -580,6 +580,19 @@ class SendServerSilentFault extends SendFormFault {
   final int? blocksSinceLastCurrent;
 }
 
+/// A Zcash network upgrade activates within 20 blocks, so the SDK refuses new
+/// sends until it has (`RW-SEND-009`, ADR-0580, decided 2026-10-30). Carries
+/// the SDK's `blocksLeft`, from which the copy names the
+/// wait in minutes (`upgradePauseMinutes`). Its OWN class, not a
+/// [SendFaultReason]: the copy needs the payload. Orange and back on the form:
+/// nothing was signed, and sending works again right after the upgrade, so it
+/// is neither a failure nor "check the details".
+class SendUpgradePausedFault extends SendFormFault {
+  const SendUpgradePausedFault({required this.blocksLeft});
+
+  final int blocksLeft;
+}
+
 /// The payload-free form-fault categories (the honest message axis; no codes).
 enum SendFaultReason {
   /// The address didn't parse for this network.
@@ -794,6 +807,11 @@ SendFormFault classifyProposeFailure(Object error) {
       WalletErrorKind_ProposeTransient() => const SendCategoricalFault(
         SendFaultReason.couldNotPrepareTransient,
       ),
+      // ADR-0580: a network upgrade is minutes away and sends are paused. Its
+      // OWN arm with the wait: the wildcard's "check the details" would blame
+      // input that is correct, and invite a retry into the same pause.
+      WalletErrorKind_UpgradeImminent(:final blocksLeft) =>
+        SendUpgradePausedFault(blocksLeft: blocksLeft),
       // sendAmountRequired never reaches here (the form always sets an amount);
       // proposeFailed / anything else → generic.
       _ => const SendCategoricalFault(SendFaultReason.couldNotPrepare),
@@ -996,6 +1014,14 @@ SendState classifySendFailure(Object error) {
       WalletErrorKind_DiskFull() => const SendForm(
         fault: SendCategoricalFault(SendFaultReason.storageFull),
       ),
+      // ADR-0580: a proposal reviewed before the pre-upgrade window and
+      // confirmed inside it is refused at sign, before any seed is pulled.
+      // Nothing was signed: back to the FORM with the wait, never the red
+      // "couldn't complete" and never "amounts expired" (re-reviewing answers
+      // the same pause until the upgrade).
+      WalletErrorKind_UpgradeImminent(:final blocksLeft) => SendForm(
+        fault: SendUpgradePausedFault(blocksLeft: blocksLeft),
+      ),
       // signFailed (or anything else): no money moved; the consumed token can't
       // be re-sent, so the result offers "try again" → a fresh form.
       _ => const SendSent(SendSignFailed()),
@@ -1023,6 +1049,9 @@ SendState classifySendFailure(Object error) {
 /// - `QueuedSendsFull` — the two-step enrol's `enqueue`, before the create.
 /// - `TexSendLimitReached`, `SignFailed` — `map_create_err` only, a create the
 ///   engine rolled back whole.
+/// - `UpgradeImminent` — the pre-upgrade pause (ADR-0580):
+///   `refuse_if_upgrade_imminent`, before the seed pull, and
+///   `create_signed_core`'s own check, before the create.
 ///
 /// NOT listed, on purpose: `StoreCorrupt` (`raw_tx_bytes` in
 /// `broadcast_persisted` reads the just-persisted bytes; the two-step's
@@ -1044,7 +1073,8 @@ bool sendErrorPrecedesPersistence(Object error) =>
       WalletErrorKind_SeedMismatch() ||
       WalletErrorKind_QueuedSendsFull() ||
       WalletErrorKind_TexSendLimitReached() ||
-      WalletErrorKind_SignFailed() => true,
+      WalletErrorKind_SignFailed() ||
+      WalletErrorKind_UpgradeImminent() => true,
       _ => false,
     };
 
@@ -1085,6 +1115,9 @@ bool queueErrorPrecedesPersistence(Object error) =>
 /// - `ProposeFailed` — `create_signed_core`'s shape guard, before signing.
 /// - `TexSendLimitReached`, `SignFailed` — `map_create_err` only, a create the
 ///   engine rolled back whole.
+/// - `UpgradeImminent` — the pre-upgrade pause (ADR-0580):
+///   `refuse_if_upgrade_imminent`, before the seed pull, and
+///   `create_signed_core`'s own check, before the create.
 /// - `DiskFull`, `StoreBusy`, `Io` — the persist itself (a failed COMMIT,
 ///   `map_create_err` → `into_store_fault`): the engine writes once, so a failed
 ///   commit saved nothing. After the create, `broadcast_persisted` raises none
@@ -1119,6 +1152,7 @@ bool singleStepSendErrorPrecedesPersistence(Object error) =>
       WalletErrorKind_ProposeFailed() ||
       WalletErrorKind_TexSendLimitReached() ||
       WalletErrorKind_SignFailed() ||
+      WalletErrorKind_UpgradeImminent() ||
       WalletErrorKind_DiskFull() ||
       WalletErrorKind_StoreBusy() ||
       WalletErrorKind_Io() => true,
@@ -1141,6 +1175,9 @@ bool singleStepSendErrorPrecedesPersistence(Object error) =>
 ///   the seed pull and the key derivation, before the create.
 /// - `ProposeFailed` — the queued path's shape guard in `prepare_queued`,
 ///   before the create.
+/// - `UpgradeImminent` — the pre-upgrade pause (ADR-0580) in
+///   `try_sign_queued_intent`, before the seed pull (inside the drain core the
+///   same refusal is swallowed into "still queued", so only this one surfaces).
 ///
 /// NOT listed, on purpose: `DiskFull`, `StoreBusy`, `Io`, `StoreCorrupt` —
 /// every create error is swallowed into "still queued", so the store kinds that
@@ -1161,6 +1198,7 @@ bool parkedAuthorizeErrorPrecedesPersistence(Object error) =>
       WalletErrorKind_SeedMismatch() ||
       WalletErrorKind_InvalidSeedLength() ||
       WalletErrorKind_KeyDerivation() ||
-      WalletErrorKind_ProposeFailed() => true,
+      WalletErrorKind_ProposeFailed() ||
+      WalletErrorKind_UpgradeImminent() => true,
       _ => false,
     };

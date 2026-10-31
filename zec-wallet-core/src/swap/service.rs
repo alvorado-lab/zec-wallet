@@ -131,6 +131,15 @@ pub trait DepositSender: Send + Sync {
         deadline_unix: u64,
         binding: Option<SpendBinding>,
     ) -> Result<(), SwapError>;
+
+    /// The pre-upgrade send pause (ADR-0580), asked BEFORE an OutOfZec execute claims its
+    /// quote: [`SwapError::UpgradeImminent`] inside a network upgrade's window, where the
+    /// deposit this execute would sign must not be signed. The default answers `Ok`, for a
+    /// sender that signs nothing (most test doubles); the wallet's sender reads its recorded
+    /// tip, the same check every wallet signing path runs.
+    async fn upgrade_pause(&self) -> Result<(), SwapError> {
+        Ok(())
+    }
 }
 
 /// The DURABLE in-flight issued-quote backing (§3.2 W2; the W-swap-3-c-1
@@ -805,7 +814,18 @@ impl SwapService {
         {
             return Err(SwapError::QuoteTermsDiffer);
         }
+        let signs_a_deposit = peeked.deposit.is_some();
         drop(peeked);
+
+        // ADR-0580: the pre-upgrade send pause, for an execute that would sign a ZEC deposit,
+        // BEFORE the claim and before the provider is asked to register anything: inside a
+        // network upgrade's window nothing is consumed, nothing is registered, nothing leaves
+        // the pool, and the quote stays executable until its own deadline. A dead quote skips
+        // it, so it is still reported by its true reason (`QuoteExpired`, below). The deposit
+        // sign keeps its own check, for a window that opens during `provider.execute`.
+        if !wall_dead && signs_a_deposit {
+            self.deposit_sender.upgrade_pause().await?;
+        }
 
         // ATOMIC CLAIM (W-swap-3-c-3-ii): the durable `take` is THE single-flight for
         // EVERY execute — within-process AND cross-restart. Its `IMMEDIATE`
@@ -1795,9 +1815,22 @@ mod tests {
         /// FR-17 spy: the binding each `send_deposit_now` presented, call-ordered.
         bindings: Mutex<Vec<Option<SpendBinding>>>,
         fail: bool,
+        /// ADR-0580: `Some((activation_height, blocks_left))` while the pre-upgrade pause
+        /// is in force; `upgrade_pause` then answers it. `None` (the default) answers `Ok`.
+        pause: Mutex<Option<(u32, u32)>>,
     }
     #[async_trait]
     impl DepositSender for RecordingDeposit {
+        async fn upgrade_pause(&self) -> Result<(), SwapError> {
+            match *self.pause.lock().expect("pause poisoned") {
+                Some((activation_height, blocks_left)) => Err(SwapError::UpgradeImminent {
+                    activation_height,
+                    blocks_left,
+                }),
+                None => Ok(()),
+            }
+        }
+
         async fn send_deposit_now(
             &self,
             deposit: Address,
@@ -2143,10 +2176,16 @@ mod tests {
         use zcash_address::ToAddress;
         use zcash_protocol::consensus::NetworkType;
         let unified = {
-            use zcash_address::unified::{Address as Ua, Encoding, Receiver};
-            Ua::try_from_items(vec![Receiver::Orchard([9; 43]), Receiver::Sapling([9; 43])])
-                .expect("valid receiver set")
-                .encode(&NetworkType::Main)
+            use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
+            Ua::try_from_items(
+                Revision::R0,
+                vec![
+                    Uitem::Data(Receiver::Orchard([9; 43])),
+                    Uitem::Data(Receiver::Sapling([9; 43])),
+                ],
+            )
+            .expect("valid receiver set")
+            .encode(&NetworkType::Main)
         };
         let zec_destinations = [
             zcash_address::ZcashAddress::from_transparent_p2pkh(NetworkType::Main, [9; 20])
@@ -2380,6 +2419,79 @@ mod tests {
         assert!(
             deposits.deposits.lock().expect("deposits").is_empty(),
             "IntoZec drives no wallet-side deposit"
+        );
+    }
+
+    /// **`execute_outofzec_inside_the_upgrade_window_is_refused_before_its_claim`** (ADR-0580,
+    /// step 4's second fold, the security review's swap finding). Inside a network upgrade's
+    /// window an OutOfZec execute, which would sign the ZEC deposit, is refused typed BEFORE
+    /// the claim: the provider is never asked to register, no deposit is queued, and the
+    /// issued record survives, so the same quote executes once the pause lifts. An IntoZec
+    /// execute signs nothing and is never refused for it.
+    ///
+    /// Mutants, each red: the check dropped (the execute registers and deposits inside the
+    /// window); the check run for every direction (the IntoZec execute is refused).
+    #[tokio::test]
+    async fn execute_outofzec_inside_the_upgrade_window_is_refused_before_its_claim() {
+        let mock = echoing_mock(100_000, 3_600);
+        let store = Arc::new(MemIssuedQuoteStore::default());
+        let (svc, deposits) = service_with_store(mock.clone(), store.clone());
+        *deposits.pause.lock().expect("pause") = Some((3_543_405, 10));
+        let quote = svc
+            .quote(out_of_zec_request(100_000))
+            .await
+            .expect("in-bounds quote");
+        let refused = svc.execute(&quote).await;
+        assert!(
+            matches!(
+                refused,
+                Err(SwapError::UpgradeImminent {
+                    activation_height: 3_543_405,
+                    blocks_left: 10,
+                })
+            ),
+            "inside the window the execute is the pause, typed: {refused:?}"
+        );
+        assert_eq!(
+            refused.as_ref().err().map(SwapError::code),
+            Some("RW-SWAP-017"),
+            "the next append-only swap code"
+        );
+        assert!(
+            mock.executed.lock().expect("mock").is_empty(),
+            "the provider was asked to register nothing"
+        );
+        assert!(
+            deposits.deposits.lock().expect("deposits").is_empty(),
+            "no deposit was queued"
+        );
+        assert!(store.contains(&quote.id), "the quote was not claimed");
+
+        *deposits.pause.lock().expect("pause") = None;
+        let id = svc
+            .execute(&quote)
+            .await
+            .expect("the same quote executes once the pause lifts");
+        assert_eq!(mock.executed.lock().expect("mock").as_slice(), &[id]);
+        assert_eq!(deposits.deposits.lock().expect("deposits").len(), 1);
+
+        // IntoZec signs nothing, so the pause never refuses it.
+        let into_mock = Arc::new(MockSwapProvider::with_quote_fn(|req| {
+            Ok(honest_quote(req, 100_000, 3_600))
+        }));
+        let (into_svc, into_deposits) = service_recording(into_mock.clone());
+        *into_deposits.pause.lock().expect("pause") = Some((3_543_405, 10));
+        let into_quote = into_svc
+            .quote(into_zec_request())
+            .await
+            .expect("intozec quote");
+        let into_id = into_svc
+            .execute(&into_quote)
+            .await
+            .expect("an IntoZec execute is not paused");
+        assert_eq!(
+            into_mock.executed.lock().expect("mock").as_slice(),
+            &[into_id]
         );
     }
 

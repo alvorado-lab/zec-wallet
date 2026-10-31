@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "We konden deze afscherming niet bevestigen. Kijk bij Activiteit voordat u het opnieuw probeert.",
   "walletMoveUnknownTitle": "Controleer voordat u opnieuw verplaatst",
   "walletMoveUnknownBody": "We konden deze verplaatsing niet bevestigen. Kijk bij Activiteit voordat u het opnieuw probeert.",
-  "walletTxExplainRetryingExpired": "Deze poging is verlopen voordat het netwerk haar bevestigde. Uw wallet verzendt de betaling vanzelf opnieuw, dus verzend deze niet zelf opnieuw."
+  "walletTxExplainRetryingExpired": "Deze poging is verlopen voordat het netwerk haar bevestigde. Uw wallet verzendt de betaling vanzelf opnieuw, dus verzend deze niet zelf opnieuw.",
+  "walletActivityCancelledByUpgrade": "Geannuleerd door upgrade",
+  "walletTxExplainCancelledNotFinal": "Een netwerkupgrade heeft deze betaling geannuleerd voordat die werd bevestigd. Dit is nog niet definitief, dus verstuur hem niet opnieuw.",
+  "walletTxExplainCancelledHeld": "Een netwerkupgrade heeft deze betaling geannuleerd. Uw wallet houdt het bedrag vast tot de betaling verloopt.",
+  "walletTxExplainCancelledReleased": "Een netwerkupgrade heeft deze betaling geannuleerd voordat die werd bevestigd. Het bedrag is weer beschikbaar.",
+  "walletTxExplainRetryingCancelled": "Een netwerkupgrade heeft deze poging geannuleerd voordat die werd bevestigd. Uw wallet verstuurt de betaling vanzelf opnieuw, dus verstuur hem niet zelf nog een keer.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{Het Zcash-netwerk wordt over ongeveer 1 minuut bijgewerkt. Tot dan is verzenden gepauzeerd, zodat uw betaling niet vast kan komen te zitten.} other{Het Zcash-netwerk wordt over ongeveer {minutes} minuten bijgewerkt. Tot dan is verzenden gepauzeerd, zodat uw betaling niet vast kan komen te zitten.}}",
+  "walletShieldPausedTitle": "Afschermen is gepauzeerd"
 }

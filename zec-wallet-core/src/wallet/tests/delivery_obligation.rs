@@ -60,7 +60,7 @@ use zcash_client_backend::data_api::{TransactionStatus, WalletWrite};
 /// cannot carry the shielded self-output a shield proposes and the sign fails
 /// closed. 3,000,000 is post-NU6 and pre-Ironwood on testnet (the same tip
 /// the parent module's own NU6-era row syncs to). A shield signed here
-/// carries `expiry_height = tip + 1 + DEFAULT_TX_EXPIRY_DELTA`, so it is
+/// carries `expiry_height = tip + 1 + 40` (the pre-NU7 default delta), so it is
 /// unexpired against this tip and expired against nothing the fixture mines.
 const ANCHOR: u64 = 2_999_700;
 pub(super) const SYNCED_TIP: u64 = 3_000_000;

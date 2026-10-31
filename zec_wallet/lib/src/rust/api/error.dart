@@ -288,6 +288,18 @@ sealed class SwapErrorKind with _$SwapErrorKind {
   const factory SwapErrorKind.quoteTermsDiffer() =
       SwapErrorKind_QuoteTermsDiffer;
 
+  /// A Zcash network upgrade activates within the next 20 blocks, and this OutOfZec
+  /// execute would sign its ZEC deposit inside that window: the swap twin of
+  /// [WalletErrorKind.upgradeImminent], with the same two fields. Refused before the
+  /// quote's single-use claim and before the provider registers anything: nothing was
+  /// consumed, nothing left the wallet, and the quote stays executable until its own
+  /// deadline. Render the same wait as for a send ("about N minutes" from `blocksLeft` at
+  /// 75 s a block); an IntoZec execute is never refused for it.
+  const factory SwapErrorKind.upgradeImminent({
+    required int activationHeight,
+    required int blocksLeft,
+  }) = SwapErrorKind_UpgradeImminent;
+
   /// Forward-compatibility arm (see [WalletErrorKind.unknown]). KEEP LAST:
   /// inserting a variant above renumbers this arm's generated wire tag —
   /// safe ONLY while the Rust cdylib and the generated Dart ship from one
@@ -580,11 +592,16 @@ sealed class WalletErrorKind with _$WalletErrorKind {
   /// `rescanFrom` refused while an OUTBOX send is IN FLIGHT (a queued or
   /// swap-deposit send that has broadcast-committed but not yet settled) —
   /// rebuilding the data DB under it could re-sign the
-  /// same payment over different notes (2× pay). Retryable within hours
-  /// WHILE SYNC RUNS: the in-flight send resolves by mining (+ ~2 h burial)
-  /// or by tx expiry, both observed only by completed sync passes — so the
-  /// honest host cue is "a send is still settling; try again in a couple of
-  /// hours (keep the app online)", never a moments-scale retry. Like
+  /// same payment over different notes (paying twice). Usually retryable within hours
+  /// WHILE SYNC RUNS: the in-flight send resolves by mining (plus ~4 h to become final)
+  /// or by tx expiry (weeks for a never-mined ZIP 318 crossing, see `send`),
+  /// both observed only by completed sync passes. So the
+  /// honest host cue is "a send is still settling; try again in a few
+  /// hours (keep the app online)", never a moments-scale retry. If the
+  /// pending row's [TxSummary.expiryHeight] is weeks away (a crossing no one
+  /// has mined yet), say so: "a payment is still on its way. If it isn't mined
+  /// by {date}, the wallet sends it again or returns the funds, so don't send
+  /// it again yourself. You can rescan a few hours after that." Like
   /// every rescan fault the handle is consumed (seals + DBs intact) — the
   /// host recovers by re-opening, exactly the existing recover-by-reopen
   /// path. (An INTERACTIVE send's broadcast-but-unmined tx keeps no outbox
@@ -628,7 +645,7 @@ sealed class WalletErrorKind with _$WalletErrorKind {
   }) = WalletErrorKind_NetworkUpgradeUnsupported;
 
   /// This server will not say which network it is on, and the grace the
-  /// wallet extends such a server has run out — `by` says how: a day of
+  /// wallet extends such a server has run out, and `by` says how: its 1,152
   /// blocks, a day on the device clock, or it never began. NOT a network
   /// upgrade and NOT [WalletErrorKind.networkUpgradeUnsupported]'s copy:
   /// nothing is known to have changed, an app update fixes nothing, and the
@@ -687,7 +704,10 @@ sealed class WalletErrorKind with _$WalletErrorKind {
   /// Propose could not prepare a transaction for a reason with no finer mapping
   /// that is deterministic on the input (retrying unchanged re-fails) — the host
   /// renders "couldn't prepare this payment; check the details and try again".
-  /// The retryable class is [WalletErrorKind.proposeTransient].
+  /// The retryable class is [WalletErrorKind.proposeTransient]. From NU7 it also
+  /// covers a payment that needs more notes than one block can carry (ZIP 218; it
+  /// hits a wallet holding hundreds of small notes). A smaller amount goes through,
+  /// so such a payment can be sent in parts.
   const factory WalletErrorKind.proposeFailed() = WalletErrorKind_ProposeFailed;
 
   /// Propose could not prepare a transaction because of a condition the wallet's
@@ -730,6 +750,26 @@ sealed class WalletErrorKind with _$WalletErrorKind {
   /// 2e-2b-iii/v-5/vi).
   const factory WalletErrorKind.texSendLimitReached() =
       WalletErrorKind_TexSendLimitReached;
+
+  /// A Zcash network upgrade activates within the next 20 blocks, so sending is
+  /// paused until it activates (ADR-0580): a transaction signed now under the rules that
+  /// are ending could go unmined before they end and leave its amount held for up to two
+  /// months. Nothing was signed. Raised by `propose`, `proposeShield`, `send` (of a proposal
+  /// made before the window), `authorizeParkedSend` (the send stays queued),
+  /// `sweepEphemeralFunds` and `reclaimEphemeralSlots`. A queued send is not refused: it waits,
+  /// then goes out after the upgrade the way any queued send does (see `authorizeParkedSend`).
+  ///
+  /// `blocksLeft` (1 to 20) is how many blocks are still to be mined before sending
+  /// works again. Render it as a wait at 75 s a block (the spacing before NU7), in
+  /// whole minutes rounded up ("The Zcash network upgrades in about N minutes.
+  /// Sending is paused until then so your payment can't get stuck."). Return to the
+  /// form, never a failure screen and never a re-propose loop: re-proposing throws
+  /// this again until the upgrade. `activationHeight` is the public height the new
+  /// rules start at, for a diagnostics surface.
+  const factory WalletErrorKind.upgradeImminent({
+    required int activationHeight,
+    required int blocksLeft,
+  }) = WalletErrorKind_UpgradeImminent;
 
   /// Underlying IO failure not better classified.
   const factory WalletErrorKind.io() = WalletErrorKind_Io;

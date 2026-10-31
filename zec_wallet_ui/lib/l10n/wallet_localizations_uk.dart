@@ -3292,4 +3292,43 @@ class WalletLocalizationsUk extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Термін дії цієї спроби минув до її підтвердження мережею. Гаманець сам надішле платіж повторно, тож не надсилайте його знову самостійно.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Скасовано оновленням';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Оновлення мережі скасувало цей платіж до підтвердження. Це ще не остаточно, тому не надсилайте його знову.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Оновлення мережі скасувало цей платіж. Гаманець утримує суму до закінчення строку платежу.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Оновлення мережі скасувало цей платіж до підтвердження. Сума знову доступна.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Оновлення мережі скасувало цю спробу до підтвердження. Гаманець сам надішле платіж повторно, тому не надсилайте його ще раз самостійно.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Мережа Zcash оновиться приблизно через $minutes хвилини. До того надсилання призупинено, щоб ваш платіж не застряг.',
+      many:
+          'Мережа Zcash оновиться приблизно через $minutes хвилин. До того надсилання призупинено, щоб ваш платіж не застряг.',
+      few:
+          'Мережа Zcash оновиться приблизно через $minutes хвилини. До того надсилання призупинено, щоб ваш платіж не застряг.',
+      one:
+          'Мережа Zcash оновиться приблизно через $minutes хвилину. До того надсилання призупинено, щоб ваш платіж не застряг.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Захист призупинено';
 }

@@ -156,12 +156,12 @@ impl SubtreeRootSource for LightwalletdClient {
 /// make a new pool work by itself: adding one still needs a leaf parser, a
 /// `put_*_subtree_roots` call and an activation height. And membership of THIS
 /// array is not itself compiler-forced — Rust cannot enumerate an enum's variants,
-/// so a future author who adds `Nu7` to the `match` arms but forgets this array
-/// would write an arm that is never reached. The array and the match therefore name
-/// each other explicitly. What the structure buys is real but bounded: the
-/// compiler names three sites on the day the variant appears, instead of the pool
-/// being quietly absent for two network upgrades and surfacing as unspendable
-/// money.
+/// so a future author who adds a fourth pool to the `match` arms but forgets this
+/// array would write an arm that is never reached (NU7 adds none). The array and
+/// the match therefore name each other explicitly. What the structure buys is
+/// real but bounded: the compiler names three sites on the day the variant
+/// appears, instead of the pool being quietly absent for two network upgrades
+/// and surfacing as unspendable money.
 pub(crate) const SUBTREE_ROOT_POOLS: &[ShieldedProtocol] = &[
     ShieldedProtocol::Sapling,
     ShieldedProtocol::Orchard,
@@ -200,8 +200,8 @@ pub(crate) enum PoolFetch {
     /// the bundle's proof and what `PoolService` exports.
     ///
     /// `roots == 0` is a LEGITIMATE state and is deliberately not an error: it is
-    /// every pool's state before its first 2^16 notes, and the state NU7's pool
-    /// will be in the day it activates (A7 ii). It is also the cheapest attack on
+    /// every pool's state before its first 2^16 notes, and the state a new pool
+    /// would be in the day it activated (A7 ii). It is also the cheapest attack on
     /// this whole item (A10) — an endpoint that accepts protocol 2, opens the
     /// stream and closes it with zero roots leaves `subtree_end_height` NULL, which
     /// is exactly the stuck state, with no error and no stall. An empty OK stream
@@ -2046,11 +2046,18 @@ fn report_pool_outcome(pool: ShieldedProtocol, outcome: PoolFetch) {
 /// address (every root ever put lands there with `Retention::Reference`, which is
 /// non-prunable) and the served one differs. **At the SCAN door the same variant
 /// arrives with the disagreement measured against LEAVES rather than against an
-/// earlier serve** — `merge_checked` refuses to reconcile the root the endpoint
-/// served for a shard with the commitments this wallet just counted into it
-/// (`shardtree-0.7.1/src/prunable.rs:946`) — which is if anything a stronger
-/// statement about the endpoint, never a weaker one about our store. The
-/// conflict has TWO candidate liars
+/// earlier serve.** Since shardtree 0.8.0 the root stored for a shard is compared
+/// with the root of the leaves this wallet's scan completes beneath it, and a
+/// difference is `Conflict` (`shardtree-0.8.0/src/prunable.rs:1069-1074`, the
+/// comparison at `:425-449`; `merge_checked` makes the same comparison at
+/// `:392-401`). The older site, an anchor frontier's ommer meeting the cap leaf of
+/// a served root, is still there (`:985-1000`, which was `shardtree-0.7.1`'s
+/// `:946`). Either is if anything a stronger statement about the endpoint, never a
+/// weaker one about our store. The whole batch is refused inside `put_blocks`, one
+/// transaction over the three pools, so nothing of it is committed and no pool
+/// degrades over it: the pass ends here
+/// (`sync_bind_proof::a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`).
+/// The conflict has TWO candidate liars
 /// — the server whose root is recorded and the server serving now — and the
 /// conflict alone cannot tell them apart (§4l P6): the recorded root is not this
 /// wallet's knowledge, it is what an EARLIER server said, kept as a record. So
@@ -2079,7 +2086,7 @@ fn report_pool_outcome(pool: ShieldedProtocol, outcome: PoolFetch) {
 /// evidence (INC-021).** The shard write is `INSERT … ON CONFLICT (shard_index)
 /// DO UPDATE` into `{prefix}_tree_shards`, whose only UNIQUE constraint besides
 /// the index is `root_unique (root_hash)`
-/// (`zcash_client_sqlite-0.22.0/src/wallet/db.rs:1033`, `:1100`, `:1167`); the
+/// (`zcash_client_sqlite-0.23.0/src/wallet/db.rs:1033`, `:1100`, `:1167`); the
 /// cap write is `ON CONFLICT (cap_id) DO UPDATE`; the discontinuity check only
 /// reads. So a `SQLITE_CONSTRAINT_UNIQUE` (extended code 2067) inside this
 /// transaction can come from exactly one place, and the value it refused is the
@@ -2107,12 +2114,12 @@ fn report_pool_outcome(pool: ShieldedProtocol, outcome: PoolFetch) {
 /// `SubtreeDiscontinuity`) and everything else fold to `StoreCorrupt`.
 ///
 /// **`Query` — local, and unreachable from this write at the pin.** The pinned
-/// `put_shard_roots` (`commitment_tree.rs:1210`) issues no tree query: `get_cap`,
+/// `put_shard_roots` (`commitment_tree.rs:1213`) issues no tree query: `get_cap`,
 /// `batch_insert`, `put_cap`, a discontinuity SELECT and the shard INSERTs, each
 /// mapped to `Storage` or `Insert`. Every `QueryError` variant describes the
 /// wallet's OWN tree (an address it does not contain, a pruned checkpoint, `Nil`
 /// nodes), so the reading stays `StoreCorrupt`; a future upstream that queries
-/// here is a reviewed event under the `=0.22.0` pin.
+/// here is a reviewed event under the `=0.23.0` pin.
 fn map_shardtree_err(e: ShardTreeError<commitment_tree::Error>) -> WalletError {
     match e {
         // A served root the tree rejects: the endpoint answered wrongly — the
@@ -2124,31 +2131,44 @@ fn map_shardtree_err(e: ShardTreeError<commitment_tree::Error>) -> WalletError {
         // reaches. The line is `merge_checked`: these two are the only members raised
         // by the walk that compares the node WE hold against the node the serve — or
         // the served frontier — implies, so they are statements about the other side.
+        //
+        // Re-read at `shardtree-0.8.0` (NU7 wave step 1s). `Conflict` gained the
+        // sites the doc above names (a shard completing beneath a stored root; a
+        // completed shard against the roots the cap holds over it, `lib.rs:212-219`,
+        // `:267-279`). `InputMalformed` gained three, each about inserted input
+        // against what is stored, so the arm still reads right: a stored leaf
+        // replaced by a subtree whose root cannot be computed
+        // (`prunable.rs:1002-1013`), a completed shard whose root cannot be computed
+        // for the cap check (`lib.rs:271-277`), and the annotation check's own
+        // `TreeMalformed` (`prunable.rs:425-449`, mapped at `:135`).
         ShardTreeError::Insert(
             shardtree::error::InsertionError::Conflict(_)
             | shardtree::error::InsertionError::InputMalformed(_),
         ) => endpoint_unusable(),
         // OURS, and the remedy is the local one. Variant by variant, on both doors
-        // (read at `shardtree-0.7.1`, which `sdk/Cargo.toml` pins `=0.7.1`):
+        // (read at `shardtree-0.8.0`, which `sdk/Cargo.toml` pins `=0.8.0`; the
+        // first reading was at 0.7.1, and no variant below moved arm):
         //
         // * `OutOfRange(position, range)` — `LocatedTree::insert_frontier_nodes`
-        //   (`prunable.rs:1177-1183`) when the frontier's leaf position is outside the
-        //   shard's range, and `batch_insert` (`:1180`) when the start position is
-        //   outside the cap's. `ShardTree::insert_frontier_nodes` derives the shard
-        //   address FROM that same position (`lib.rs:438-439`) and `put_shard_roots`
-        //   is passed a `start_index` this wallet chose — 0, or since S15-F1 the
-        //   plan's start, which is below the stored run's length and so inside the
-        //   cap (`commitment_tree.rs:1210`; the truncate door passes 0) — so neither
-        //   number is one an endpoint chooses.
-        // * `NotContained(addr)` — `insert_subtree` (`prunable.rs:1038`) when the
+        //   (`prunable.rs:1229-1248`) when the frontier's leaf position is outside the
+        //   shard's range, and `batch_insert` (`batch.rs:157-186`) when the start
+        //   position is outside the cap's. `ShardTree::insert_frontier_nodes` derives
+        //   the shard address FROM that same position (`lib.rs:715`) and
+        //   `put_shard_roots` is passed a `start_index` this wallet chose — 0, or since
+        //   S15-F1 the plan's start, which is below the stored run's length and so
+        //   inside the cap (`commitment_tree.rs:1213`; the truncate door passes 0) —
+        //   so neither number is one an endpoint chooses.
+        // * `NotContained(addr)` — `insert_subtree` (`prunable.rs:1102`) when the
         //   subtree's root address is not inside the shard's. The subtree is built by
         //   `from_frontier` AT the shard's own level, from the same position, so it is
-        //   contained by construction.
-        // * `TreeFull` — raised only by `append` (`prunable.rs:1066`) and
-        //   `ShardTree::append` (`lib.rs:367`). Neither door calls either: both enter
+        //   contained by construction. 0.8.0's `ShardTree::insert` raises it too
+        //   (`lib.rs:551-555`), and neither door calls `ShardTree::insert`.
+        // * `TreeFull` — raised only by `append` (`prunable.rs:1130`) and
+        //   `ShardTree::append` (`lib.rs:645`). Neither door calls either: both enter
         //   through `insert_frontier` (§4x-run's settled reading, points 1-3).
         // * `CheckpointOutOfOrder` and `MarkedRetentionInvalid` — unreachable on both
-        //   doors by that same reading (`ShardTree::append` only, and
+        //   doors by that same reading (`ShardTree::append` only, `lib.rs:633`; and
+        //   `insert_frontier`'s empty-frontier arm, `lib.rs:694-700`, under
         //   `Marking::None` at every truncate-door call site).
         //
         // So every member of this arm describes a tree or an address that only this
@@ -2813,9 +2833,14 @@ impl ClassifyStoreFault for SqliteClientError {
             //
             // **`Insert` is the ENDPOINT's, and since B1-5 (§4x) it says so HERE too.**
             // A served root the tree rejects at SCAN time is a `shardtree` `Conflict`
-            // (`shardtree-0.7.1/src/prunable.rs:946`, an `InsertionError` → a
-            // `ShardTreeError::Insert`) raised when the leaves this wallet just counted
-            // refute the root hash the endpoint served for that shard — the iv-d-2
+            // (an `InsertionError` → a `ShardTreeError::Insert`; since shardtree
+            // 0.8.0 raised when the shard completes beneath the stored root,
+            // `shardtree-0.8.0/src/prunable.rs:1069-1074`, the comparison at
+            // `:425-449`, and still at an anchor ommer meeting the cap leaf,
+            // `:985-1000`, which was `shardtree-0.7.1`'s `:946`) raised when the leaves
+            // this wallet just counted refute the root hash the endpoint served for
+            // that shard. `put_blocks` refuses the whole batch, so nothing commits and
+            // the pass ends `EndpointMisbehaving` for every pool. That is the iv-d-2
             // detection this SDK's own spec names as what catches a well-formed-but-WRONG
             // root. It arrived here as `PutBlocksCommitmentTree` and fell to the
             // fail-closed `StoreCorrupt`: an endpoint lie, rendered to the user as "your
@@ -4260,8 +4285,8 @@ pub(crate) async fn fetch_tip<C: ScanClient + ?Sized>(
 /// | INC-023's under-reporter (tip 3,451,205, Ironwood served zero) | `BehindBundle` | the pools ARE asked; `proven` reads 0 for the rows above its tip, so the zero stays `Served { 0 }` — and the surface says the server is behind: the badge it hid is replaced by the sentence that says why it cannot be graded from that tip (E2) |
 /// | under-reporting to anywhere at or above the row but below `scanned − REORG_MAX_BLOCKS` | `BehindBundle` | T0-1c-R2: the wallet's own height is the reference; a clean 0-batch pass (upstream's early return), reported behind, no stamp (G1) |
 /// | under-reporting to within `REORG_MAX_BLOCKS` of our own height, at or above the row | `AtOrAboveBundle` | **the residual**, below |
-/// | a behind server on the FIRST (provisioning) pass | `BehindBundle` | `resolve_birthday` clamps the tip up to the row and provisions (M3) at the birthday a current server at the row gives — the anchor ceiling, never activation; the pass then reaches this grade, and because that birthday is above the server's tip by construction, [`birthday_beyond_tip`] returns the pass BEFORE `record_chain_tip` (T0-1c-R3): `EndpointBehind { tip, newest_known, pools }`, zero batches, no tip recorded, no stamp, the loop alive — NOT "scans to its height like the second row" (that sentence stood here on the R2 join and was false: the pass panicked in upstream `from_parts`). The behind cell is unreachable on that pass ONLY when a configured birthday exceeds `max(tip, row)`: provisioning stops with `BirthdayInFuture`, rendered as its own `StallReason::BirthdayInFuture` (§4m #13, §4k-run owed 2) — never "check your connection" |
-/// | any server whose tip is below the account's birthday − 1, with nothing scanned (INC-024: a fresh create or a configured birthday — both resolve to at most the anchor row + 1 — against a validator stuck below that anchor; the clamped remnant above) | `BehindBundle` below the reference, `AtOrAboveBundle` at or above it | [`birthday_beyond_tip`] fires before `record_chain_tip` (upstream would assert on `birthday..tip + 1`): below the reference, `EndpointBehind` with zero batches and the pools report beside it; at or above it, `Stalled { BirthdayInFuture }` — unreachable from any shipped resolver today (a resolved birthday is below the row on both networks), pinned through the seam with a synthetic anchor. Both leave the loop alive; the pass on which a server reports a tip at or past the birthday scans as normal |
+/// | a behind server on the FIRST (provisioning) pass | `BehindBundle` | `resolve_birthday` clamps the tip up to the row and provisions (M3) at the birthday a current server at the row gives — a bundled row below it, never activation; the pass then reaches this grade, and because that birthday is above the server's tip by construction, [`birthday_beyond_tip`] returns the pass BEFORE `record_chain_tip` (T0-1c-R3): `EndpointBehind { tip, newest_known, pools }`, zero batches, no tip recorded, no stamp, the loop alive — NOT "scans to its height like the second row" (that sentence stood here on the R2 join and was false: the pass panicked in upstream `from_parts`). The behind cell is unreachable on that pass ONLY when a configured birthday exceeds `max(tip, row)`: provisioning stops with `BirthdayInFuture`, rendered as its own `StallReason::BirthdayInFuture` (§4m #13, §4k-run owed 2) — never "check your connection" |
+/// | any server whose tip is below the account's birthday − 1, with nothing scanned (INC-024: a fresh create or a configured birthday — both resolve to at most the bundle's newest row + 1 — against a validator stuck below that birthday; the clamped remnant above) | `BehindBundle` below the reference, `AtOrAboveBundle` at or above it | [`birthday_beyond_tip`] fires before `record_chain_tip` (upstream would assert on `birthday..tip + 1`): below the reference, `EndpointBehind` with zero batches and the pools report beside it; at or above it, `Stalled { BirthdayInFuture }` — unreachable from any shipped resolver (a resolved birthday is at most the row + 1; G11 below), pinned through the seam with a synthetic anchor. Both leave the loop alive; the pass on which a server reports a tip at or past the birthday scans as normal |
 ///
 /// **The residual, stated so the next reader need not rediscover it.** An
 /// endpoint that under-reports its tip to anywhere at or above the reference —
@@ -4353,8 +4378,8 @@ pub(crate) fn tip_reference(newest_bundled: u32, scanned_tip: Option<u32>) -> u3
 /// 1. *M3's shape behind the guard — the CLAMP is kept, not REFUSE.* A
 ///    provisioning tip below the row is still clamped up to it in
 ///    `provision::resolve_birthday`, so the account-less remnant provisions at
-///    the same birthday a current server at the row gives (the anchor ceiling —
-///    never activation, never a server-chosen number) and this guard turns the
+///    the same birthday a current server at the row gives (a bundled row below
+///    it — never activation, never a server-chosen number) and this guard turns the
 ///    pass into `EndpointBehind` with nothing scanned. Bought: no stall on a
 ///    remnant, an address at once, and one posture with the shipped fresh
 ///    install (FR-24 writes that same birthday with no server at all). Lost:
@@ -4389,16 +4414,16 @@ pub(crate) fn tip_reference(newest_bundled: u32, scanned_tip: Option<u32>) -> u3
 ///    if they ever disagree the guard follows upstream, the surface the row.
 ///
 /// **Reachability (G11).** The below-the-reference cell is the shipped path:
-/// every resolver writes at most the anchor row + 1
-/// (`checkpoints::bundled_treestate` caps a request at
-/// `newest_known_activation + 1`; 3,427,311 mainnet / 4,125,171 testnet
-/// today), which is BELOW the bundle's newest row on both networks, so a fresh
-/// create or a configured birthday against any server below that anchor lands
-/// here — not, as §4n-R's premise sentence had it, "the tail + 1" (no resolver
-/// can write that; the R2 plant imports it through a synthetic anchor). The
-/// same fact makes the at-or-above cell unreachable from any shipped resolver
-/// today (a resolved birthday is always ≤ the row < the reference ≤ such a
-/// tip); the arm exists because the contract names the cell and it costs one
+/// every resolver writes at most the bundle's newest row + 1. Since `Nu7` joined
+/// `KNOWN_UPGRADES` the anchor ceiling sits above that row on both networks, so
+/// the bound is `checkpoints::bundled_treestate`'s strict-below rule: a request
+/// at or below the tail lands below the row (a fresh create, an eager configured
+/// birthday), and only a request above the tail (a lazy configured birthday, or a
+/// stampless fresh remnant, against a server at or past it) reaches the row + 1.
+/// So a fresh create against any server below its anchor lands here. The
+/// at-or-above cell stays unreachable from any shipped resolver: a resolved
+/// birthday is at most the row + 1, and so at most such a tip + 1, which upstream
+/// accepts. The arm exists because the contract names the cell; it costs one
 /// match arm, and it is pinned through the seam with a synthetic anchor.
 ///
 /// §5.4: the caller logs `claimed` (the tip) and an `outcome` code only; the

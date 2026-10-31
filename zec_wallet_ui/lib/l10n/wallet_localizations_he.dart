@@ -3220,4 +3220,39 @@ class WalletLocalizationsHe extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'תוקף הניסיון הזה פג לפני שהרשת אישרה אותו. הארנק שלך ישלח את התשלום שוב בעצמו, אז אל תשלח אותו שוב בעצמך.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'בוטל בגלל שדרוג';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'שדרוג רשת ביטל את התשלום הזה לפני שאושר. זה עדיין לא סופי, לכן אל תשלח אותו שוב.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'שדרוג רשת ביטל את התשלום הזה. הארנק מחזיק את הסכום עד שתוקף התשלום יפוג.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'שדרוג רשת ביטל את התשלום הזה לפני שאושר. הסכום זמין שוב לשימוש.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'שדרוג רשת ביטל את הניסיון הזה לפני שאושר. הארנק ישלח את התשלום שוב בעצמו, לכן אל תשלח אותו שוב בעצמך.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'רשת Zcash תשודרג בעוד כ־$minutes דקות. עד אז השליחה מושהית, כדי שהתשלום שלך לא ייתקע.',
+      one:
+          'רשת Zcash תשודרג בעוד דקה בערך. עד אז השליחה מושהית, כדי שהתשלום שלך לא ייתקע.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'ההגנה מושהית';
 }

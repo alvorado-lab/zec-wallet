@@ -234,7 +234,7 @@ the Relim vision:
 | **Spend-before-Sync** — non-linear scanning via `suggest_scan_ranges`; funds spendable mid-sync | ADOPT (free with the built-in engine); surfaced as `spendable_ready` in `SyncStatus` (§2.5) |
 | propose → create → submit with **per-tx `TxSubmitResult`** — one proposal can yield SEVERAL txs (pool-crossing); `NotAttempted` is a first-class outcome | ADOPT — §3.1 send shape corrected; partial failure never collapsed (§2.5) |
 | **Transparent-funds shielding** (`proposeShielding` + threshold) — exchange withdrawals land transparent | ADOPT — §3.1 `propose_shield`; `SHIELDING_THRESHOLD_ZAT` named constant; privacy-positive, very on-vision |
-| **Bundled checkpoints** (modern spacing 2,500 blocks, refreshed every release; nearest ≤ birthday) + `estimateBirthdayHeight(date)` + new-wallet **live tree state at tip−100** with bundle fallback | ADOPT the bundle + `estimate_birthday` UX (§3.1); **INVERT the live/bundle priority** — the crypto audit (2026-06-14, §3.2f) proved a live frontier is cryptographically unverifiable (the backend trusts lightwalletd for tree state), so we provision the birthday frontier from the BUNDLE only, never a live `get_tree_state` (the M2 live-frontier threat eliminated, not "fallback") |
+| **Bundled checkpoints** (modern spacing 2,500 blocks, refreshed every release; nearest ≤ birthday) + `estimateBirthdayHeight(date)` + new-wallet **live tree state at tip−100** with bundle fallback | ADOPT the bundle + `estimate_birthday` UX (§3.1); **INVERT the live/bundle priority** — the crypto audit (2026-06-14, §3.2f) proved a live frontier is cryptographically unverifiable (the backend trusts lightwalletd for tree state), so provisioning builds the birthday from the BUNDLE only, never a live `get_tree_state`. The bundle fixes the birthday height and the tree sizes; the first sync pass's live `GetTreeState` still seeds the trees, so the M2 live-frontier threat remains a frozen balance, not eliminated (corrected 2026-10-30: §8's live-provisioning row states the limit and the item owed) |
 | **Retry-forever sync loop** — their retry-capped loop generated "manually restart the synchronizer" bug reports, so `defaultRetries = Int.max`; backoff cap 600 s; 10-min stuck-sync watchdog | ADOPT (§6.2/§7) |
 | **Tor `ServiceMode` circuit isolation** — per-txid circuit groups; broadcast/fetch-tx/tree-state over Tor; bulk compact-block download Direct-only (hard `require` in their client) | ADOPT the isolation mechanism; **TIGHTEN the policy** — verified: their Direct-only split is an app-level perf choice, NOT an upstream limit (full gRPC-over-Tor works, §2.3) — so our `Required` = genuinely zero clearnet; the residual Q7 is restore-speed UX posture |
 | Seed **per-call transient**; spending key **derived on demand, never stored**; try-without-seed → `SeedRequired` → retry-with-seed (Rust migrations occasionally need the seed) | ADOPT — validates §4.2; adds the `SeedRequired` contract to `open` (§6.1) |
@@ -270,7 +270,8 @@ chain-derived only (matches §6.2: our queue stores INTENTS, never tx state);
 window is the fossil of a one-size batch); **unary vs streaming gRPC timeouts
 split** (their `[ZUTXO0001]` regression); reorg constants (max 100 / rewind
 10); tx expiry inherited from the Rust backend (verified:
-`DEFAULT_TX_EXPIRY_DELTA = 40`, ZIP-203 post-Blossom — their CHANGELOG "20"
+`DEFAULT_TX_EXPIRY_DELTA = 40` (removed in `zcash_primitives` 0.31; pre-NU7:
+`BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`; NU7: 120), ZIP-203 post-Blossom — their CHANGELOG "20"
 is stale; we inherit the constant, never duplicate it); the `shardtree`
 note-commitment corruption fix floor folds into A8's pin verification;
 **"birthday not respected as sync start"** (their #823) — the restore-start
@@ -485,7 +486,7 @@ both:
   removed it).** A suspension that outlasts the backoff resumes into a fresh round,
   by design. The removed budget compared `now_unix` against the kick's start and
   stopped at 600 s — but the transaction it was protecting carries a ~50-minute
-  expiry window (`DEFAULT_TX_EXPIRY_DELTA`, 40 blocks) with a guaranteed ≥ 20-block
+  expiry window (`DEFAULT_TX_EXPIRY_DELTA`, 40 blocks; pre-NU7: `BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`; NU7: 120) with a guaranteed ≥ 20-block
   floor after `send`'s re-anchor, so at 600 s the round it suppressed was almost
   always a round on a STILL-VALID transaction. And because the gate above answers
   `Proceed` unconditionally for a parked row, it could only ever suppress on the
@@ -2074,10 +2075,13 @@ boundary; it makes no trust claim about the treestate's honesty.
 > and a live frontier is cryptographically unverifiable at a recent height — so
 > iv-c **dropped the live `get_tree_state` provisioning path**. The
 > `birthday_from_treestate` decode boundary built here is REUSED, but it is now
-> fed the **TRUSTED bundled frontier** (signed binary), not a hostile live fetch;
-> the "continuity verification escalated to inc-2c-iv" is therefore not owed — it
-> was eliminated, not escalated. (The unary `get_tree_state` seam survives for
-> iv-d's per-range `from_state`, a different position — §3.2f.)
+> fed the bundled row, not a hostile live fetch. **Corrected 2026-10-30 (the NU7
+> wave, re-read at the final crates):** that row fixes the birthday height and the
+> Sapling and Orchard tree sizes the import records, and nothing more. The unary
+> `get_tree_state` seam that survives for iv-d's per-range `from_state` is what
+> seeds the trees, on the first pass at the birthday − 1, so the "continuity
+> verification escalated to inc-2c-iv" was not eliminated: it is still owed (§8's
+> live-provisioning row states the limit and the item).
 
 **The `init_wallet_db(Some(seed))` retry loop (now reachable).** Once a derived
 account exists, an app upgrade that adds a seed-validating migration makes
@@ -2181,7 +2185,7 @@ design review):**
   `create_with_seed_port`).
 
 **MUST-HANDLE:** seed dropped right after USK derivation (before the prove); USK
-confined to the one blocking section (no Zeroize upstream — §4.2 residual); the
+confined to the one blocking section (its transparent key is not erased upstream: the §4.2 residual); the
 `provide_seed` non-blocking/non-re-entrant/no-wallet-lock contract (in the trait
 doc); `SeedMismatch` must not become a decoy-vs-real oracle — `Denied` is the only
 duress signal and a decoy identity uses a SEPARATE `db_dir` (depends on **FR-13**
@@ -2283,11 +2287,15 @@ its own full spec section when built (the inc-2c-ii/iii discipline):
   (crypto-change review — the M2 trust root). DESIGN + AS-BUILT in §3.2f.** The
   crypto audit (2026-06-14) settled §3.6/§4.6's open question — the backend does
   NOT self-verify a birthday frontier (it trusts lightwalletd for tree state) —
-  so iv-c takes the **"drop the live path"** branch: **the birthday frontier
-  ALWAYS comes from the bundled checkpoint slice in the signed binary, NEVER a
-  live `get_tree_state`** (a live frontier is cryptographically unverifiable at a
+  so iv-c takes the **"drop the live path"** branch: **the birthday ALWAYS comes
+  from the bundled checkpoint slice in the signed binary, NEVER a live
+  `get_tree_state`** (a live frontier is cryptographically unverifiable at a
   recent height — "fetch-then-verify" collapses into "provision from the bundled
-  anchor"; this ELIMINATES the M2 live-frontier threat, matching Zashi/Zodl).
+  anchor", matching Zashi/Zodl). **Corrected 2026-10-30:** this said it
+  "ELIMINATES the M2 live-frontier threat". It does not: the bundle fixes the
+  birthday height and the tree sizes, and the first sync pass's live
+  `GetTreeState` still seeds the trees (§8's live-provisioning row states the
+  limit and the item owed).
   Resolve the birthday height (`config.birthday` ? the height : `get_latest_block`
   tip−N, §1.7), pick the newest bundled tree-state row `< requested` (never skip
   funds at `requested`), decode it via the inc-2c-iii `birthday_from_treestate`,
@@ -2529,14 +2537,26 @@ against a bundled anchor at a *different* height `H′ < H` without scanning
 `H′→H` to re-derive it — at which point you already hold the trusted frontier
 and never needed the fetched one. "Verify against the bundled anchor" therefore
 collapses into **"provision from the bundled anchor."** So iv-c takes §3.6/§4.6's
-"drop the live path" branch: **the birthday frontier ALWAYS comes from the
-bundled checkpoint slice in the signed binary — NEVER from a live
-`get_tree_state`.** This is exactly how the reference wallets (Zashi/Zodl)
-bootstrap, and it ELIMINATES the M2 live-frontier threat rather than mitigating
-it. (The unary `get_tree_state` seam built in inc-2c-ii stays — iv-d's per-range
-`from_state` at `start−1` uses it for blocks the wallet has ALREADY scanned past,
-a different trust position; see iv-d's step map. It is no longer on the
-provisioning path.)
+"drop the live path" branch: **the birthday ALWAYS comes from the bundled
+checkpoint slice in the signed binary — NEVER from a live `get_tree_state`.**
+This is exactly how the reference wallets (Zashi/Zodl) bootstrap. (The unary
+`get_tree_state` seam built in inc-2c-ii stays for iv-d's per-range `from_state`
+at `start−1`; see iv-d's step map. It is not on the provisioning path.)
+
+> **Corrected 2026-10-30 (the NU7 wave, re-read at the final crates by three
+> reviewers).** Two claims this paragraph made are false. It said the bundled
+> anchor "ELIMINATES the M2 live-frontier threat", and that iv-d's `from_state`
+> serves "blocks the wallet has ALREADY scanned past, a different trust position".
+> The bundled row fixes only the birthday HEIGHT and the Sapling and Orchard tree
+> SIZES the import records: upstream's `add_account` / `rewind_to_chain_state`
+> inserts no frontier (`zcash_client_sqlite-0.23.0/src/wallet.rs:600-628`,
+> `:4891-5059`; 0.22.0 the same). The first pass's `from_state`, the live
+> `GetTreeState` at the birthday − 1, is for blocks NOT yet scanned, and it seeds
+> the trees and so every witness and anchor
+> (`zcash_client_backend-0.25.0/src/data_api/ll/wallet.rs:766-800`). The audit
+> finding's "poisoned-but-size-correct live frontier" therefore still reaches a
+> fresh wallet, with the consequence the finding names. §8's live-provisioning
+> row states the limit and the item owed for it.
 
 **The bundled-frontier anchor (the §3.6 tree-state slice, now built).** §3.6
 always reserved the full `(height, hash, sapling_tree, orchard_tree)` slice of
@@ -2942,7 +2962,7 @@ decomposed dependency-ordered, each a reviewed unit (the inc-2c-ii…iv discipli
   `cargo-fuzz` target (`fuzz_subtree_root`) + a proptest over the parsers. This is
   the trust-anchor for SPEND witnesses — a server lying with well-formed-but-WRONG
   roots is caught at SCAN time as a shardtree `Conflict` on a COMPLETED shard (the
-  iv-c audit), so it underpins spend-correctness, not detection.
+  iv-c audit), so it underpins spend-correctness, not detection (limits: below).
   **BIND-1 (S269, `production-readiness-phase-1.md` §4x) corrected what that
   detection then SAID.** The scan-time `Conflict` arrived as
   `SqliteClientError::PutBlocksCommitmentTree` and was folded to `StoreCorrupt` —
@@ -2974,10 +2994,12 @@ decomposed dependency-ordered, each a reviewed unit (the inc-2c-ii…iv discipli
   upstream has no way to clear. Disposition, as at ingest: Sapling/Orchard
   pass-fatal (`EndpointMisbehaving`), Ironwood degraded and REPORTED through the
   pass's `root_outcomes` (never only a log line — an event emitted inside the
-  blocking scan resolves a worker thread's dispatcher). Gated on the rewind
-  ledger for the BLAME only: with a rewind outstanding the row is still corrected
-  and the endpoint is not badged, which also gives the raised-boundary residual an
-  exit other than a rescan. **Where it does not reach:** an ABSENCE of commitments
+  blocking scan resolves a worker thread's dispatcher). That split is the HEIGHT
+  dimension's only; a refuted root HASH is pass-fatal for every pool (the paragraph
+  after this one). Gated on the rewind ledger for the BLAME only: with a rewind
+  outstanding the row is still corrected and the endpoint is not badged, which also
+  gives the raised-boundary residual an exit other than a rescan. **Where it does
+  not reach:** an ABSENCE of commitments
   refutes nothing unless the wallet has counted at least one for that pool in the
   batch — an empty tree is indistinguishable from a stream carrying nothing for the
   pool, and reading a zero as evidence refuted every truthful record too (measured:
@@ -2988,6 +3010,22 @@ decomposed dependency-ordered, each a reviewed unit (the inc-2c-ii…iv discipli
   row, and above it BIND-1 makes an accepted lie a WINDOW rather than a permanent
   state — one that closes when the wallet's scan reaches the blocks that decide it,
   and stays open meanwhile.
+
+  **A refuted root HASH is pass-fatal for every pool, Ironwood included** (shardtree
+  0.8.0; the NU7 wave, step 1s). The scan refuses it when the shard completes
+  beneath the stored root, inside `put_blocks`, which commits the three trees in
+  one transaction, so there is no committed batch for a pool to degrade over
+  (`sync_bind_proof::a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`).
+  That is the spend-correctness anchor above, and it holds when the root is stored
+  before its shard completes. Not covered: a root served for a shard the device has
+  ALREADY completed (stored unchecked, upstream shardtree issue #207), and a shard a
+  0.7.1-era wallet already holds inconsistent (0.8.0 does not re-check it). One
+  limit, the wedge: a wrong root stored for an incomplete shard refuses every server
+  until `Wallet::rescan_from`, and that rescan is fenced while a send is in flight.
+  For a send the outbox holds, only a clean pass lifts the fence and the wedge
+  allows none, so wipe and restore is the one exit left; whether an engine-only
+  send's fence can lift during the wedge is not established, so it is treated the
+  same (`docs/plan/nu7-wave.md` step 1s and §8).
 
   **BIND-1-R (S269, §4x-R) — the REFUTATION is what is durable, and a withdrawal
   never opens a gap.** The first build of the reconcile made the CORRECTION durable
@@ -5974,7 +6012,7 @@ scope): a shared `confirmDialog -> Future<bool?>` brick (4 bespoke `showDialog<b
   build-the-tested-core-then-wire pattern, as `Retained.proposal` was for 2d-1).
 - **The RE-ANCHOR guard `assert_proposal_anchor_fresh` — the discharged suspend
   obligation.** The upstream `Builder` sets tx expiry = `proposal.min_target_height +
-  DEFAULT_TX_EXPIRY_DELTA` (40 blocks, verified in `zcash_primitives::transaction::
+  DEFAULT_TX_EXPIRY_DELTA` (40 blocks; pre-NU7: `BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`; NU7: 120; verified in `zcash_primitives::transaction::
   builder`) and does NOT consult the live tip; upstream errors ONLY on a *pruned*
   anchor, never a merely-*stale* one. So a suspend-resumed proposal (the monotonic TTL
   paused — §3.2h consume SAFETY-OBLIGATION) whose chain advanced would build a
@@ -5983,7 +6021,8 @@ scope): a shared `confirmDialog -> Future<bool?>` brick (4 bespoke `showDialog<b
   `proposal.min_target_height` against `wdb.chain_height()` and rejects `ProposalStale`
   (re-propose) when the chain has advanced past `min_target_height +
   PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS` — `20`, half the 40-block expiry window, so a signed
-  tx always keeps ≥ 20 blocks of mining headroom. A wallet with no recorded chain tip
+  tx always keeps ≥ 20 blocks of mining headroom, counted from the recorded tip (across a
+  network upgrade's activation with the pre-upgrade pause, ADR-0580, §6.3). A wallet with no recorded chain tip
   (`chain_height() == None`, not synced) is also `ProposalStale` (sync first). This
   DISCHARGES the reserved `proposal_resumed_after_suspend_must_reanchor_at_send` (now
   height-driven + green): mine past the drift window → `ProposalStale`, never a
@@ -5999,8 +6038,8 @@ scope): a shared `confirmDialog -> Future<bool?>` brick (4 bespoke `showDialog<b
   STRICTLY function-local inside the `spawn_blocking` proving closure — never stored,
   never held across an `.await`, never placed in any struct (no `Debug`-reachable
   container), wrapped into `SpendingKeys::from_unified_spending_key` and dropped at the
-  closure's end. The un-zeroized residue is the documented §4.2(a) residual (upstream
-  `UnifiedSpendingKey` has no `Zeroize`).
+  closure's end. The un-zeroized residue is the documented §4.2(a) residual (since the
+  NU7 wave, only the USK's transparent key: its shielded keys erase on drop).
 - **Errors — NEW `SignFailed` (RW-SEND-006), reuse the rest.** Payload-free, fail-closed
   for any proving/build/key/structural fault (the builder's error value can echo amounts
   AND a txid via `ChainDoubleSpend` — §5.4 — so it is DROPPED, never formatted).
@@ -6107,7 +6146,7 @@ prover` + `Wallet::sign_proposal`):**
   `consume_admits_exactly_one_under_concurrent_double_tap` (N threads barrier-race `consume`,
   exactly one Ok — the laggy-phone double-tap; testing-patterns mandates a concurrent test for
   a thread-safe type), `create_signed_core_anchors_a_mineable_future_expiry` (the re-anchor's
-  CONSTRUCTIVE half — the signed tx's expiry is `target + DEFAULT_TX_EXPIRY_DELTA` and > tip,
+  CONSTRUCTIVE half — the signed tx's expiry is `target + DEFAULT_TX_EXPIRY_DELTA` (pre-NU7: `BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`; NU7: 120) and > tip,
   never born-expired), `create_signed_core_signs_a_deshield_to_transparent` (the exchange-
   t-address off-ramp THROUGH signing — a distinct transparent-output prover path the
   propose-only de-shield test never exercised), `create_signed_core_max_send_signs_to_completion`
@@ -8598,7 +8637,7 @@ implementation starts hardened (each gets a test):
 > + their interaction], no BLOCKER; the money-safety spine + engine correctness re-confirmed [141
 > re-derived a THIRD time]. HARDENING folds, in 3 batches):**
 > **Batch 1 — money-critical DERIVATION pins (no behaviour change).** (H3) `EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`
-> now DERIVES from the engine symbol `zcash_primitives…DEFAULT_TX_EXPIRY_DELTA` (not a bare `40`), so an
+> now DERIVES from the engine symbol `zcash_primitives…DEFAULT_TX_EXPIRY_DELTA` (pre-NU7: `BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`; NU7: 120) (not a bare `40`), so an
 > upstream expiry-delta bump auto-recomputes the still-correct margin AND trips the `== 141` tripwire; the
 > reorg-burial test re-derives the boundary from the symbol (anti-tautology, the founder's "tests must
 > derive, not restate" bar). (H4) `EPHEMERAL_RECLAIM_MINT_ZAT` pinned above the engine `MARGINAL_FEE`/
@@ -9788,13 +9827,16 @@ binary (§4.6 M2). This section owns the concrete design; §1.7 (data source),
 
 **Two consumers, two slices of one bundle.** `estimate_birthday` needs only
 `(height, block_time)` pairs — a compact embedded table. Sync-start needs the
-full `(height, hash, sapling_tree, orchard_tree)` to anchor the commitment trees
+full `(height, hash, sapling_tree, orchard_tree)` row to build the birthday
 without rescanning from activation. The crypto audit (2026-06-14) settled this
 slice's role: the backend does NOT self-verify a birthday frontier, so the
-tree-state slice is not "hostile input to be checked" — it IS the **trusted
-anchor** (signed-binary data) that provisioning uses INSTEAD of a live
-`get_tree_state` (the M2 live-frontier threat is eliminated, not mitigated;
-§3.2f). **This base chunk delivered the `(height, time)` slice +
+tree-state slice is not "hostile input to be checked" — it IS the **trusted**
+signed-binary data that provisioning uses INSTEAD of a live `get_tree_state`
+(§3.2f). It fixes the birthday height and the tree sizes the import records;
+the trees themselves are seeded by the first sync pass's live `GetTreeState`
+(corrected 2026-10-30: this said the M2 live-frontier threat is "eliminated,
+not mitigated"; §8's live-provisioning row states the limit and the item owed).
+**This base chunk delivered the `(height, time)` slice +
 `estimate_birthday`; the tree-state slice is AS BUILT in W3-inc-2c-iv-c (§3.2f).**
 
 **Bundle source + format + provenance (M2) — AS BUILT.** The `(height, time)`
@@ -10170,13 +10212,20 @@ zcash_client_sqlite account; zcash_client_sqlite persists only what
 librustzcash's design requires (UFVK + note commitments — never spending
 keys). Signing re-derives transient spend authority per transaction inside
 librustzcash. **Verified (2026-06-10), two upstream sharp edges we own:**
-(a) `UnifiedSpendingKey` implements **no Zeroize/ZeroizeOnDrop** (it is
-`Clone + Debug`; zcash_keys' zeroize dep gates on an unrelated feature) —
-mitigation, scope-pinned (review HARD-C): the USK lives **only inside the
+(a) `UnifiedSpendingKey` is `Clone` and erases only part of itself on drop:
+since `zcash_keys` 0.17 (the NU7 wave, 2026-10-21) its Orchard and Sapling
+spending keys are `ZeroizeOnDrop` under the `zeroize` feature, which
+`sdk/Cargo.toml` turns on (it is also enabled through `pczt`; the compile-time pin
+`erases_on_drop` in `derivation.rs` is the guard); its **transparent spending key is not erased** (upstream says so on
+the type). Mitigation, scope-pinned (review HARD-C): the USK lives **only inside the
 `spawn_blocking` proving closure** — never held across an `.await`, never
 stored, never placed in any container with a transitive `Debug` impl, never
-`Clone`-reachable from our API; the un-zeroized residue in freed memory is a
-**documented residual for crypto audit** and an upstream-issue candidate. (b)
+`Clone`-reachable from our API; the un-zeroized TRANSPARENT key residue in freed
+memory is a **documented residual for crypto audit** and an upstream-issue
+candidate. Since the same wave, the per-note encryption keys `zcash_note_encryption`
+0.5.1 derives go through `chacha20poly1305` 0.11.0, built here without its `zeroize`
+feature, so those transient AEAD keys are not erased either: a residual of the same
+kind, upstream's, and recorded rather than patched. (b)
 `UnifiedSpendingKey::from_seed` **panics** on seeds < 32 bytes and does not
 enforce the ZIP-32 252-byte upper bound — our `SeedSource` validation (§2.2)
 enforces **both bounds before any upstream call**; a panic across FFI is a
@@ -11654,15 +11703,16 @@ reference UI's recover-by-reopen already renders a usable wallet at the
 prior birthday). The hours bound carries the SAME liveness qualifier as the
 purge: it holds while resubmission passes run over an ADVANCING tip — a
 frozen/censoring endpoint stalls resolution indefinitely (self-limiting:
-sync is visibly stuck; an endpoint change is the remedy). Checked AFTER the
-stop-join + quiesce (sole `Inner`
+sync is visibly stuck; an endpoint change is the remedy, except in the wedge,
+where every endpoint is refused: the root-HASH paragraph after BIND-1's,
+`docs/plan/nu7-wave.md` step 1s). Checked AFTER the stop-join + quiesce (sole `Inner`
 ownership), so no racing drain pass — or orphaned pass straggler — can sign
 a row in behind the check; `Queued` rows do NOT block (nothing signed; they
 re-propose FRESH against the rebuilt view, which is the correct recovery);
 `Stranded` rows do not block (terminal, tx0 mined ⇒ the rescan re-finds it).
 A refusal consumes the handle like every rescan fault (seals + DBs intact;
 the host re-opens). Availability residual, accepted: a mined-but-unburied
-send blocks a rescan for the ≤ ~2 h burial tail — conservative by design
+send blocks a rescan for the ≤ ~4 h burial tail (15,000 s of chain time since NU7 wave step 4) — conservative by design
 (a mined-check inside the fence would re-open a reorg window). ~~SCOPE
 residual (crypto-review MED, documented): the fence covers the OUTBOX
 classes only — an INTERACTIVE single-step send keeps no outbox row (its one
@@ -11678,7 +11728,7 @@ row (typed `RescanWithInFlightSend`); a host that skips the UI and calls
 `rescanFrom` then `propose` sees the same refusal — the rescan never
 happened, so there is no inverted witness to re-send over. AVAILABILITY
 residual, widened and accepted: a single-step send blocks a rescan until it
-mines or expires (`DEFAULT_TX_EXPIRY_DELTA` = 40 blocks ≈ 50 min), where
+mines or expires (`DEFAULT_TX_EXPIRY_DELTA` = 40 blocks ≈ 50 min; pre-NU7: `BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`; NU7: 120), where
 before only the outbox classes did.
 
 **The dead-order trail (documented residual, W-swap-4-a-3).** When the
@@ -12360,7 +12410,7 @@ SDK only has to *allow* it):
 | ZIP-321 URIs (QR codes, links) | parsing REUSED from the maintained `zip321` crate (verified, v0.8.0, librustzcash monorepo — we do NOT write a URI parser); our boundary adds size-cap before parse (`PAYMENT_URI_MAX_BYTES`), network check on every address, **fuzz target** `fuzz_payment_uri` over the whole funnel. **SHIPPED (ZIP-321 chunk, 2026-06-13)**: `crates/zec-wallet-core/fuzz` (own-workspace cargo-fuzz harness, never enters `just ci`); upstream error values echo URI content and are DROPPED at the funnel (payload-free `PaymentUriInvalid`) |
 | Addresses (user paste, swap provider) | parse via zcash_keys, network-checked; never truncated |
 | lightwalletd gRPC responses | librustzcash's parsing (audited, trial-decrypt is constant-shape); our glue caps message sizes via tonic limits (`GRPC_MAX_MESSAGE_BYTES`) |
-| Checkpoints / tree state (review M2) | bundled checkpoints ship **inside the signed binary** with **reproducible provenance** (committed `CHECKPOINTS.md` pins the source REPO + COMMIT + path so a reviewer regenerates byte-identical `data.rs` — §3.6). Integrity is TWO layers (as built): a load-time monotonic self-check (reorder/dup/regression) PLUS a pinned content hash (`checkpoint_data_matches_pinned_provenance_hash`) that catches a still-monotonic value tamper the self-check can't. The **live tree-state path RESOLVED (crypto audit 2026-06-14, §3.2f):** the backend does NOT self-verify a birthday frontier (it trusts lightwalletd for tree state; a recent-birthday `Conflict` cannot fire), so we **DROPPED the live path** — the birthday frontier is provisioned from the BUNDLED tree-state slice in the signed binary ONLY (W3-inc-2c-iv-c), never a live `get_tree_state`. The bundled tree-state slice is the trusted anchor; it carries its own pinned hash (`treestate_bundle_matches_pinned_provenance_hash`). The M2 live-frontier threat is ELIMINATED, not mitigated. Bundle format + the conservative-floor `estimate_birthday` are designed in §3.6. Tests: `poisoned_checkpoint_or_tree_state_does_not_silently_hide_funds` + `provision_never_provisions_from_a_live_frontier` |
+| Checkpoints / tree state (review M2) | bundled checkpoints ship **inside the signed binary** with **reproducible provenance** (committed `CHECKPOINTS.md` pins the source REPO + COMMIT + path so a reviewer regenerates byte-identical `data.rs` — §3.6). Integrity is TWO layers (as built): a load-time monotonic self-check (reorder/dup/regression) PLUS a pinned content hash (`checkpoint_data_matches_pinned_provenance_hash`) that catches a still-monotonic value tamper the self-check can't. The **live tree-state path RESOLVED (crypto audit 2026-06-14, §3.2f):** the backend does NOT self-verify a birthday frontier (it trusts lightwalletd for tree state; a recent-birthday `Conflict` cannot fire), so we **DROPPED the live path** — the birthday frontier is provisioned from the BUNDLED tree-state slice in the signed binary ONLY (W3-inc-2c-iv-c), never a live `get_tree_state`. The bundled tree-state slice is the trusted anchor; it carries its own pinned hash (`treestate_bundle_matches_pinned_provenance_hash`). The M2 live-frontier threat is NOT eliminated (corrected 2026-10-30): the bundled row fixes the birthday height and the tree sizes, and the first sync pass's live `GetTreeState` still seeds the trees; §8's live-provisioning row states the limit and the item owed. Bundle format + the conservative-floor `estimate_birthday` are designed in §3.6. Tests: `poisoned_checkpoint_or_tree_state_does_not_silently_hide_funds` + `provision_never_provisions_from_a_live_frontier` |
 | Swap provider REST/SDK responses | **named max-length bounds on every provider string** (`PROVIDER_STR_MAX_*`) + finite/in-range decimal checks BEFORE DTO entry (review m1); the echoed `refundTo` verified equal to ours (§2.6), and every other echoed request term too (`map::check_request_echo`, 2026-10-07; test `quote_refuses_an_echo_that_contradicts_the_request`); status enum closed (unknown → `Failed(ProviderProtocol)`, never a panic); **fuzz target** `fuzz_swap_status_decode` |
 | Swap-record / queued-intent DB writes | parameterized statements ONLY — provider strings reach SQL as bind values, never interpolation; injection test `swap_and_intent_tables_reject_injection` (review m6) |
 | Memos (inbound, decrypted) | bytes surfaced as content, length already protocol-bounded (512); text validated UTF-8-or-Arbitrary, never panics |
@@ -12685,9 +12735,10 @@ typed data; the host renders (i18n gate satisfied structurally).
 | `propose()` of a donation-form leg (no amount) | yes | `SendAmountRequired` (`RW-SEND-002`) — valid to DISPLAY (`zcash:ADDR`), not to send; host fills the amount in (§2.4) |
 | a prepared `SendProposal` re-`send`/`consume`d (double-tap) | yes | `ProposalAlreadyUsed` (`RW-SEND-003`) — the opaque one-shot token was taken; the notes are never broadcast twice (§6.3 double-spend guard's propose seam) |
 | a `SendProposal` past its TTL / un-anchorable wallet | yes | `ProposalStale` (`RW-SEND-004`) — re-`propose()` for a fresh fee; also the fold for upstream `ScanRequired` (not synced far enough) |
-| `propose()` fault with no finer mapping that is DETERMINISTIC on the input (change/selection/structural, incl. a >1-step pool-crossing this build can't do) | partial | `ProposeFailed` (`RW-SEND-005`) — payload-free, fail-closed (the selector message can echo amounts — §5.4 — so it is DROPPED); a DB fault is the existing `StoreCorrupt`; the host copy is "check the details" — retrying unchanged re-fails |
+| `propose()` fault with no finer mapping that is DETERMINISTIC on the input (change/selection/structural, incl. a >1-step pool-crossing this build can't do) | partial | `ProposeFailed` (`RW-SEND-005`) — payload-free, fail-closed (the selector message can echo amounts — §5.4 — so it is DROPPED); a DB fault is the existing `StoreCorrupt`; the host copy is "check the details" — retrying unchanged re-fails. From the NU7 activation it is also every propose path's refusal of a transaction over ZIP 218's per-block limits (330 Orchard actions, 330 Ironwood actions, 300 Sapling spends plus outputs, 330 across all three), which upstream does not check (`block_limits::check_proposal`; logged `code = "zip218_block_limit"`) |
 | `propose()` refused by a condition the wallet's OWN state clears — a note whose witness the scan has not completed (`CommitmentTree`), an anchor not yet recorded (`Proposal(AnchorNotFound)`), an input a concurrent proposal holds (`Proposal(InputsLocked)`) — INC-018 (b), phase-2 P2-2 | **built, EMPTY at this pin** | `ProposeTransient` (`RW-SEND-008`) — payload-free like its sibling; classified FROM THE ENUM in `send::propose_refusal_is_transient` (the wildcard is NOT transient); the host copy is "Couldn't prepare this payment just now. Try again in a moment." (Send) / "Couldn't prepare the shield just now. Try again in a moment." (Shield) — never "check the details". **Reach (the Batch C security pass, confirmed at `zcash_client_backend` 0.24.0):** none of the three shapes is constructed on the propose path with `lock_inputs: None` — they are create-path and lock-path constructions — so the class is mirrored and guarded end to end but empty in production until INC-018 (a)'s `code` field names the S257 variant; INC-018 stays OWED on (b). The same two upstream shapes on the create+sign path fold to `ProposalStale` (the row below) |
 | `send()` create+sign fault — proving/build failure, a structural proposal fault, or the USK's UFVK not the account's (impossible on the seed-derived path; defense-in-depth LOUD catch otherwise) | partial | `SignFailed` (`RW-SEND-006`) — payload-free, fail-closed (the builder message can echo amounts + a txid — §5.4 — DROPPED); ONLY a reorg-pruned anchor (`AnchorNotFound`) or witness (`CommitmentTree`) folds to `ProposalStale` (re-propose), a DB fault to `StoreCorrupt` |
+| a send inside the last 20 blocks before a network upgrade's activation: the tips `H - 21` to `H - 2` (ADR-0580, the pre-upgrade pause; §6.3) | yes (wait) | `UpgradeImminent { activation_height, blocks_left }` (`RW-SEND-009`). Where it is raised, in order: `propose` and `propose_shield` check before any note or UTXO is selected; the sign of a reviewed proposal and a parked row's "Send now" check before the seed is pulled, and the create checks again under its lock, so a proposal made before the window and confirmed inside it gets this, never `ProposalStale` (a re-propose would meet the same refusal); the recovery sweep and the reclaim mint check at their entry, before any seed is pulled, and their propose runs after the pull. A window that opens mid-sweep is not raised: the sweep returns what it swept, the caught address `failed`. An OutOfZec swap execute is refused with `SwapError::UpgradeImminent` (`RW-SWAP-017`, same fields) before the quote is claimed. `blocks_left` (1 to 20) is the number of blocks still to be mined; the host names the wait in whole minutes at 75 s a block, rounded up ("The Zcash network upgrades in about N minutes. Sending is paused until then so your payment can't get stuck."), back on the form, never a failure. The background paths defer instead: the queued drain leaves its rows queued (a swap deposit among them) and counts them `retried`; the reference UI's automatic shield stays quiet. Queueing keeps working. Sends work again from the tip `activation_height - 1`, unless another activation falls in the next 20 blocks |
 | memo to transparent recipient | yes | `MemoRequiresShieldedRecipient` (construction-time, honest-degradation UI per ADR-0005 r3) |
 | a payment leg given BOTH a text memo and machine bytes (FR-28) | yes (fix the caller) | `MemoConflict` (`RW-PAY-011`) — **a CALLER bug, and deliberately NOT `MemoInvalid`.** Neither memo is individually invalid, so folding it into RW-PAY-006 made a host programming error surface to the END USER as *"That memo can't be sent. Remove it and try again."* — wrong for both audiences, and it made one code mean two unrelated things. The reference UI renders *"Couldn't send this payment — the app attached two notes to it. Nothing was sent."*: it names no user action, because there is none |
 | `machineMemos(txidHex)` given a txid that is not 64 lowercase-or-uppercase hex characters | yes | `TxidInvalid` (`RW-PAY-009`) — payload-free (txids are §5.4 never-log; the offending string is never echoed). The host passes back the `txidHex` a history row gave it, verbatim |
@@ -12750,6 +12801,55 @@ its bookkeeping recovery:
 UX corollary (gate 2): the broadcast-jitter window (§5.3) rides the
 `Queued` status — the user who taps send sees an honest "queued → sent"
 transition, never an unexplained delay or a fake instant success.
+
+**What "expired" means across a network upgrade (NU7 wave step 4; ADR-0579
+Decisions 4 and 6).** A transaction commits to the consensus branch it was signed
+under, so it can be mined only below the activation that ends that branch. Its
+EFFECTIVE expiry is the earlier of its stored ZIP-203 expiry and the block before
+that activation (`H - 1`, with `H` from the crate's `BranchId::height_bounds`,
+never the hand-kept `KNOWN_UPGRADES`). One kernel (`crate::expiry`) answers it
+from the transaction's own header and stored expiry; every reader of the
+delivery obligation (ADR-0556) asks it and compares nothing itself: the
+resubmission pass, the generic obligation's enumeration and per-transaction
+reading, the history page, and the endpoint status check. An unreadable header
+never shortens an expiry.
+
+- From the tip `H - 1` such a transaction is rebuilt, never re-broadcast. Every
+  irreversible step (the requeue, and through it a swap deposit's purge; the
+  strand; the delete-on-final; the reap; the stranded-amount weld; the host's
+  finality badge) waits for IRREVERSIBLE burial: 15,000 s of chain time
+  (`stranded::irreversibly_buried`, 200 blocks at 75 s, 600 at 25 s, a sum across
+  the activation). `REORG_MAX_BLOCKS` stays 100 for the grace clamp, the birthday
+  lag, the scan cap, the bind's window and the bundle reference.
+- **Sending pauses before an activation (ADR-0580, extending the signing-time half
+  of ADR-0579 Decision 4).** A send is refused `UpgradeImminent` (§6.1) when the
+  branch at `tip + 1` differs from the branch at `tip + 21`
+  (`PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS`, 20): at the tips `H - 21` to `H - 2`, at
+  propose and again at sign (§6.1 orders each path's checks against its seed pull).
+  Sends work again from `H - 1`, unless another activation falls in the next 20
+  blocks. Signing also keeps the branch clause: a proposal whose target branch
+  differs from the branch at `tip + 1` is `ProposalStale`, which catches a proposal
+  made at the last allowed tip `H - 22` and signed at `H - 1`. With the drift bound,
+  the two keep every send this wallet signs with at least 20 blocks of mining
+  headroom under its own branch, counted from the RECORDED tip. What remains is that
+  tip's. The first residual is a class: any sign before the first sync since the
+  chain moved (a resume, an old database opened, a device whose sync keeps failing).
+  The second is a server whose reported tip is wrong; a false tip inside the window
+  holds the pause until the real chain reaches `H - 1`, since the recorded tip does
+  not come down (ADR-0580, Consequences). A transaction signed under an ending
+  branch anyway (those residuals, an older build, another wallet on the same seed)
+  is marked dead by the kernel once the wallet has synced.
+- The history row reads `TxStatus::CancelledByUpgrade { stopped_at, released_at,
+  phase }` (winning over `Expired` once the stored expiry passes too). It carries
+  both heights: `stopped_at` is `H`, the activation height the network stopped
+  accepting the transaction at, and `released_at` is the release height, the
+  stored expiry (`None` for a stored 0), the same value as
+  `TxSummary.expiry_height`, which stays the release height. The core computes
+  the phase: not final until `H - 1` is irreversibly buried, then final but not
+  released until the stored expiry frees the notes, then released. Only the
+  released phase may say the amount is back. An expired transaction a live
+  intent will replace (a `Sent` group with no mined leg, or a claim of a live
+  `Submitting` row) reads `DeliveryState::RetryPending`.
 
 ---
 
@@ -12819,6 +12919,251 @@ transition, never an unexplained delay or a fake instant success.
 
 ## 8. Testing strategy — the named-test contract (gate map)
 
+> **NU7 wave pointer row, step 1** (`docs/plan/nu7-wave.md` §3 step 1, ADR-0579): the
+> two named choices inside the pin wave's exemption.
+> `the_concrete_consensus_type_is_named_only_by_the_walletparams_alias`
+> (`tests/no_network_io_outside_the_dialer.rs`): over the core's production `src/`,
+> the concrete consensus parameters are named only by the `WalletParams` alias and its
+> mapping (`money.rs`) and by `derivation.rs`'s encoders and key derivation ·
+> `derivation::tests::encode_ufvk_returns_its_typed_error_never_a_panic`: an
+> unencodable UFVK maps to the typed `KeyDerivation`, never a panic (not reachable
+> from a well-formed key, so it is driven on the mapper). And the step's review folds:
+> `derivation::tests::the_shielded_spending_keys_a_usk_holds_erase_on_drop` (the
+> registered face of the non-test `erases_on_drop` pin: Orchard and Sapling spending
+> keys are `ZeroizeOnDrop`, compile-time) · `rng::tests::two_draws_from_the_seam_differ_and_neither_is_all_zero`
+> (the ADR-0579 Decision 3 seam reads a live source) ·
+> `reclaim::tests::reclaim_margin_covers_the_nu7_delta` (RED BY DESIGN until the wave's
+> step 5 makes the reclaim margin height-aware; the tester-build gate of the plan's §5,
+> not a standing red). Each has a watched row in `evals/mutants.tsv`.
+>
+> **NU7 wave pointer row, step 1g** (`docs/plan/nu7-wave.md` §3 step 1g, ADR-0579
+> Decisions 2 and 3): the supply-chain gates, all in `tests/pins_policy.rs`.
+> `no_forbidden_cfg_reaches_a_shipped_build`: no cfg in its one `FORBIDDEN_CFGS` array
+> (`zcash_unstable`, `getrandom_backend`, `secp256k1_fuzz`, `hashes_fuzz`) is named in a
+> manifest, a build script, the SDK's non-test sources, cargokit, a plugin's podspec,
+> Gradle or CMake file, a CI workflow, the `Justfile`, `lefthook.yml`, a script under
+> `scripts/` or a cargo config, except at the five sites it admits by name: the four
+> `compile_error!` refusals (`rng.rs`'s, and `lib.rs`'s three), each for its own cfg,
+> and `sdk/Cargo.toml`'s check-cfg declaration. Each site, comments dropped, equals
+> the canonical text built from the values the pinned crates read, and a refusal sits
+> at column 0 outside every bracket with no attribute before it; nothing in the
+> core's sources names what could answer for `compile_error!` in place of the builtin
+> (the word outside a refusal, `macro_use`, `extern crate`, `include!`). Those two
+> read text and are early warnings, not the check that a refusal is live (below); the
+> crates must still be at the versions, and the lock hold the crates, the lists were
+> read at. A command
+> runner, CI workflow, script, podspec, cargokit or plugin Gradle or CMake file may
+> not hand cargo a wrapper, `RUSTC`, a source replacement, a target linker, runner or
+> flags, a `CARGO_HOME` or a `--config` (cargokit's own Android linker, and the
+> release extractor's gitleaks `--config`, admitted by their text), and a manifest
+> may not set `cargo-features`. It prints how many files of each kind it read, fails
+> on zero, and holds the podspecs, both plugins' cargokit and their six build files,
+> a CI workflow, the two command runners and the cargo slot script to a floor ·
+> `no_cargo_config_or_cargokit_yaml_reaches_a_build_of_the_sdk`: no `.cargo/config`,
+> `.cargo/config.toml` or `cargokit.yaml` exists under `sdk/` or at the monorepo root,
+> unless an allow-list names it (empty), looked up in every directory as cargo and
+> cargokit look (through a symlinked directory, by the volume's case rules) and by
+> name in any case: a config's `paths` or `[source] replace-with` swaps a crate with
+> no trace in `Cargo.lock`, and a `cargokit.yaml` passes cargo any flag or ships a
+> binary built elsewhere · `every_refusal_stops_a_build_of_the_core_under_its_cfg`:
+> under each forbidden value (ten), the core's lib target, built by cargo on the host in
+> eight builds (every combination of debug assertions on and off, the default features
+> and none, and `panic` unwind and abort), fails on that cfg's own refusal, and builds
+> without it; a twin keyed on a flag those builds do not vary (a target, a
+> `target_feature`, another `--cfg`) is a stated limit · `the_cores_lib_target_is_src_lib_rs`:
+> the crate root the text checks read is the one cargo builds ·
+> `the_core_has_no_build_script`: the core has no build script, so no cfg a build
+> script would set from the profile or the environment can switch a twin past a refusal
+> in a build the liveness test does not compile ·
+> `every_lock_carries_one_copy_of_each_zec_crate_at_the_sdk_version`: `sdk/Cargo.lock`
+> carries one copy of each of the nineteen ZEC crates, both fuzz locks carry them at its
+> versions, and any other lock under `sdk/` that carries one carries it at that version ·
+> `the_os_generator_is_getrandom_pinned_exactly_and_rand_is_not_a_direct_dependency`:
+> judged on `cargo metadata` for every workspace under `sdk/`, every `getrandom`
+> declaration is exactly `=0.4.2` from crates.io with `sys_rng` alone and no
+> `[features]` entry adds to it, and no SDK crate declares a user-space generator
+> (`rand` and nine others, `chacha20` with `rng`, a dependency's `rand` feature) ·
+> `no_patch_or_replace_overrides_a_dependency_of_the_sdk`: no manifest under `sdk/`
+> carries a `[patch]` or `[replace]` table. The build-side half is `zec-wallet-core`
+> itself, which refuses to compile under any `zcash_unstable` value a pinned crate's
+> code reads, any `getrandom_backend` value that replaces the operating system's
+> generator, `secp256k1_fuzz` and `hashes_fuzz`, when the flag reaches the core's own
+> compile: the wallet plugin's build. A flag aimed at another crate alone, the Tor
+> plugin's build (no core in it), a binary built elsewhere and a refusal made dead only
+> for a target other than the host's are its stated limits (the tests' docs, and the
+> plan's step 1g). The step's deny floors (`sdk/deny.toml`:
+> `halo2_gadgets <0.6.0`, `orchard <0.16.0`) are held by `cargo deny` through `just
+> sdk-audit`, not by a test. Each has a watched row in `evals/mutants.tsv`.
+>
+> **NU7 wave pointer row, step 3** (`docs/plan/nu7-wave.md` §3 step 3, ADR-0579): `Nu7`
+> joins `KNOWN_UPGRADES`, so the bundled-anchor ceiling is the NU7 activation on both
+> networks and every bundled row is in reach. New:
+> `consensus::tests::nu7_heights_and_branch_match_zcash_protocol` (testnet 4,465,026,
+> mainnet 3,543,405 and branch `0x77190AD9`, read from the crate, one block each side) ·
+> `consensus::tests::the_anchor_ceiling_is_exactly_the_newest_activation_the_crate_knows_on_both_networks`
+> (the ceiling equals the newest activation in the crate's own `UPGRADES_IN_ORDER`, neither
+> below nor above) · `enhance::tests::a_testnet_nu7_transaction_is_not_staleness_evidence` ·
+> `ironwood_spendability::a_send_targeted_past_nu7_is_built_as_v6_under_its_branch` ·
+> `provision::tests::a_fresh_wallet_is_born_above_the_ironwood_activation_with_its_frontier_on_both_networks`.
+> Refixtured, each now on both networks where it reads a network:
+> `consensus::tests::known_upgrades_is_really_complete`,
+> `consensus::tests::the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model`,
+> `consensus::tests::a_lying_endpoint_can_hide_our_own_staleness_from_this_predicate`
+> (written against the newest branch this build knows),
+> `checkpoints::tests::bundled_treestate_never_anchors_an_empty_ironwood_frontier_above_activation`
+> (arm 2 asserts the reachable SET against the crate, not a count),
+> `checkpoints::tests::the_anchor_ceiling_is_narrated_with_the_height_it_actually_has`
+> (scans the Nu6_3 and Nu7 heights too) and
+> `provision::tests::resolve_birthday_tip_far_above_bundle_tail_floors_to_the_anchor_ceiling`
+> (a far tip now resolves to the bundle's newest row). Each has a watched row in
+> `evals/mutants.tsv`; one stated limit is recorded there with its reason (a ceiling raised
+> inside `bundled_treestate` alone moves no row while every bundled row sits below both
+> NU7 activations). The record is `docs/adjudication/nu7-3/`.
+>
+> **NU7 wave pointer row, step 2b** (`docs/plan/nu7-wave.md` §3 step 2b, ADR-0579
+> Decision 3; adjudicated at `docs/adjudication/nu7-2b/ruling.md`): the generator and
+> clock seam. `wallet::tests::generator_seam::the_same_shielded_payment_signed_twice_never_yields_the_same_transaction`
+> and `…::the_same_orchard_payment_signed_twice_never_yields_the_same_transaction`: two
+> harness wallets from one seed sign the same shielded payment through
+> `send::create_signed_core`, and the txids, the `auth_commitment()`s and the randomized
+> spend keys all differ ·
+> `…::one_fixed_stream_fed_to_two_identical_wallets_signs_byte_identical_transactions`
+> (the control: the generator is the only input that separates the two signs) ·
+> `wallet::tests::generator_seam_named::an_entropy_failure_panics_inside_the_locked_create_and_nothing_signs_twice`
+> (a test-only entropy failure at the seam panics inside the locked create, poisons the
+> wallet's DB mutex, persists nothing, and the next sign is refused) ·
+> `every_signing_generator_comes_from_the_one_seam`,
+> `the_seam_scanner_refuses_each_planted_generator_and_admits_the_seam` and
+> `a_generator_planted_in_a_file_no_list_names_is_refused`
+> (`tests/no_network_io_outside_the_dialer.rs`: every production create and wallet DB
+> construction names `crate::rng::wallet_rng()` and the seam's clock
+> `crate::rng::wallet_db_clock()`) · `rng::tests::an_armed_failure_panics_through_unwraperr_once`
+> and `rng::tests::an_armed_failure_follows_only_the_work_its_thread_hands_over` (the
+> test hook fires once, through `UnwrapErr`, and only in the work its thread hands
+> over). Each has a watched row in `evals/mutants.tsv`. Item 3's panic posture has no
+> row, by decision (2026-10-30, the plan's §9): an entropy failure panics before
+> anything is stored, so under `panic = "unwind"` or `"abort"` nothing is stored or
+> sent, nor signed twice. The stated limit: a host built with `panic = "abort"` exits on an OS
+> entropy failure instead of returning an error (`rng.rs`'s module doc).
+>
+> **NU7 wave pointer row, step 4s** (`docs/plan/nu7-wave.md` §3 step 4s, ADR-0579
+> Decision 6): the spacing function in `chain_time.rs`, which step 4's burial predicate
+> and step 5's grace and reclaim margin read. The contract's three, at the crate's own
+> activation on both networks and on a straddling `LocalNetwork`, with no NU7 height
+> giving 75 s and 40 blocks at every height from Blossom:
+> `chain_time_tests::target_spacing_is_75_before_the_activation_and_25_from_it` ·
+> `chain_time_tests::the_default_expiry_delta_is_40_before_the_activation_and_120_from_it` ·
+> `chain_time_tests::chain_time_between_two_heights_sums_each_side_of_the_activation`.
+> Beside them: `chain_time_tests::chain_time_of_an_empty_or_reversed_span_is_zero` (a
+> reorged tip below the mined height reads no time) ·
+> `chain_time_tests::chain_time_is_the_sum_of_the_one_spacing_and_splits_at_any_height`
+> (the closed-form sum cannot drift from the one spacing) ·
+> `chain_time_tests::the_spacing_function_equals_the_crate_s_own_at_the_boundary_rows`
+> (the A-F6 pin against `pow_target_spacing`, `target_time_between` and
+> `default_tx_expiry_delta`; heights below Blossom are not asserted there. Since step 7m
+> the module returns the crate's own values, so below Blossom it reads the crate's 150 s
+> and 20 blocks, where step 4s's copy kept 75 s and 40) ·
+> `chain_time::closed_form_tests::the_sum_does_not_overflow_across_the_whole_height_range`.
+> Each has a watched row in `evals/mutants.tsv` (`docs/adjudication/nu7-4s/`, re-watched
+> on step 7m's wrapper in `docs/adjudication/nu7-5r7m/`).
+>
+> **NU7 wave pointer row, step 4** (`docs/plan/nu7-wave.md` §3 step 4, ADR-0579
+> Decisions 4 and 6): the expiry kernel (`expiry.rs`), its five readers, the signing-time
+> branch clause, the 15,000 s burial predicate and the cancelled-by-upgrade reading. In
+> `wallet::tests::nu7_activation`, on a chain that straddles the activation:
+> `every_expiry_reader_agrees_a_send_the_upgrade_killed_is_dead_from_the_block_before_it` ·
+> `the_requeue_after_an_activation_waits_for_irreversible_burial` ·
+> `a_reorg_below_the_activation_resumes_the_rebroadcast_and_never_requeues` ·
+> `history_says_cancelled_by_upgrade_even_after_upstream_says_expired` ·
+> `a_live_submitting_claim_reads_retry_pending_after_the_activation` ·
+> `a_proposal_that_straddles_the_activation_is_stale_at_signing` ·
+> `a_send_signed_under_the_new_branch_is_never_cancelled_by_it` (a send under the new branch
+> keeps its own expiry) ·
+> `a_requeued_crossing_with_reserved_notes_is_stale_until_its_release` (the core half of
+> rule (d); its copy half is deferred past this release) ·
+> `the_burial_premise_is_600_blocks_after_the_activation`. In
+> `wallet::tests::nu7_activation_named`:
+> `the_kernel_returns_the_block_before_the_next_activation_or_the_stored_expiry` ·
+> `the_kernel_never_extends_an_expiry_and_its_readers_agree` (proptest; the resubmission
+> pass agrees at the boundary rows, not per sample) ·
+> `a_pre_release_mainnet_nu6_3_send_keeps_its_stored_expiry` ·
+> `the_header_branch_reader_reads_only_a_whole_v5_or_v6_header` ·
+> `the_header_branch_reader_never_panics_and_reads_only_whole_headers` ·
+> `irreversible_burial_is_15000_seconds_of_chain_time_each_side_of_the_activation` ·
+> `a_send_the_upgrade_cancelled_carries_both_heights_and_its_phase` ·
+> `the_base_rows_mapping_names_the_cancelled_reading` ·
+> `a_cancelled_by_upgrade_reading_logs_branches_and_heights_only` ·
+> `a_cancelled_send_with_no_stored_expiry_has_no_release_height_and_is_never_released` ·
+> `the_kernel_agrees_with_an_independent_reading_of_any_header_bytes` (the CI twin of
+> `fuzz_enhance_parse`'s kernel oracle, which reads the header layout itself and takes the
+> stored expiry from a prefix of its own) ·
+> `one_sends_readings_over_a_random_tip_walk_agree_with_the_tip_alone` (every reader at every
+> step of a tip walk with reorgs, against the tip alone). In
+> `send::tests::nu7_activation`:
+> `a_partly_mined_tex_group_strands_at_irreversible_burial_of_the_block_before_it` ·
+> `a_swap_deposit_killed_by_the_upgrade_ends_through_its_hold_and_purge`. The source pins
+> (`tests/no_network_io_outside_the_dialer.rs`):
+> `the_kernel_reads_h_from_height_bounds_never_known_upgrades` ·
+> `only_the_kernel_compares_an_expiry_with_a_tip` ·
+> `no_finality_consumer_reads_reorg_max_blocks` ·
+> `the_keepers_do_not_read_the_irreversible_predicate` (the keep-list's global edit reds
+> `extraction_policy::named_constants_at_boundary`). The bridge
+> (`nu7_activation_bridge_tests`):
+> `a_cancelled_by_upgrade_reading_crosses_the_bridge_with_both_heights_and_its_phase` ·
+> `a_cancelled_send_with_no_stored_expiry_crosses_the_bridge_with_released_at_null` ·
+> `the_bridge_abi_is_12_for_the_cancelled_reading`. Dart:
+> `a_cancelled_by_upgrade_send_never_renders_as_pending_or_retrying`. The moved burial rows
+> of `send::tests` and `stranded::tests` read the predicate's depth, and
+> `tex_two_step_strands_when_tx0_mined_and_the_final_tx_is_gone_from_the_store` holds tx0's
+> burial one block each side. Each row the contract gives a mutant has a watched row in
+> `evals/mutants.tsv` (`docs/adjudication/nu7-4/`).
+>
+> **NU7 wave pointer row, step 4's fold** (`docs/plan/nu7-wave.md` §3 step 4, "The
+> pre-upgrade pause"; ADR-0580): the pause's rule, where it runs, and its copy. In
+> `wallet::tests::upgrade_pause`:
+> `the_pause_refuses_the_last_twenty_blocks_before_each_activation` (mainnet and testnet
+> heights, the straddling chain, two activations in one window) ·
+> `a_send_inside_the_window_is_refused_at_propose_and_at_sign_never_stale` ·
+> `every_signing_entry_refuses_inside_the_window_before_any_seed_is_pulled`. The bridge:
+> `upgrade_imminent_crosses_the_ffi_typed_with_its_heights`. Dart
+> (`test/features/wallet/send/upgrade_pause_test.dart`):
+> `the_pause_names_the_wait_in_whole_minutes_rounded_up` ·
+> `every_classifier_maps_the_pause_to_its_wait_never_a_failure` ·
+> `the_send_form_shows_the_pause_sentence_with_the_wait`; and
+> `the_pre_upgrade_pause_defers_the_automatic_shield_quietly`,
+> `a_retrying_upgrade_cancel_says_the_upgrade_ended_the_attempt`, and the kind's place in
+> the four precedes-persistence lists. Each has a watched row in `evals/mutants.tsv`.
+>
+> **NU7 wave pointer row, steps 5 (the reclaim half) and 7m** (`docs/plan/nu7-wave.md` §3
+> steps 5 and 7m, ADR-0579 Decision 6): the reclaim's deadness gate
+> (`reclaim::is_provably_dead`) reads the branch each tx0 targeted and the burial predicate,
+> so an index is dead (40 + 1) + 200 = 241 blocks after its exposure before the activation,
+> (120 + 1) + 600 = 721 from it, and between the two where the span straddles it; and
+> `chain_time` returns upstream's `pow_target_spacing`, `target_time_between` and
+> `default_tx_expiry_delta`. In `reclaim::tests::margin_across_the_activation`:
+> `the_reclaim_margin_is_dead_only_at_its_margin_after_the_activation` ·
+> `the_reclaim_margin_straddling_the_activation_takes_the_target_branch` ·
+> `the_deadness_gate_is_dead_exactly_at_the_derived_margin_below_the_activation` ·
+> `a_pre_activation_expiry_buried_across_the_activation_sums_both_spacings` ·
+> `the_reclaim_margin_reads_the_network_s_own_activation` ·
+> `the_reclaim_margin_is_the_crate_s_expiry_delta_buried_at_every_exposure` ·
+> `below_blossom_the_reclaim_margin_is_the_crate_s_too` (no mainnet or testnet tx0 is live below
+> Blossom, and a span to a synced tip is millions of blocks, so the value decides nothing). In
+> `reclaim::tests`:
+> `deadness_margin_meets_the_engine_arithmetic_for_a_full_reorg_burial` (its tripwire is
+> 241, and so is `extraction_policy::named_constants_at_boundary`'s pin) and
+> `reclaim_margin_covers_the_nu7_delta` (the tester-build gate: an index exposed at `H - 1`
+> on mainnet is not dead at `H - 1 + 720`). On a testnet wallet, in `wallet::tests`:
+> `the_reclaim_waits_its_pre_activation_margin_on_a_testnet_wallet` ·
+> `the_reclaim_waits_the_nu7_margin_from_the_block_before_the_activation` ·
+> `the_reclaim_waits_for_a_pre_activation_expiry_buried_in_nu7_blocks`. The drift window
+> against half of each branch's delta:
+> `send::tests::the_drift_window_leaves_half_of_each_branch_s_expiry_delta`. The swap:
+> `stranded::tests::the_burial_is_the_crate_s_target_time_at_every_height`, with step 4s's
+> seven rows re-watched on the wrapper. `no_finality_consumer_reads_reorg_max_blocks` no
+> longer excuses the reclaim margin. Each has a watched row in `evals/mutants.tsv`
+> (`docs/adjudication/nu7-5r7m/`).
+>
 > **S264 pointer row — GRACE-1** (`production-readiness-phase-1.md` §4p; the
 > per-test register is `ironwood-nu63-support.md` §8 Gate 6): the unknown-branch
 > grace's second rule (the device clock, `WallClock` port + `ManualClock`
@@ -12987,10 +13332,10 @@ integration.
 | 4/7 plugin ABI — **GREEN, FR-5 C3a** (S286) | the plugin crate's (`sdk/zec_wallet_tor/rust`) `the_plugins_abi_mirror_agrees_with_the_wallet_header` + `the_plugins_own_header_agrees_with_its_rust` (P14) · `every_tor_error_maps_to_one_frozen_dial_code_and_only_device_or_tor_failures_reach_the_fallback_codes` (P9) · `blockage_kinds_are_mirrored_one_to_one_from_the_pinned_arti_source` (P24) · the class binding and completeness scans · the Apple/ELF resolver predicates · the no-wallet-image path | the optional Tor plugin's independent mirror of the wallet's ABI v3 header and of its own `zec_wallet_tor.h` agree with both headers value for value and layout for layout; the §3.3 error table sends nothing to code 2 and only a Tor-network timeout to code 3; every `dialer-tor` bridge class has a code; the resolver takes one in-bundle wallet image and refuses ambiguity or a decoy. `tor-plugin.md` §8, plan §7.4 |
 | 4/privacy — **THE FOUNDER'S MINUTE (ADR-0552, S286, 2026-09-18)** | `a_preferred_wallet_does_not_go_clearnet_inside_the_patience_window` (a qualifying failure at t=0 AND at t=59 returns typed; the fallback dialer's call count is ZERO — the leak the window exists to prevent) + `the_first_qualifying_failure_after_the_minute_switches_and_latches` (at t=60 the SAME call switches, so the user does not wait another dial bound) + `a_successful_private_dial_resets_the_patience_clock` (a success at t=59 buys another minute — a flaky-but-alive private path never accumulates its way to clearnet) + `required_never_switches_however_long_the_private_path_is_silent` (silence × 10 windows, still fail-closed) + `a_non_reachability_failure_never_switches_even_after_the_minute` (ADR-0546's error set is untouched: the window changed WHEN, never WHICH) + `a_preferred_plan_blames_the_private_path_until_the_wallet_has_switched` (the honesty half: `Stalled{TorUnavailable}` while insisting, `EndpointUnreachable` once switched) + the clock's own three (`a_posture_whose_private_path_never_worked_waits_the_whole_minute`, `a_private_success_restarts_the_minute`, `the_latch_is_sticky_across_a_later_private_success`) | §3.2a's policy table + ADR-0552. **A `Preferred` wallet stops leaving the private path on the first quiet dial.** Every test runs on a PAUSED tokio clock (`start_paused` + `advance`) so a minute costs no wall time and no test sleeps; the tests that need a REAL loopback accept cannot use it — auto-advance expires the dial bound before an idle accept is polled — so one takes a back-dated posture (`dialer.rs`) and the FOUR wallet-level ones (`swap_dialer_*`, `tor_state_preferred_*`) call a `cfg(test)` forced-spend on the wallet's own posture. The four pre-existing fall-back tests now SPEND the minute first — they are the proof the timing changed. Plan `docs/plan/tor-patience-phase-1.md` |
 | 4/privacy transport seam (W3-inc-2c-ii) | `grpc_channel_rides_the_host_dialer_not_a_direct_socket` (a mock `NetDialer` records every `dial(host,port,iso)`; the client's RPC reaches a mock lightwalletd ONLY through it) + `tor_required_dialer_failure_is_fail_closed_zero_bytes` (Required + a failing dialer ⇒ `Stalled{TorUnavailable}`, the mock dialer saw zero post-failure dials) + `preferred_dialer_failure_falls_back_visibly` (`TorFellBack` surfaced) + `sync_isolation_key_reaches_the_dialer` + `loopback_http_skips_tls_remote_https_wraps_tls` + `unsupported_runtime_is_typed_config_error_not_clearnet_leak` | §3.2a — the gRPC seam rides the host's network infrastructure (protocol-agnostic: Tor/xray/VLESS/SOCKS/loopback), fail-closed under `Required`, NO independent clearnet path. All against an in-memory mock lightwalletd + mock dialer — NO real network (testing-patterns §"No real network in unit tests") |
-| account import (W3-inc-2c-iii) | `current_address_after_import_equals_offline_derivation` (the crypto audit S16 forward-owed: import account 0 with a birthday, then `current_address` reads the DB UFVK and the UA byte-equals `derive_default_address` — the `{account 0, Require/Require/Omit, default diversifier}` triple) + `import_account_is_idempotent` (a second import is a no-op via `get_account_ids`; one account, ever) + `none_mode_reads_account_ua_without_seed` (None-persistence: the account UFVK is in the DB, `current_address` derives with zero key material) + `birthday_from_treestate_decodes_and_rejects_malformed` (empty-tree fixture → birthday height = treestate height + 1; a bad-hex hash/tree → typed decode error, never a panic) + `migrate_idempotent_with_account_and_seed` (SealedKeychain close→reopen after import re-runs `init_wallet_db` with the seed available — no `SeedRequired`; the `None` steady-state `None`-pass is forward-insurance, untestable until an upstream seed-migration exists) | §3.2b — derived account 0 over the audited `import_account_hd`; the M2 treestate-decode boundary (deep continuity was escalated to the sync-engine crypto-change review — RESOLVED §3.2f: the live path was DROPPED, the boundary now decodes the TRUSTED bundled frontier). All offline against an in-memory DB + a hand-built treestate — NO real network |
+| account import (W3-inc-2c-iii) | `current_address_after_import_equals_offline_derivation` (the crypto audit S16 forward-owed: import account 0 with a birthday, then `current_address` reads the DB UFVK and the UA byte-equals `derive_default_address` — the `{account 0, Require/Require/Omit, default diversifier}` triple) + `import_account_is_idempotent` (a second import is a no-op via `get_account_ids`; one account, ever) + `none_mode_reads_account_ua_without_seed` (None-persistence: the account UFVK is in the DB, `current_address` derives with zero key material) + `birthday_from_treestate_decodes_and_rejects_malformed` (empty-tree fixture → birthday height = treestate height + 1; a bad-hex hash/tree → typed decode error, never a panic) + `migrate_idempotent_with_account_and_seed` (SealedKeychain close→reopen after import re-runs `init_wallet_db` with the seed available — no `SeedRequired`; the `None` steady-state `None`-pass is forward-insurance, untestable until an upstream seed-migration exists) | §3.2b — derived account 0 over the audited `import_account_hd`; the M2 treestate-decode boundary (deep continuity was escalated to the sync-engine crypto-change review — RESOLVED §3.2f for provisioning only: the boundary now decodes the bundled row; the first sync pass's live tree state still seeds the trees, so the continuity check is still owed, the live-provisioning row's limit). All offline against an in-memory DB + a hand-built treestate — NO real network |
 | block-download stream (W3-inc-2c-iv-a) | `get_block_range_streams_compact_blocks_in_order` (blocks in order, then an idempotent clean end) + `block_stream_idle_timeout_fires_at_the_streaming_bound` (gate 7: a silent stream surfaces a typed `Timeout` no earlier than `GRPC_STREAMING_TIMEOUT_SECS`, virtual clock — the wedged-connection guard) + `block_stream_mid_stream_failure_is_typed_never_a_silent_end` (the load-bearing property: a mid-stream fault is `Err`, NEVER `Ok(None)` — else `scan_cached_blocks` skips the range tail = a silent fund-detection gap; `Status` and `Transport` arms both covered) + `get_block_range_streams_through_the_host_dialer_not_a_direct_socket` (the STREAMING RPC rides the host `NetDialer` like the unary seam — ADR-0526) + **real-world edge cases (operational 3-lens):** `slow_but_alive_link_resets_idle_timeout_per_message` (a Tor link at one block / (bound−1)s for ≫ the bound is NOT killed — the per-message reset, no total cap) + `idle_timeout_bites_after_progress_not_only_at_stream_open` (a radio drop after 5 good blocks still times out — the timer re-arms every pull) + `empty_range_is_a_clean_end_not_an_error` + `single_block_range_yields_exactly_one_then_clean_end` (the tip-follow hot path) + `re_poll_after_error_is_loud_not_a_silent_clean_end` (the SPENT-ON-ERROR money latch — a re-poll after a fault is a typed `Transport`, never a phantom `Ok(None)`) + `clean_end_re_poll_stays_idempotent_ok_none` (the latch never over-fires on a clean end) + `dropped_next_block_consumes_no_block_then_resumes` (cancel-safety: a backgrounded drop eats no block) + `silent_accepting_server_establishment_times_out` (a DPI/censor middlebox that accepts then stalls is caught by the establishment bound, distinct from the dial bound) | §3.2d — the download arm of the sync engine; pure transport (no money/crypto). The pump is driven through scripted/delayed/stall-after `CompactBlockSource`s (no live gRPC server: only the CLIENT is codegen'd, `tonic::Streaming` has no test ctor) + the §3.2a dialers — ALL deterministic on a virtual clock, NO real network. The real-`Streaming` truncation guard is integration-tier (the `>=0.14.6` tonic floor is the unit-level guard) |
 | block cache (W3-inc-2c-iv-b) | `cache_insert_read_delete_round_trips` (blocks in → `read(range)` back → `delete(range)` gone) + `with_blocks_feeds_scan_in_height_order` (the `BlockSource` contract `scan_cached_blocks` relies on: contiguous from `from_height`, `limit` honored, ascending) + `headroom_reaches_zero_at_the_cache_byte_bound` (gate 7: with an INJECTED small byte-bound — the real `CACHE_MAX_BYTES` 256 MiB is impractical to fill in a test — `headroom()` saturates at 0 at the boundary; the primitive iv-d's loop consults to stop reading ahead, so a full disk never spins — M4) + `corrupt_cache_is_deleted_and_recreated_on_open` (validated-or-deleted sanitation — a bad/wrong-key cache → dropped + fresh empty, never fed to the scanner) + `mid_batch_kill_leaves_a_clean_height_prefix` (disposability §6.3: SQLite atomicity ⇒ no torn rows; a killed fill leaves a contiguous prefix, re-openable) + `truncate_drops_blocks_above_height` (reorg rewind) + `cache_db_is_encrypted_at_rest_and_holds_no_key_material` (principle 5 — the file is SQLCipher under `db_key`; data plane only) + **review folds:** `with_blocks_stops_at_a_gap_never_feeds_across_it` (the crypto audit MAJOR — a start gap yields an EMPTY read, never a later block fed as `from_height`; closes the scanner's first-block-continuity blind spot = silent missed funds; also covers the `None` "first available block" contract) + `insert_rejects_out_of_range_height` (a > u32 height is a typed reject, never mis-keyed / never the scanner's u32-`unwrap` panic) + `oversized_cached_block_is_rejected_not_read` (a substituted oversized BLOB is size-capped before alloc, never OOM, never fed) | §3.2e — the disposable read-ahead cache implementing the ungated `BlockSource` trait + inherent methods over a separate bounded SQLCipher DB; data plane only (no decryption). All against a temp-dir keyed DB + scripted blocks — NO real network |
-| live provisioning (W3-inc-2c-iv-c) | `bundled_treestate_picks_newest_row_below_birthday` (selection: newest tree-state row with `height < requested` ⇒ birthday `≤ requested`, the never-skip-funds money property) + `bundled_treestate_floors_to_activation` (a sub-activation/at-floor birthday resolves to the activation row, never below) + `treestate_bundle_every_row_decodes` (EVERY bundled row → a valid `AccountBirthday` via `birthday_from_treestate` — no runtime decode surprise on trusted signed-binary data; empty pre-NU5 orchard frontier handled) + `treestate_bundle_frontiers_grow_and_orchard_activates_at_nu5` (the assertion the decode test CANNOT make: it is frontier-BLIND, since `birthday == height + 1` is derived from the height we supplied. Note commitment trees are append-only, so a later row can never describe a smaller tree — this kills a blanked/shrunken frontier, which otherwise passes every gate including the pinned hash, because a refresh updates the pin in the SAME commit as the data. Also pins orchard ABSENT below the real NU5 activation (1687104 / 1842420) and PRESENT from it) + `treestate_bundle_frontiers_chain_to_their_predecessors` (a completed subtree root is immutable once its leaf range is full, so wherever two bundled frontiers share one the hash must be identical — binds a refresh's NEW rows to already-audited data. Bounded: it constrains only SHARED completed subtrees, so each frontier's newest end is unconstrained; asserts >10,000 real comparisons so it cannot pass vacuously) + `treestate_bundle_matches_pinned_provenance_hash` (the M2 integrity gate over the tree-state slice — any `data.rs` frontier change fails CI; sibling of `checkpoint_data_matches_pinned_provenance_hash`) + `treestate_and_time_slices_are_row_aligned` (one source of truth — same heights, same order as the `(height,time)` slice) + `treestate_bundle_samples_no_row_between_ironwood_activation_and_the_reimport_threshold` (**added S255**, `ironwood-nu63-support.md` §9.2 / ADR-0540 Decision 6: no bundled row falls between the Ironwood activation and the first bundled row above it, so no wallet can be ANCHORED in a window where the pool exists on chain but our anchor would assume it empty. This is what lets the re-import threshold narrow from the activation height; if a refresh ever adds a row there, the threshold widens back — the test is never retuned. Anti-vacuous by requiring rows on both sides of the activation; it pins the threshold constant to the table so the number in the ADR cannot drift from the data, AND freezes the direction with a ceiling expressed as a frozen DISTANCE from the activation, because a unilateral raise of the threshold drops already-anchored wallets out of remediation. **Stated limit, measured, so this row does not claim a guard the test lacks:** the ceiling rides the activation, so ANY upward drift of the activation constant — solo, not merely joint — passes every assertion for anything up to the full window width (+1,667 mainnet). A test cannot self-anchor a consensus constant; that job is `checkpoint_activation_heights_match_zcash_protocol` against the crate in Phase B. Measured against zec.rocks the same day: the window is NOT an empty-tree region — mainnet field 7 is non-empty from activation+1 — so "the tree is empty in there anyway" is a false justification and the row-absence is the real one) + `provision_rejects_network_mismatched_endpoint` (the `get_lightd_info` chain-name + Sapling-activation guard — a mainnet wallet on a testnet endpoint is `NetworkMismatch` before any write. **Corrected 2026-09-06:** this row used to say "chain/branch guard"; no branch comparison was ever built, and asserting one here helped hide the Ironwood outage. The consensus-branch axis is `ironwood-nu63-support.md` §3.2 and registers its own rows when it ships) + `provision_resolves_birthday_and_imports_account` (end-to-end over a fake gRPC client + in-memory DB: birthday from the bundle, account imported, UA byte-equals the offline derivation) + `provision_never_provisions_from_a_live_frontier` (THE trust-model guard: a fake client whose `get_tree_state` returns a poisoned frontier is NEVER consulted — provisioning is byte-identical with or without it) + **operational 3-lens (real-world edge cases):** `resolve_birthday_restore_without_birthday_floors_to_activation` (THE money fix: a RESTORE with no `config.birthday` floors to activation = full scan §1.7, NEVER ~tip which would silently skip the user's whole history; contrasted against a fresh wallet which starts at tip−lag) + `resolve_birthday_tip_far_above_bundle_tail_floors_to_bundle_tail` (the stale-bundle case — a live tip far above our newest checkpoint resolves to the tail, a bounded from-tail rescan) + `provision_partial_rpc_failure_writes_no_account_then_retry_converges` (the flaky-first-sync flow: identity-ok/tip-fails ⇒ typed `Sync` + NO account written, then a healed-link retry converges to one correct account) + `provision_account_none_persistence_returns_seed_required` (the Relim None-persistence path — provisioning is typed `SeedRequired`, never a seedless account) + `unary_silent_accepting_server_under_required_no_longer_blames_the_private_path` (net/grpc — the unary sibling of the streaming censor-middlebox test, on the all-unary provisioning path: gate-7 `GRPC_UNARY_TIMEOUT_SECS` boundary, and the stall reason that must survive the tonic status erasure. **It REPLACES `unary_silent_accepting_server_times_out_with_tor_stall`, deleted at stage S1 `truth` (S290):** that row asserted the `TorUnavailable` stall SURVIVES on an accepted-and-silent connection, which is exactly the over-claim S1 removed — under `Required` a connection whose dial was ACCEPTED and then carried nothing reads `EndpointUnreachable`, and only a dial that FAILED keeps `TorUnavailable`. The replacement carries the refused-dial control in the same row) | §3.2f — live provisioning over the BUNDLED-frontier anchor (the crypto-change review; the audit-driven "drop the live path"). The birthday frontier comes from the signed binary, never a live `get_tree_state`. The default birthday is create-vs-restore aware (`freshly_generated`). All offline against a fake `LightwalletdClient` + in-memory DB — NO real network |
+| live provisioning (W3-inc-2c-iv-c) | `bundled_treestate_picks_newest_row_below_birthday` (selection: newest tree-state row with `height < requested` ⇒ birthday `≤ requested`, the never-skip-funds money property) + `bundled_treestate_floors_to_activation` (a sub-activation/at-floor birthday resolves to the activation row, never below) + `treestate_bundle_every_row_decodes` (EVERY bundled row → a valid `AccountBirthday` via `birthday_from_treestate` — no runtime decode surprise on trusted signed-binary data; empty pre-NU5 orchard frontier handled) + `treestate_bundle_frontiers_grow_and_orchard_activates_at_nu5` (the assertion the decode test CANNOT make: it is frontier-BLIND, since `birthday == height + 1` is derived from the height we supplied. Note commitment trees are append-only, so a later row can never describe a smaller tree — this kills a blanked/shrunken frontier, which otherwise passes every gate including the pinned hash, because a refresh updates the pin in the SAME commit as the data. Also pins orchard ABSENT below the real NU5 activation (1687104 / 1842420) and PRESENT from it) + `treestate_bundle_frontiers_chain_to_their_predecessors` (a completed subtree root is immutable once its leaf range is full, so wherever two bundled frontiers share one the hash must be identical — binds a refresh's NEW rows to already-audited data. Bounded: it constrains only SHARED completed subtrees, so each frontier's newest end is unconstrained; asserts >10,000 real comparisons so it cannot pass vacuously) + `treestate_bundle_matches_pinned_provenance_hash` (the M2 integrity gate over the tree-state slice — any `data.rs` frontier change fails CI; sibling of `checkpoint_data_matches_pinned_provenance_hash`) + `treestate_and_time_slices_are_row_aligned` (one source of truth — same heights, same order as the `(height,time)` slice) + `treestate_bundle_samples_no_row_between_ironwood_activation_and_the_reimport_threshold` (**added S255**, `ironwood-nu63-support.md` §9.2 / ADR-0540 Decision 6: no bundled row falls between the Ironwood activation and the first bundled row above it, so no wallet can be ANCHORED in a window where the pool exists on chain but our anchor would assume it empty. This is what lets the re-import threshold narrow from the activation height; if a refresh ever adds a row there, the threshold widens back — the test is never retuned. Anti-vacuous by requiring rows on both sides of the activation; it pins the threshold constant to the table so the number in the ADR cannot drift from the data, AND freezes the direction with a ceiling expressed as a frozen DISTANCE from the activation, because a unilateral raise of the threshold drops already-anchored wallets out of remediation. **Stated limit, measured, so this row does not claim a guard the test lacks:** the ceiling rides the activation, so ANY upward drift of the activation constant — solo, not merely joint — passes every assertion for anything up to the full window width (+1,667 mainnet). A test cannot self-anchor a consensus constant; that job is `checkpoint_activation_heights_match_zcash_protocol` against the crate in Phase B. Measured against zec.rocks the same day: the window is NOT an empty-tree region — mainnet field 7 is non-empty from activation+1 — so "the tree is empty in there anyway" is a false justification and the row-absence is the real one) + `provision_rejects_network_mismatched_endpoint` (the `get_lightd_info` chain-name + Sapling-activation guard — a mainnet wallet on a testnet endpoint is `NetworkMismatch` before any write. **Corrected 2026-09-06:** this row used to say "chain/branch guard"; no branch comparison was ever built, and asserting one here helped hide the Ironwood outage. The consensus-branch axis is `ironwood-nu63-support.md` §3.2 and registers its own rows when it ships) + `provision_resolves_birthday_and_imports_account` (end-to-end over a fake gRPC client + in-memory DB: birthday from the bundle, account imported, UA byte-equals the offline derivation) + `provision_never_provisions_from_a_live_frontier` (the trust-model guard FOR PROVISIONING: a fake client whose `get_tree_state` returns a poisoned frontier is NEVER consulted — provisioning is byte-identical with or without it. It covers provisioning only, not the first sync pass's live tree state: the limit stated at the end of this row) + **operational 3-lens (real-world edge cases):** `resolve_birthday_restore_without_birthday_floors_to_activation` (THE money fix: a RESTORE with no `config.birthday` floors to activation = full scan §1.7, NEVER ~tip which would silently skip the user's whole history; contrasted against a fresh wallet which starts at tip−lag) + `resolve_birthday_tip_far_above_bundle_tail_floors_to_the_anchor_ceiling` (the stale-bundle case — a live tip far above our newest checkpoint resolves to the tail, a bounded from-tail rescan) + `provision_partial_rpc_failure_writes_no_account_then_retry_converges` (the flaky-first-sync flow: identity-ok/tip-fails ⇒ typed `Sync` + NO account written, then a healed-link retry converges to one correct account) + `provision_account_none_persistence_returns_seed_required` (the Relim None-persistence path — provisioning is typed `SeedRequired`, never a seedless account) + `unary_silent_accepting_server_under_required_no_longer_blames_the_private_path` (net/grpc — the unary sibling of the streaming censor-middlebox test, on the all-unary provisioning path: gate-7 `GRPC_UNARY_TIMEOUT_SECS` boundary, and the stall reason that must survive the tonic status erasure. **It REPLACES `unary_silent_accepting_server_times_out_with_tor_stall`, deleted at stage S1 `truth` (S290):** that row asserted the `TorUnavailable` stall SURVIVES on an accepted-and-silent connection, which is exactly the over-claim S1 removed — under `Required` a connection whose dial was ACCEPTED and then carried nothing reads `EndpointUnreachable`, and only a dial that FAILED keeps `TorUnavailable`. The replacement carries the refused-dial control in the same row) | §3.2f — live provisioning over a bundled birthday row (the crypto-change review; the audit-driven "drop the live path"). The birthday comes from the signed binary, never a live `get_tree_state`. **The trust model's limit (corrected 2026-10-30, re-read at the final crates):** the bundled row fixes the birthday HEIGHT and the Sapling and Orchard tree SIZES the import records; upstream's `add_account` / `rewind_to_chain_state` inserts no frontier (`zcash_client_sqlite-0.23.0/src/wallet.rs:600-628`, `:4891-5059`; 0.22.0 the same), and the trees, so every witness and anchor, are seeded by the first sync pass's LIVE `GetTreeState` at the birthday − 1 (`zcash_client_backend-0.25.0/src/data_api/ll/wallet.rs:766-800`). Upstream checks only tree sizes, and `root_bind` binds subtree completion HEIGHTS, never a root or a frontier's contents (`root_bind.rs:23-30`; its bundled arm stops at the newest bundled row, and its recorded, scanned-count and block-hash arms reach above it), so a lying server can serve a frontier whose sizes check out and whose contents are wrong: wrong witnesses, spends on an anchor the chain never had, rejected by the network, funds frozen until a rescan against an honest server; nothing stolen, no key exposed. **Owed (HIGH, older than the NU7 wave):** bind a fresh wallet's first live anchor to the bundled row, as its own crypto change, with an ADR that supersedes ADR-0540 Decisions 6 and 7 (Decision 6's premise, that the import seeds the tree from the bundled frontier, is false; Decision 7 is not implemented). `provision.rs`'s module doc states the same; other sections point here. The default birthday is create-vs-restore aware (`freshly_generated`). All offline against a fake `LightwalletdClient` + in-memory DB — NO real network |
 | subtree-root ingestion (W3-inc-2c-iv-d-1) | **transport (net/grpc, the `MessageStream<T>` generalization):** `subtree_root_stream_yields_roots_in_order_then_clean_end` (the generic pump drives a `SubtreeRootStream` exactly like `BlockStream` — order, then one idempotent clean end) + `subtree_root_stream_mid_stream_failure_is_typed_never_a_silent_end` (the money property for the SUBTREE-ROOT stream: a mid-stream fault is a typed `Err` + latches terminal, NEVER `Ok(None)` — else a truncated spend-witness tree) + `get_subtree_roots_streams_through_the_host_dialer_not_a_direct_socket` (the new RPC rides the host `NetDialer`, ADR-0526) — PLUS the 12 iv-a `BlockStream` tests pass UNCHANGED, locking the generalization. **conversion + write (sync.rs):** `parse_subtree_root_decodes_canonical_and_rejects_hostile_shapes` (a 32-byte canonical root → right height+hash for both pools; a wrong length / non-canonical field element / >u32 height is a typed reject, never a panic — the §4.6 boundary) + `parse_root_never_panics_on_arbitrary_bytes` (proptest, testing-patterns §2 — any length/bytes/height) + `collect_roots_drains_in_order_and_empty_is_ok` + `collect_roots_malformed_root_is_typed_sync_not_panic` + `collect_roots_transport_fault_preserves_stall` (the unstable-network arms) + `collect_roots_caps_a_flooding_endpoint` (gate-7/DoS: a server flooding valid roots forever is stopped at `MAX_SUBTREE_ROOTS_PER_POOL` = 2^16 with a typed `Sync`, never an unbounded-Vec OOM) + `fetch_subtree_roots_orchard_open_failure_writes_nothing` (money: an Orchard-pool fault after Sapling streamed aborts BEFORE any write — no half-written tree — with the `TorUnavailable` stall preserved) + `put_subtree_roots_writes_both_pools_and_is_idempotent` (a real keyed `WalletDb`; re-put from index 0 — what every sync does — is Ok, the retry property) + **end-to-end through the handle (wallet.rs):** `update_subtree_roots_writes_both_pools_through_the_handle` + `update_subtree_roots_pool_failure_is_typed_and_writes_nothing`. **fuzz:** `fuzz_subtree_root` (cargo-fuzz, `fuzz/fuzz_targets/`) over the two parsers | §3.2g iv-d-1 — the SPEND-witness trust anchor; pure transport + hostile-input decode (audited `from_bytes`, no custom crypto). Driven through the `SubtreeRootSource` seam + scripted/endless `MessageStream`s + a real keyed DB — NO live gRPC server, NO real network. Review folds (count cap, honest `ShardTreeError` split, fuzz target) all included |
 | db-lock split (W3-inc-2c-iv-d-2a) | `db_lock_split_ui_reads_are_decoupled_from_the_held_db_lock` (the structural decoupling gate: a background thread HOLDS `Inner::db`, channel-synchronized — no wall clock; while held, the lock-free immutable fields `network`/`status`/seed read back without blocking — proving the scan loop's per-batch db-lock hold can never park a UI `network`/`status`/seed-derivation read. Compiles ONLY if those fields stay bare lock-free `Inner` members; running to completion proves they share no lock with the DB) — PLUS every iv-c/iv-d-1 handle test (`current_address`/`import_account`/`provision_account`/`update_subtree_roots`) passes UNCHANGED through the split lock model | §3.2g iv-d-2a — the db-lock split (the BLOCKER before the scan loop): `Inner`'s single `Mutex<OpenWallet>` → lock-free immutable UI-read fields + `Mutex<WalletDb>` for the mutable db+key. Crypto/security/arch review: ZERO BLOCKER/MAJOR (seed zeroization/drop-order/`Sync` verified unchanged). The per-batch hold-bound timing test defers to iv-d-2b |
 | scan primitive (W3-inc-2c-iv-d-2b-i) | **download (completeness + DoS):** `download_range_delivers_the_full_span_in_order` (the happy path — every block cached; ALSO asserts the half-open `[s,e)` → INCLUSIVE wire `[s,e−1]` conversion via `FakeScanClient.last_block_range`) + `download_range_short_stream_is_typed_sync_never_silent` (THE money property, §3.2g: a clean-but-SHORT span is typed `Sync`, never a silent gap the scanner records as scanned = missed funds) + `download_range_gap_in_the_span_is_typed_sync` (a gap/out-of-order block rejected BEFORE the cache) + `download_range_overlong_span_is_typed_sync` (a block past `end−1` rejected by the `next ≥ end` arm) + `download_range_transport_fault_preserves_stall` (a mid-stream fault is typed `Sync`, the SPENT-ON-ERROR latch) + `download_range_caps_a_block_flooding_endpoint` (gate-7/DoS: a server padding block bodies past `DOWNLOAD_BATCH_MAX_BYTES` is typed `Sync`, never OOM — INJECTED tiny cap, the `open_with_bound` pattern). **anchor:** `fetch_chain_state_decodes_the_anchor_and_a_fault_is_typed` (a valid tree state → `ChainState` at the height; a fault → typed `Sync` with the precise Tor-vs-endpoint stall preserved). **scan_batch:** `scan_batch_from_state_misalignment_is_typed_never_panics` (THE robustness GUARD — a server anchoring its tree state at the wrong height surfaces typed `Sync`, never the FFI-crashing upstream `assert_eq!`) + `scan_batch_clean_empty_scan_advances` (happy-path wiring: an aligned empty batch → `Scanned`) + `rewind_target_saturates_at_genesis` (gate-7: the reorg rewind arithmetic saturates at 0 near genesis) + `map_scan_err_passes_through_the_cache_error_and_collapses_our_db` (honest attribution: a cache `DiskFull` passes through, not collapsed to `StoreCorrupt`). **operational 3-lens (real-world edge cases):** `download_range_open_fault_then_retry_converges` (unstable-network: the flaky-first-sync flow — a stream-OPEN fault caches NOTHING + typed `Sync`, then a healed retry downloads the full span idempotently; the open-fault arm) + `fetch_chain_state_wrong_height_anchor_is_caught_by_the_scan_guard` (money: a server mis-anchoring a scan is caught end-to-end — the anchor carries the server's claimed height, the scan guard rejects the mismatch, never a scan against a lied-about anchor) + `download_range_single_block_span_round_trips` (boundary: the smallest non-empty `[s,s+1)` Verify range → inclusive wire `[s,s]`, the off-by-one fence-post) + `download_range_empty_range_is_a_noop` (the defensive `end ≤ start` guard / underflow fix: no RPC, no `end−1` underflow, Ok). **GA-BLOCKING e2e (owed):** `scan_detects_a_note_and_a_forced_reorg_rewinds` (positive note-detection + a REAL continuity-error reorg — needs upstream `test-dependencies` fixtures / regtest; a NAMED gate, not an open deferral) | §3.2g iv-d-2b-i — the per-batch scan primitive (the fetch-async/apply-sync pair beneath the 2b-ii driver loop). The money-critical correctness (completeness, the panic guard, the byte cap, reorg classification) is unit-tested deterministically against a `FakeScanClient` + real keyed `WalletDb`/`BlockCache` — NO live gRPC server, NO real network. Full review (crypto ∥ security ∥ arch → code reviewer): the byte-cap MAJOR + the spec-split + 6 MINOR/NIT all folded |
@@ -13022,7 +13367,7 @@ integration.
 | concurrency | `proposal_one_shot_and_ttl` (double-tap ⇒ `ProposalAlreadyUsed`; stale ⇒ `ProposalStale`) | §3.1 — no double-send from UI races, no stale anchors |
 | concurrency | `wipe_refused_while_instance_open` + `api_calls_in_wrong_lifecycle_state_get_typed_errors` | §3.3 lifecycle state machine |
 | 1 funds-safety (M1) | `quote_zec_side_outside_request_tolerance_rejected_before_signing` | §2.6 user-anchored ceiling — gates SIGNING, not display |
-| 1 security — **GREEN (bundle slice)** (§3.6/M2) | `poisoned_checkpoint_or_tree_state_does_not_silently_hide_funds` | §4.6 — proves the two-layer defense: a still-monotonic time tamper slips `is_monotonic` (and would overshoot) BUT is caught by the pinned content hash, so a poisoned bundle can't silently ship. The live tree-state path is DROPPED (§3.2f) — provisioning anchors on the bundled frontier slice (signed binary), never a live `get_tree_state`; see `provision_never_provisions_from_a_live_frontier` |
+| 1 security — **GREEN (bundle slice)** (§3.6/M2) | `poisoned_checkpoint_or_tree_state_does_not_silently_hide_funds` | §4.6 — proves the two-layer defense: a still-monotonic time tamper slips `is_monotonic` (and would overshoot) BUT is caught by the pinned content hash, so a poisoned bundle can't silently ship. The live tree-state path is DROPPED from provisioning (§3.2f) — the birthday comes from the bundled slice (signed binary), never a live `get_tree_state`; see `provision_never_provisions_from_a_live_frontier`. The first sync pass's live tree state still seeds the trees: the live-provisioning row's limit (corrected 2026-10-30) |
 | 3 common-sense (M3) | `refund_after_wipe_window_surfaced_or_recoverable` | §6.3 `WipeWithPendingSwap` + HD-recoverability |
 | privacy (m5) | `tor_required_covers_swap_api_calls` — **GREEN, W-swap-1** (behavioral half: fail-closed dialer ⇒ every endpoint typed-fails with zero bytes; structural half: `adapter_cannot_open_its_own_sockets` pins no-socket-deps + tokio-without-`net` at the manifest) | §3.2 — swap rides the same stack; no independent clearnet |
 | 1 security (m6) | `swap_and_intent_tables_reject_injection` | §4.6 parameterized-writes row |
@@ -13254,7 +13599,9 @@ REST client). M2's live-tree-state continuity verification escalated into
 the W2 crypto-change review of the SYNC chunk — **RESOLVED in W3-inc-2c-iv-c (§3.2f):
 the live path was DROPPED (a live frontier is cryptographically unverifiable), so
 provisioning anchors on the bundled frontier slice; there is no live-continuity
-check to own.** G7 (UA transparent receiver in/out) routes to the W2
+check to own.** (Corrected 2026-10-30: only provisioning's live path was dropped.
+The first sync pass's live tree state still seeds the trees, so the
+live-continuity check IS owed: §8's live-provisioning row.) G7 (UA transparent receiver in/out) routes to the W2
 crypto audit (§3.1).
 
 **W3 as-built notes (2026-06-12, increment 1 — package + bridge + frozen
@@ -13409,7 +13756,8 @@ stack now resolves in the sdk lock (proven for real: `zcash_keys =0.14.0`,
   fixed request (only the BIP39 vector changed; the fixed-seed UAs were already
   index-0-valid for both).
 - **§4.2(a) USK residual honored as-built:** the `UnifiedSpendingKey`
-  (`Clone + Debug`, no Zeroize upstream) is strictly function-local in
+  (`Clone`, redacting `Debug`; since the NU7 wave only its transparent key is left
+  un-erased upstream, the shielded keys pinned `ZeroizeOnDrop` by `erases_on_drop`) is strictly function-local in
   `default_address_for` — fed a borrowed `&[u8]`, consumed into the UFVK,
   dropped at return; never logged/stored/`Clone`-reached from a DTO. Miri is
   not run on this path (our glue is `forbid(unsafe_code)` over audited curve

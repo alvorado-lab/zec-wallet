@@ -168,6 +168,22 @@ void main() {
     );
   });
 
+  /// ADR-0580: the pre-upgrade pause refusing an OutOfZec execute is its OWN
+  /// fault carrying the wait, never the categorical "couldn't quote". Mutant:
+  /// the classifier's pause arm removed (it falls to the generic); red.
+  test('the_swap_execute_pause_maps_to_its_wait_never_a_failure', () {
+    final fault = classifySwapFailure(
+      err(
+        const SwapErrorKind.upgradeImminent(
+          activationHeight: 3543405,
+          blocksLeft: 12,
+        ),
+      ),
+    );
+    expect(fault, isA<SwapUpgradePausedFault>());
+    expect((fault as SwapUpgradePausedFault).blocksLeft, 12);
+  });
+
   test('a non-SDK error is the honest generic', () {
     expect(reasonOf(StateError('boom')), SwapFaultReason.couldNotQuote);
   });

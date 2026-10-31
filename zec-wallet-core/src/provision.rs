@@ -1,22 +1,46 @@
-//! §3.2f — live account provisioning over the BUNDLED-frontier anchor (the
+//! §3.2f — live account provisioning over a BUNDLED birthday row (the
 //! W3-inc-2c-iv-c crypto-change review). The bridge that makes inc-2c-iii's offline
 //! `import_account` seam LIVE: resolve a birthday height from the endpoint's tip
-//! (or the host's `config.birthday`), then anchor it with the TRUSTED bundled
-//! commitment-tree frontier — NEVER a live `get_tree_state`.
+//! (or the host's `config.birthday`), then build the `AccountBirthday` from the
+//! bundled tree-state row below it. Provisioning itself makes no `get_tree_state`
+//! call.
 //!
-//! **The trust model (crypto audit 2026-06-14, §3.2f):** the backend does NOT
-//! self-verify a birthday frontier (it trusts lightwalletd for tree state), and a
-//! live frontier is cryptographically unverifiable at a recent height. So the
-//! birthday frontier comes from the signed-binary bundle ([`checkpoints::
-//! bundled_treestate`]) — the M2 live-frontier threat is ELIMINATED, not
-//! mitigated. This module STRUCTURALLY cannot consult a live frontier: the
-//! [`ChainOracle`] seam exposes only the tip + the network identity — there is no
-//! tree-state method on it by design (`provision_never_provisions_from_a_live_frontier`).
+//! **The trust model, and its limit (crypto audit 2026-06-14, §3.2f; re-read at
+//! the NU7 wave's final crates).** The backend does not self-verify a birthday
+//! frontier, and a live frontier is cryptographically unverifiable at a recent
+//! height. The bundled row ([`checkpoints::bundled_treestate`]) fixes the birthday
+//! HEIGHT and the Sapling and Orchard tree SIZES the import records. It does not
+//! seed the trees: upstream's `add_account` / `rewind_to_chain_state` records
+//! those sizes and inserts no frontier
+//! (`zcash_client_sqlite-0.23.0/src/wallet.rs:600-628`, `:4891-5059`; 0.22.0 did
+//! the same). The trees, and so every witness and anchor the wallet spends on,
+//! are seeded by the first sync pass's LIVE `GetTreeState` at the birthday − 1
+//! (`zcash_client_backend-0.25.0/src/data_api/ll/wallet.rs:766-800`, through
+//! `sync::fetch_chain_state`). Upstream checks only that frontier's tree sizes,
+//! and `crate::root_bind` binds subtree completion HEIGHTS, never a root or a
+//! frontier's contents (`root_bind.rs:23-30`): its bundled arm stops at the
+//! newest bundled row, and its recorded, scanned-count and block-hash arms reach
+//! above it. So a lying server CAN serve a frontier whose sizes check out and
+//! whose contents are wrong: the wallet then holds wrong witnesses, its spends
+//! name an anchor the chain never had and the network rejects them, and its
+//! funds stay frozen until a rescan against an honest server. Nothing is stolen
+//! and no key is exposed. **Owed (HIGH, older than the NU7 wave):** bind a fresh
+//! wallet's first live anchor to the bundled row, as its own crypto change, with
+//! an ADR that supersedes ADR-0540 Decisions 6 and 7 (Decision 6's premise, that
+//! the import seeds the tree from the bundled frontier, is false; Decision 7 is
+//! not implemented). This paragraph and the spec's §8 live-provisioning row are
+//! where the limit is stated; other comments point here.
+//!
+//! What this module guarantees is narrower: provisioning STRUCTURALLY cannot
+//! consult a live frontier. The [`ChainOracle`] seam exposes only the tip and the
+//! network identity, with no tree-state method by design
+//! (`provision_never_provisions_from_a_live_frontier` pins that for provisioning,
+//! and says nothing about the first sync pass after it).
 //!
 //! The endpoint reads here are CHEAP correctness guards (honestly scoped, §3.2f):
 //! the `get_lightd_info` network-match (host/manifest-misconfig defense) and the
 //! tip clamp (config-typo defense) — NOT adversary defense (every server-reported
-//! field is server-controlled; the bundled frontier is what defeats a liar).
+//! field is server-controlled, and the limit above is what a liar can still do).
 //!
 //! **Since `ironwood-nu63-support.md` §3.1 the same `get_lightd_info` read also
 //! feeds the consensus-staleness verdict** ([`crate::consensus`]), which is a
@@ -41,7 +65,8 @@ use crate::net::grpc::{GrpcError, LightwalletdClient, transport_err};
 /// lightwalletd CLIENT codegen (no server), so the provisioning logic is unit
 /// tested through a fake oracle, no live network. **By design it exposes only the
 /// tip + the network identity — NO tree-state method** — so `resolve_birthday`
-/// cannot anchor the birthday on a live frontier even by accident.
+/// cannot build the birthday from a live frontier even by accident (what the
+/// first sync pass reads afterwards is the module doc's limit).
 #[async_trait]
 pub(crate) trait ChainOracle {
     /// Best-chain tip height (the birthday-lag input + the above-tip clamp).
@@ -219,9 +244,11 @@ pub(crate) async fn verify_endpoint_network<C: ChainOracle + ?Sized>(
 }
 
 /// Resolve the wallet's birthday [`AccountBirthday`] for `network` from the
-/// endpoint's tip (or the host-supplied `configured` height), anchored by the
-/// TRUSTED bundled frontier (§3.2f). NEVER reads a live `get_tree_state` — the
-/// frontier comes from the signed binary.
+/// endpoint's tip (or the host-supplied `configured` height), built from the
+/// bundled tree-state row below it (§3.2f). It reads no live `get_tree_state`:
+/// the row fixes the birthday height and the tree sizes the import records, and
+/// the trees themselves are seeded later, by the first sync pass's live
+/// `GetTreeState` (the module doc states that limit).
 ///
 /// Steps: (1) network-match (`NetworkMismatch` on a wrong-chain endpoint, before
 /// any side effect); (2) resolve the requested height — `configured` if the host
@@ -312,7 +339,7 @@ pub(crate) async fn resolve_birthday<C: ChainOracle + ?Sized>(
     // `SyncStatus::EndpointBehind` with nothing scanned. The two are ONE
     // mechanism; a reader changing either must read the other. What the clamp
     // buys over REFUSE, what it costs, and where the birthday it writes sits
-    // (the anchor ceiling — the same height FR-24 writes with no server at all)
+    // (a bundled row below the tail — the height FR-24 writes with no server)
     // are recorded at `birthday_beyond_tip`.
     let tip_reference = match crate::sync::tip_standing(network, tip, None) {
         crate::sync::TipStanding::AtOrAboveBundle => tip,
@@ -326,8 +353,9 @@ pub(crate) async fn resolve_birthday<C: ChainOracle + ?Sized>(
         created_at,
     )?;
 
-    // (3) Anchor on the TRUSTED bundled frontier (never a live get_tree_state) →
-    // decode to a birthday. An empty/undecodable bundle is a corrupt binary.
+    // (3) Build the birthday from the bundled row (no `get_tree_state` here; what
+    // the first sync pass still reads live is the module doc's limit) → decode
+    // to a birthday. An empty/undecodable bundle is a corrupt binary.
     let treestate = checkpoints::bundled_treestate(network, BlockHeight::new(requested))
         .ok_or(WalletError::StoreCorrupt)?;
     birthday_from_treestate(treestate).map_err(|_| WalletError::StoreCorrupt)
@@ -338,9 +366,9 @@ pub(crate) async fn resolve_birthday<C: ChainOracle + ?Sized>(
 /// clamped up to the bundle's newest row (T0-1c-R2 M3; the caller does the
 /// clamp through `sync::tip_standing`). Factored out so the arithmetic below
 /// can be driven at heights the clamp makes unreachable end to end (every
-/// network's row sits far above `activation + lag`, and the anchor ceiling in
-/// `checkpoints::bundled_treestate` flattens every request above Nu6.3's
-/// activation onto one row, so two requests near the tail resolve to the same
+/// network's row sits far above `activation + lag`, and
+/// `checkpoints::bundled_treestate` flattens every request above the bundle's
+/// tail onto the tail row, so two requests near the tail resolve to the same
 /// birthday). The resolved birthday is always ≤ the request.
 ///
 /// A configured height above `tip_reference` ⇒ `BirthdayInFuture`. No host
@@ -492,7 +520,8 @@ mod tests {
     #[tokio::test]
     async fn resolve_birthday_new_wallet_uses_tip_lag_and_bundle() {
         // §8: with no configured birthday, the requested height is tip − lag, and
-        // the birthday is the bundled frontier for it (NEVER a live frontier).
+        // the birthday comes from the bundled row for it (provisioning reads no
+        // live frontier).
         // The fixture tip sits ABOVE the bundle's newest row (T0-1c-R2 M3: a tip
         // below it is clamped up to the row before the lag is taken, so only a
         // tip above the row is the reference this row's formula names).
@@ -579,7 +608,7 @@ mod tests {
         // Driven at the REQUEST (`requested_birthday_height`) since T0-1c-R2: a
         // tip below the row is clamped up to it, so the only tips at which
         // `tip − lag < estimate` can hold sit inside `[row, row + lag)` — and
-        // there the anchor ceiling (`bundled_treestate`) resolves both terms to
+        // there the strict-below rule (`bundled_treestate`) resolves both terms to
         // the same row, so the resolved birthday cannot tell the branches apart.
         // The request can.
         let net = Network::Main;
@@ -775,8 +804,9 @@ mod tests {
         // the newest AT OR BELOW THE ANCHOR CEILING, not the raw bundle tail. Above
         // the newest activation this build knows, the chain state can contain a
         // value pool we cannot model, and what we import there is immutable — so a
-        // build anchors only where it can model the rules. With the current pin the
-        // ceiling is below the bundle tail, which is exactly the Ironwood case.
+        // build anchors only where it can model the rules. Under the Nu6_3 list the
+        // ceiling sat below the bundle tail (the Ironwood case); with `Nu7` listed it
+        // sits above the whole bundle, so the row is the tail (asserted below).
         for net in [Network::Main, Network::Test] {
             let ceiling = crate::consensus::newest_known_activation(&net.consensus())
                 .map_or(u32::MAX, u32::from);
@@ -799,16 +829,86 @@ mod tests {
                 "{net:?}: a tip far above the bundle floors to the newest row the \
                  ceiling allows"
             );
-            // Non-vacuity: with the current pin the ceiling must actually BITE on
-            // mainnet, or this test would pass while asserting nothing new.
-            if net == Network::Main {
-                assert!(
-                    expected_row < tail,
-                    "the mainnet ceiling no longer bites — the bundle tail is now \
-                     within modelled rules, so re-check whether the 13 Ironwood-window \
-                     rows still need excluding"
-                );
-            }
+            // REFIXTURED in the NU7 wave (step 3). This used to require the mainnet
+            // ceiling to BITE (`expected_row < tail`), and its message named the
+            // re-check for the day it stopped: whether the 13 Ironwood-window rows
+            // still need excluding. With `Nu7` listed they do not. The ceiling on
+            // both networks is the NU7 activation, above the whole bundle; the rows
+            // above the Ironwood activation are under rules this build models, and
+            // each carries its Ironwood frontier
+            // (`checkpoints::tests::bundled_treestate_never_anchors_an_empty_
+            // ironwood_frontier_above_activation`, which is where the ceiling's
+            // bite is now measured). So the measured fact here is the opposite: the
+            // ceiling admits the bundle's newest row. A bundle refresh that carries a
+            // row past the NU7 activation makes the ceiling bite again and fires
+            // this, which is the decision point, not a false failure.
+            assert_eq!(
+                expected_row, tail,
+                "{net:?}: the anchor ceiling ({ceiling}) excludes the bundle's newest row \
+                 ({tail}). With every bundled row below the newest activation this build \
+                 models, a tip far above the bundle resolves to the tail row; a ceiling \
+                 that bites here is either a stale KNOWN_UPGRADES or a bundle that now \
+                 reaches past that activation"
+            );
+        }
+    }
+
+    /// UNLISTED CASE (NU7 wave step 3, not in the contract's list): what listing
+    /// `Nu7` changes for a user. A wallet created fresh, at the bundle's newest
+    /// checkpoint time, on either network, is born ABOVE the Ironwood activation,
+    /// on the newest bundled row strictly below its creation estimate, and its
+    /// birthday carries the Ironwood frontier.
+    ///
+    /// Through the shipped offline create path (`resolve_offline_birthday`, FR-24's
+    /// eager import), not over the table. Under a list that stops at `Nu6_3` the
+    /// same create is born BELOW the activation, on the last pre-Ironwood row
+    /// (birthdays 3,427,311 mainnet and 4,125,171 testnet, each that row + 1),
+    /// about 30,000 mainnet blocks of first scan earlier; red. The frontier
+    /// assertion pins the bundled `AccountBirthday` value, not the tree the wallet
+    /// scans with: the bundle fixes the birthday height and the Sapling and Orchard
+    /// tree sizes the import records, and the trees are seeded by the first
+    /// batch's live `GetTreeState` at the birthday − 1, which this row never reads.
+    #[test]
+    fn a_fresh_wallet_is_born_above_the_ironwood_activation_with_its_frontier_on_both_networks() {
+        use zcash_protocol::consensus::{NetworkUpgrade, Parameters};
+        for net in [Network::Main, Network::Test] {
+            let ironwood = u32::from(
+                net.consensus()
+                    .activation_height(NetworkUpgrade::Nu6_3)
+                    .expect("the pinned params know Nu6_3 on both networks"),
+            );
+            let created_at = checkpoints::newest_checkpoint_time(net);
+            let estimate = checkpoints::estimate_birthday(net, created_at).value();
+            // The newest bundled row strictly below the estimate, from the table
+            // alone: what the strict-below rule picks when no ceiling intervenes.
+            let expected_row = checkpoints::treestate_table(net)
+                .iter()
+                .map(|&(h, ..)| h)
+                .filter(|&h| h < estimate)
+                .max()
+                .expect("a bundled row below the creation estimate");
+            let b = resolve_offline_birthday(net, None, Some(created_at), true)
+                .expect("resolves")
+                .expect("a stamped fresh create imports eagerly");
+            let got = u32::try_from(u64::from(b.height())).expect("a birthday fits u32");
+            assert_eq!(
+                got,
+                expected_row + 1,
+                "{net:?}: a fresh wallet at the bundle's newest time is born on the newest \
+                 row below its estimate ({estimate}), plus one; the anchor ceiling held it \
+                 lower"
+            );
+            assert!(
+                got > ironwood,
+                "{net:?}: a fresh wallet is born at {got}, not above the Ironwood activation \
+                 {ironwood}"
+            );
+            assert!(
+                b.prior_chain_state().final_ironwood_tree().tree_size() > 0,
+                "{net:?}: the birthday at {got} sits above the Ironwood activation, but the \
+                 bundled AccountBirthday carries an EMPTY Ironwood frontier the chain does \
+                 not have there"
+            );
         }
     }
 
@@ -886,12 +986,16 @@ mod tests {
 
     #[tokio::test]
     async fn provision_never_provisions_from_a_live_frontier() {
-        // §8 THE trust-model guard. The STRUCTURAL impossibility is the real
-        // guarantee — `ChainOracle` exposes no `get_tree_state`, so a poisoned-
-        // frontier fake is literally unconstructable. This test verifies the
-        // *consequence*: the anchored birthday is purely bundle-derived — it equals
-        // the bundled frontier for the resolved height, a value computable with ZERO
-        // endpoint tree-state input — so no live frontier (poisoned or not) can move it.
+        // §8, the trust-model guard FOR PROVISIONING. The STRUCTURAL impossibility
+        // is the real guarantee — `ChainOracle` exposes no `get_tree_state`, so a
+        // poisoned-frontier fake is literally unconstructable. This test verifies
+        // the *consequence*: the `AccountBirthday` provisioning returns is purely
+        // bundle-derived — it equals the bundled row for the resolved height, a
+        // value computable with ZERO endpoint tree-state input — so no live
+        // frontier (poisoned or not) can move it. It covers provisioning and
+        // nothing after it: the trees the wallet scans and spends with are seeded
+        // by the first sync pass's live `GetTreeState`, which this row never
+        // reads (the module doc's limit, and the HIGH owed with it).
         // T0-1c-R2 M3 sharpens the thesis: the tip is BELOW the bundle's row, so
         // not even the endpoint's tip enters the request — the row does.
         for net in [Network::Main, Network::Test] {
@@ -948,10 +1052,10 @@ mod tests {
     /// current endpoint at the row does — far above activation — and the
     /// request is `row − lag`, computable from the compiled bundle alone.
     /// (G3's "≥ row − lag" on the birthday itself is not satisfiable on either
-    /// network: `bundled_treestate` caps every anchor at Nu6.3's activation —
-    /// 3,428,143 mainnet / 4,134,000 testnet — which sits below `row − lag`;
-    /// the birthday a CURRENT server gives is the ceiling row + 1, and that is
-    /// what this row pins.) Mutant: the clamp removed (the reference reverted to
+    /// network: `bundled_treestate` anchors on the newest row strictly below the
+    /// request, and the bundle's rows are spaced wider than the lag, so the
+    /// birthday a CURRENT server gives is the row before the newest, plus one,
+    /// below `row − lag`; that is what this row pins.) Mutant: the clamp removed (the reference reverted to
     /// the raw tip) — the lying-low birthday falls to the bundled row near the
     /// tip, and both assertions red.
     #[tokio::test]

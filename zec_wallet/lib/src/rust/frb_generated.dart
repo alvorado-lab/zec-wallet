@@ -397,7 +397,11 @@ abstract class ZecWalletRustLibApi extends BaseApi {
 
   int crateApiMetaSeverAnswerGraceMs();
 
-  bool crateApiStateTxConfirmationIsFinal({required int confirmationDepth});
+  bool crateApiStateTxConfirmationIsFinal({
+    required Network network,
+    required int minedHeight,
+    required int confirmationDepth,
+  });
 
   ValidatedAddress crateApiPaymentsValidateAddress({
     required String address,
@@ -2933,11 +2937,17 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       const TaskConstMeta(debugName: "sever_answer_grace_ms", argNames: []);
 
   @override
-  bool crateApiStateTxConfirmationIsFinal({required int confirmationDepth}) {
+  bool crateApiStateTxConfirmationIsFinal({
+    required Network network,
+    required int minedHeight,
+    required int confirmationDepth,
+  }) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_network(network, serializer);
+          sse_encode_u_32(minedHeight, serializer);
           sse_encode_u_32(confirmationDepth, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 73)!;
         },
@@ -2946,7 +2956,7 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
           decodeErrorData: null,
         ),
         constMeta: kCrateApiStateTxConfirmationIsFinalConstMeta,
-        argValues: [confirmationDepth],
+        argValues: [network, minedHeight, confirmationDepth],
         apiImpl: this,
       ),
     );
@@ -2955,7 +2965,7 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
   TaskConstMeta get kCrateApiStateTxConfirmationIsFinalConstMeta =>
       const TaskConstMeta(
         debugName: "tx_confirmation_is_final",
-        argNames: ["confirmationDepth"],
+        argNames: ["network", "minedHeight", "confirmationDepth"],
       );
 
   @override
@@ -3364,6 +3374,12 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
   WalletConfig dco_decode_box_autoadd_wallet_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_wallet_config(raw);
+  }
+
+  @protected
+  CancelPhase dco_decode_cancel_phase(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return CancelPhase.values[raw as int];
   }
 
   @protected
@@ -4311,6 +4327,11 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       case 15:
         return SwapErrorKind_QuoteTermsDiffer();
       case 16:
+        return SwapErrorKind_UpgradeImminent(
+          activationHeight: dco_decode_u_32(raw[1]),
+          blocksLeft: dco_decode_u_32(raw[2]),
+        );
+      case 17:
         return SwapErrorKind_Unknown();
       default:
         throw Exception("unreachable");
@@ -4720,6 +4741,12 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       case 4:
         return TxStatus_Failed();
       case 5:
+        return TxStatus_CancelledByUpgrade(
+          stoppedAt: dco_decode_u_32(raw[1]),
+          releasedAt: dco_decode_opt_box_autoadd_u_32(raw[2]),
+          phase: dco_decode_cancel_phase(raw[3]),
+        );
+      case 6:
         return TxStatus_Unknown();
       default:
         throw Exception("unreachable");
@@ -5043,8 +5070,13 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       case 61:
         return WalletErrorKind_TexSendLimitReached();
       case 62:
-        return WalletErrorKind_Io();
+        return WalletErrorKind_UpgradeImminent(
+          activationHeight: dco_decode_u_32(raw[1]),
+          blocksLeft: dco_decode_u_32(raw[2]),
+        );
       case 63:
+        return WalletErrorKind_Io();
+      case 64:
         return WalletErrorKind_Unknown();
       default:
         throw Exception("unreachable");
@@ -5430,6 +5462,13 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_wallet_config(deserializer));
+  }
+
+  @protected
+  CancelPhase sse_decode_cancel_phase(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return CancelPhase.values[inner];
   }
 
   @protected
@@ -6713,6 +6752,13 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       case 15:
         return SwapErrorKind_QuoteTermsDiffer();
       case 16:
+        var var_activationHeight = sse_decode_u_32(deserializer);
+        var var_blocksLeft = sse_decode_u_32(deserializer);
+        return SwapErrorKind_UpgradeImminent(
+          activationHeight: var_activationHeight,
+          blocksLeft: var_blocksLeft,
+        );
+      case 17:
         return SwapErrorKind_Unknown();
       default:
         throw UnimplementedError('');
@@ -7200,6 +7246,15 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       case 4:
         return TxStatus_Failed();
       case 5:
+        var var_stoppedAt = sse_decode_u_32(deserializer);
+        var var_releasedAt = sse_decode_opt_box_autoadd_u_32(deserializer);
+        var var_phase = sse_decode_cancel_phase(deserializer);
+        return TxStatus_CancelledByUpgrade(
+          stoppedAt: var_stoppedAt,
+          releasedAt: var_releasedAt,
+          phase: var_phase,
+        );
+      case 6:
         return TxStatus_Unknown();
       default:
         throw UnimplementedError('');
@@ -7561,8 +7616,15 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
       case 61:
         return WalletErrorKind_TexSendLimitReached();
       case 62:
-        return WalletErrorKind_Io();
+        var var_activationHeight = sse_decode_u_32(deserializer);
+        var var_blocksLeft = sse_decode_u_32(deserializer);
+        return WalletErrorKind_UpgradeImminent(
+          activationHeight: var_activationHeight,
+          blocksLeft: var_blocksLeft,
+        );
       case 63:
+        return WalletErrorKind_Io();
+      case 64:
         return WalletErrorKind_Unknown();
       default:
         throw UnimplementedError('');
@@ -8012,6 +8074,12 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_wallet_config(self, serializer);
+  }
+
+  @protected
+  void sse_encode_cancel_phase(CancelPhase self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -9139,8 +9207,15 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
         sse_encode_i_32(14, serializer);
       case SwapErrorKind_QuoteTermsDiffer():
         sse_encode_i_32(15, serializer);
-      case SwapErrorKind_Unknown():
+      case SwapErrorKind_UpgradeImminent(
+        activationHeight: final activationHeight,
+        blocksLeft: final blocksLeft,
+      ):
         sse_encode_i_32(16, serializer);
+        sse_encode_u_32(activationHeight, serializer);
+        sse_encode_u_32(blocksLeft, serializer);
+      case SwapErrorKind_Unknown():
+        sse_encode_i_32(17, serializer);
     }
   }
 
@@ -9541,8 +9616,17 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
         sse_encode_i_32(3, serializer);
       case TxStatus_Failed():
         sse_encode_i_32(4, serializer);
-      case TxStatus_Unknown():
+      case TxStatus_CancelledByUpgrade(
+        stoppedAt: final stoppedAt,
+        releasedAt: final releasedAt,
+        phase: final phase,
+      ):
         sse_encode_i_32(5, serializer);
+        sse_encode_u_32(stoppedAt, serializer);
+        sse_encode_opt_box_autoadd_u_32(releasedAt, serializer);
+        sse_encode_cancel_phase(phase, serializer);
+      case TxStatus_Unknown():
+        sse_encode_i_32(6, serializer);
     }
   }
 
@@ -9869,10 +9953,17 @@ class ZecWalletRustLibApiImpl extends ZecWalletRustLibApiImplPlatform
         sse_encode_i_32(60, serializer);
       case WalletErrorKind_TexSendLimitReached():
         sse_encode_i_32(61, serializer);
-      case WalletErrorKind_Io():
+      case WalletErrorKind_UpgradeImminent(
+        activationHeight: final activationHeight,
+        blocksLeft: final blocksLeft,
+      ):
         sse_encode_i_32(62, serializer);
-      case WalletErrorKind_Unknown():
+        sse_encode_u_32(activationHeight, serializer);
+        sse_encode_u_32(blocksLeft, serializer);
+      case WalletErrorKind_Io():
         sse_encode_i_32(63, serializer);
+      case WalletErrorKind_Unknown():
+        sse_encode_i_32(64, serializer);
     }
   }
 
@@ -9943,7 +10034,10 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// only `signed` may be phrased as "sending now", and `stillQueued` is NOT a failure.
   /// §5.4: ids/timestamps only — no amount or address crosses. Throws
   /// [WalletErrorKind.invalidState] on a closed handle; a watch-only wallet throws
-  /// [WalletErrorKind.watchOnly] (structurally seedless — it can never sign).
+  /// [WalletErrorKind.watchOnly] (structurally seedless: it can never sign); in the last 20
+  /// blocks before a network upgrade it throws [WalletErrorKind.upgradeImminent] and the send
+  /// stays queued: authorize it again after the upgrade (a wallet that signs unattended also
+  /// sends it by itself then).
   Future<ParkedAuthorization> authorizeParkedSend({
     required PlatformInt64 id,
     required PlatformInt64 createdAt,
@@ -10337,7 +10431,12 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// [WalletErrorKind.sendAmountRequired]; not enough confirmed funds is
   /// [WalletErrorKind.insufficientFunds] (carrying available / required / pending-incoming,
   /// so the host can say "wait for confirmations" honestly); a not-yet-anchorable wallet is
-  /// [WalletErrorKind.proposalStale] (re-propose after sync). No amount or address is ever
+  /// [WalletErrorKind.proposalStale] (re-propose after sync). In the last 20 blocks before a
+  /// network upgrade it is [WalletErrorKind.upgradeImminent] (propose again after the upgrade).
+  /// From NU7, a payment that would exceed one block's ZIP 218 limits (330 Orchard actions, 330
+  /// Ironwood actions, 300 Sapling spends and outputs, 330 in all) is
+  /// [WalletErrorKind.proposeFailed], whose doc says what still goes through. No amount or
+  /// address is ever
   /// logged (§5.4); [WalletErrorKind.invalidState] on a closed handle.
   Future<SendProposal> propose({required String requestUri}) => ZecWalletRustLib
       .instance
@@ -10356,8 +10455,9 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   ///   transparent funds) — the host hides the "shield now" action.
   ///
   /// DETERMINISTIC, like `propose`: no spending keys, no proofs, no network, no DB writes;
-  /// NOTHING is sent. No amount is ever logged (§5.4); [WalletErrorKind.invalidState] on a
-  /// closed handle, [WalletErrorKind.proposalStale] on a not-yet-anchorable wallet.
+  /// NOTHING is sent. No amount is ever logged (§5.4); [WalletErrorKind.invalidState] on a closed
+  /// handle, [WalletErrorKind.upgradeImminent] in the last 20 blocks before a network upgrade
+  /// (propose again after it), [WalletErrorKind.proposalStale] on a not-yet-anchorable wallet.
   Future<SendProposal?> proposeShield() => ZecWalletRustLib.instance.api
       .crateApiWalletWalletHandleProposeShield(that: this);
 
@@ -10392,7 +10492,8 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// — it expires and frees the funds; try again). It unblocks the WINDOW only — it NEVER re-sends a
   /// paused/queued payment (no double-pay). Throws [WalletErrorKind.seedRequired] with no signing
   /// key, [WalletErrorKind.insufficientFunds] when the shielded balance can't fund the mint,
-  /// [WalletErrorKind.invalidState] on a closed handle. Live now that TEX two-step sends run in
+  /// [WalletErrorKind.upgradeImminent] in the last 20 blocks before a network upgrade (nothing is
+  /// minted; run it again after the upgrade), [WalletErrorKind.invalidState] on a closed handle. Live now that TEX two-step sends run in
   /// production (gate-removal, 2e-2b-v-5); a wallet that has made no TEX send has nothing to reclaim.
   ///
   /// ⚠ HOST GATING (money-relevant): surface this ONLY behind the #327 authorizer + the honest-cost
@@ -10534,7 +10635,9 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// the 2026-09-20 review's R02.) Read the live state per tx from [TxSummary.delivery] or
   /// [WalletHandle.deliveryState] — persisted / retryPending / accepted / confirmed. Throws
   /// [WalletErrorKind.proposalAlreadyUsed] on a re-send/double-tap (the token was consumed —
-  /// the notes are never broadcast twice, §6.3) or [WalletErrorKind.signFailed]. No txid/amount
+  /// the notes are never broadcast twice, §6.3) or [WalletErrorKind.signFailed]; it throws
+  /// [WalletErrorKind.upgradeImminent] when the last 20 blocks before a network upgrade began
+  /// after `propose` (nothing is signed; propose again after the upgrade). No txid/amount
   /// is ever logged (§5.4); [WalletErrorKind.invalidState] on a closed handle.
   ///
   /// ORDERING (the per-tx → leg contract): the list is in BROADCAST order, which is also mine
@@ -10556,7 +10659,9 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// [WalletHandle.listInFlightSends] cue owns the honest "don't re-send" through that window.
   /// Every non-accepted TWO-STEP tx stays persisted and re-broadcasts on the next sync (the
   /// send is enrolled durably before broadcast); a failed SINGLE-step send instead self-heals
-  /// by expiry (~40 blocks) freeing its notes for a fresh re-send. An ordinary
+  /// by expiry (about 50 minutes), freeing its notes for a fresh re-send. A payment of a round
+  /// amount (1, 2 or 5 × 10^k ZEC) sent from Orchard funds can be a ZIP 318 crossing, whose
+  /// expiry is 30 to 60 days, so do not offer it again before [TxSummary.expiryHeight]. An ordinary
   /// pool-crossing send's txs are INDEPENDENT — position is broadcast order only, no leg meaning.
   ///
   /// PROPOSAL FRESHNESS (the confirm-screen host contract): a [SendProposal] is a one-shot
@@ -10634,7 +10739,10 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// as for `swapQuote`; [SwapErrorKind.quoteExpired] past the deposit deadline AND for a quote
   /// this wallet did not issue or already executed (re-quote, never retry the same DTO);
   /// [SwapErrorKind.quoteTermsDiffer] when the DTO differs from the issued record (get a fresh
-  /// quote); [SwapErrorKind.depositSendFailed] if the deposit leg could not be queued (re-quote).
+  /// quote); [SwapErrorKind.depositSendFailed] if the deposit leg could not be queued (re-quote);
+  /// [SwapErrorKind.upgradeImminent] for an OutOfZec execute in the last 20 blocks before a
+  /// network upgrade, with the quote left unused (execute the same quote after the upgrade if it
+  /// has not expired; an IntoZec execute is never refused for it).
   Future<String> swapExecute({required SwapQuote quote}) => ZecWalletRustLib
       .instance
       .api
@@ -10688,7 +10796,10 @@ class WalletHandleImpl extends RustOpaque implements WalletHandle {
   /// double-spend). `failed > 0` ⇒ some funds stay on-chain + re-runnable (a flaky link, NOT a loss);
   /// `truncated > 0` ⇒ a heavy wallet hit the per-invocation cap — run it again. Throws
   /// [WalletErrorKind.seedRequired] when the wallet cannot sign (no seed/credential available),
-  /// [WalletErrorKind.invalidState] on a closed handle. Live now that TEX two-step sends run in
+  /// [WalletErrorKind.invalidState] on a closed handle, [WalletErrorKind.upgradeImminent] when
+  /// called in the last 20 blocks before a network upgrade (run it again after the upgrade). If
+  /// that window opens while it runs, it stops and returns what it swept: the address in progress
+  /// counts in `failed`, the rest in `truncated`. Live now that TEX two-step sends run in
   /// production (gate-removal, 2e-2b-v-5); on a wallet that has made no TEX send no one-time address is
   /// reserved ⇒ an empty no-op.
   Future<EphemeralSweepSummary> sweepEphemeralFunds() => ZecWalletRustLib

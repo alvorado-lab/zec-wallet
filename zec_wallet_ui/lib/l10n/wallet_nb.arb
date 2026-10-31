@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Vi kunne ikke bekrefte denne skjermingen. Se Aktivitet før du prøver igjen.",
   "walletMoveUnknownTitle": "Sjekk før du flytter igjen",
   "walletMoveUnknownBody": "Vi kunne ikke bekrefte denne flyttingen. Se Aktivitet før du prøver igjen.",
-  "walletTxExplainRetryingExpired": "Dette forsøket utløp før nettverket bekreftet det. Lommeboken din sender betalingen på nytt av seg selv, så ikke send den på nytt selv."
+  "walletTxExplainRetryingExpired": "Dette forsøket utløp før nettverket bekreftet det. Lommeboken din sender betalingen på nytt av seg selv, så ikke send den på nytt selv.",
+  "walletActivityCancelledByUpgrade": "Kansellert av oppgradering",
+  "walletTxExplainCancelledNotFinal": "En nettverksoppgradering kansellerte denne betalingen før den ble bekreftet. Dette er ikke endelig ennå, så ikke send den på nytt.",
+  "walletTxExplainCancelledHeld": "En nettverksoppgradering kansellerte denne betalingen. Lommeboken holder beløpet til betalingen utløper.",
+  "walletTxExplainCancelledReleased": "En nettverksoppgradering kansellerte denne betalingen før den ble bekreftet. Beløpet er tilgjengelig igjen.",
+  "walletTxExplainRetryingCancelled": "En nettverksoppgradering kansellerte dette forsøket før det ble bekreftet. Lommeboken sender betalingen på nytt av seg selv, så ikke send den på nytt selv.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{Zcash-nettverket oppgraderes om omtrent 1 minutt. Sending er satt på pause til da, så betalingen din ikke kan bli sittende fast.} other{Zcash-nettverket oppgraderes om omtrent {minutes} minutter. Sending er satt på pause til da, så betalingen din ikke kan bli sittende fast.}}",
+  "walletShieldPausedTitle": "Skjerming er satt på pause"
 }

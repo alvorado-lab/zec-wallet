@@ -299,24 +299,102 @@ fn consensus_compatibility_is_the_only_staleness_predicate() {
 /// comparison — in `provision.rs` beside the chain guard, say — recreates the
 /// two-mechanisms-one-question state that let the branch half of the
 /// network-match sit specified-but-unbuilt for months.
+///
+/// Test code is not a second comparison: the inline test modules end the scan of
+/// their file (below), and an OUT-OF-LINE test module is skipped whole
+/// ([`is_an_out_of_line_test_module`]). The NU7 wave's step 4 put the first test
+/// files under `src/` that name the identifier (a row checking a parsed
+/// transaction's branch against its header bytes), and this gate read them as
+/// production.
 #[test]
 fn no_second_branch_comparison() {
-    let mut offenders = Vec::new();
-    scan(&manifest_dir().join("src"), &mut offenders);
+    let offenders = branch_comparison_offenders(&manifest_dir().join("src"));
     assert!(
         offenders.is_empty(),
         "`consensus_branch_id` is read outside the predicate + its boundary parse — a second \
          staleness comparison is the §1.2 defect recurring: {offenders:?}"
     );
+}
 
-    fn scan(dir: &Path, offenders: &mut Vec<String>) {
+/// Whether `path`, a file under `src`, is an OUT-OF-LINE test module by the
+/// crate's convention: it sits below a `tests/` directory, and the file that owns
+/// that directory declares `mod tests` only behind `#[cfg(test)]`, so rustc
+/// compiles everything declared inside it only under `cfg(test)`. The owner of
+/// `<dir>/tests/` is `<dir>.rs` or `<dir>/mod.rs` (`lib.rs` for `src/tests/`), as
+/// rustc resolves a non-mod-rs and a mod-rs declarer.
+///
+/// Not the resolver of `no_network_io_outside_the_dialer.rs` (it lives in another
+/// test binary, and sharing it would move the lines that binary's registry rows
+/// cite). Its limits, stated: a `tests/` directory with no owner on disk (an inline
+/// module's own `tests`), and a test file declared by `#[path]` outside a `tests/`
+/// directory, are still scanned (the loud direction); a production module declared
+/// INTO a gated owner's `tests/` directory by an ungated `#[path]` elsewhere would
+/// be skipped. No file under `src/` is declared that way.
+fn is_an_out_of_line_test_module(src: &Path, path: &Path) -> bool {
+    let Ok(relative) = path.strip_prefix(src) else {
+        return false;
+    };
+    let components: Vec<_> = relative.components().collect();
+    let Some(at) = components.iter().position(|c| c.as_os_str() == "tests") else {
+        return false;
+    };
+    if at + 1 >= components.len() {
+        return false;
+    }
+    let dir: PathBuf = components[..at].iter().collect();
+    let owners = if at == 0 {
+        vec![src.join("lib.rs")]
+    } else {
+        let dir = src.join(dir);
+        vec![dir.with_extension("rs"), dir.join("mod.rs")]
+    };
+    let mut gated = 0usize;
+    for owner in owners {
+        let Ok(text) = fs::read_to_string(&owner) else {
+            continue;
+        };
+        let lines: Vec<&str> = text.lines().map(str::trim).collect();
+        for (i, line) in lines.iter().enumerate() {
+            let declaration = ["pub(crate) ", "pub(super) ", "pub "]
+                .iter()
+                .find_map(|v| line.strip_prefix(v))
+                .unwrap_or(line);
+            if !(declaration.starts_with("mod tests {")
+                || declaration.starts_with("mod tests;")
+                || declaration == "mod tests")
+            {
+                continue;
+            }
+            // The attributes above the declaration, blank and comment lines between
+            // them allowed; any ungated `mod tests` compiles its files into production.
+            let is_gated = lines[..i]
+                .iter()
+                .rev()
+                .take_while(|l| l.is_empty() || l.starts_with("#[") || l.starts_with("//"))
+                .any(|l| *l == "#[cfg(test)]");
+            if !is_gated {
+                return false;
+            }
+            gated += 1;
+        }
+    }
+    gated > 0
+}
+
+/// The production lines under `src` that name `consensus_branch_id` outside the
+/// predicate's two owners and the test code, as `file:line`.
+fn branch_comparison_offenders(src: &Path) -> Vec<String> {
+    fn scan(src: &Path, dir: &Path, offenders: &mut Vec<String>) {
         for entry in fs::read_dir(dir).expect("src readable") {
             let path = entry.expect("dir entry").path();
             if path.is_dir() {
-                scan(&path, offenders);
+                scan(src, &path, offenders);
                 continue;
             }
             if path.extension().is_none_or(|e| e != "rs") {
+                continue;
+            }
+            if is_an_out_of_line_test_module(src, &path) {
                 continue;
             }
             let name = path
@@ -352,6 +430,64 @@ fn no_second_branch_comparison() {
             }
         }
     }
+
+    let mut offenders = Vec::new();
+    scan(src, src, &mut offenders);
+    offenders
+}
+
+/// The self-test of [`no_second_branch_comparison`]'s skip, over a planted tree: a
+/// file under a `tests/` directory whose owner gates `mod tests` behind
+/// `#[cfg(test)]` (a non-mod-rs owner, a mod-rs owner with a second attribute and a
+/// visibility, `lib.rs` for `src/tests/`) is skipped; the same file under an
+/// owner that declares `mod tests` without the gate, a file under `tests/` with no
+/// owner, and a plain production file are each an offender. The inline test
+/// module still ends its file's scan.
+///
+/// Mutants, each red: skip every file under a `tests/` directory (the ungated
+/// owner's file is no offender); skip none (the gated owners' files are).
+#[test]
+fn no_second_branch_comparison_skips_only_gated_out_of_line_test_modules() {
+    let root = tempfile::tempdir().expect("tempdir");
+    let src = root.path().join("src");
+    let names = "fn t() { let _ = parsed.consensus_branch_id(); }\n";
+    for (file, text) in [
+        ("lib.rs", "#[cfg(test)]\nmod tests {\n    mod top;\n}\n"),
+        ("tests/top.rs", names),
+        ("gated.rs", "#[cfg(test)]\nmod tests {\n    mod rows;\n}\n"),
+        ("gated/tests/rows.rs", names),
+        (
+            "net/mod.rs",
+            "#[cfg(test)]\n// the shared fakes\n#[allow(dead_code)]\npub(crate) mod tests {\n    mod fakes;\n}\n",
+        ),
+        ("net/tests/fakes.rs", names),
+        ("ungated.rs", "mod tests {\n    mod production_rows;\n}\n"),
+        ("ungated/tests/production_rows.rs", names),
+        ("orphan/tests/no_owner.rs", names),
+        (
+            "production.rs",
+            "fn second() { let _ = identity.consensus_branch_id; }\n",
+        ),
+        (
+            "inline.rs",
+            "fn a() {}\n#[cfg(test)]\nmod tests {\n    fn t() { let _ = parsed.consensus_branch_id(); }\n}\n",
+        ),
+    ] {
+        let path = src.join(file);
+        fs::create_dir_all(path.parent().expect("parent")).expect("mkdir");
+        fs::write(&path, text).expect("plant");
+    }
+    let mut offenders = branch_comparison_offenders(&src);
+    offenders.sort();
+    assert_eq!(
+        offenders,
+        vec![
+            "no_owner.rs:1".to_string(),
+            "production.rs:1".to_string(),
+            "production_rows.rs:1".to_string(),
+        ],
+        "only the gated owners' out-of-line test modules are skipped"
+    );
 }
 
 /// §8 G2 lint: every `pub enum` in the crate is `#[non_exhaustive]` — the
@@ -747,7 +883,7 @@ fn named_constants_at_boundary() {
     // hostile-input caps (§4.6)
     assert_eq!(ADDRESS_MAX_BYTES, 512);
     // §3.2i-2 2e-2b ephemeral / TEX-reclaim family (#294/#300/#301/#315) — pin every value; the
-    // ENGINE-SYMBOL derivations (the deadness margin vs `DEFAULT_TX_EXPIRY_DELTA`, the mint amount vs
+    // ENGINE-SYMBOL derivations (the deadness margin vs the builder's default delta, the mint amount vs
     // the ZIP-317 fee floor) are owned by `reclaim::tests`, where the engine crate is importable. Here
     // the value pins + the load-bearing SDK-internal orderings a drive-by change must come to review.
     assert_eq!(EPHEMERAL_GAP_LIMIT, 10); // the engine's ephemeral gap window
@@ -760,9 +896,12 @@ fn named_constants_at_boundary() {
         "wallet-ephemeral-detect"
     );
     assert_eq!(EPHEMERAL_RECLAIM_MINT_ZAT, 50_000);
-    assert_eq!(EPHEMERAL_RECLAIM_DEADNESS_BLOCKS, 141);
-    // The deadness margin buries the tx0's expiry beyond the deepest auto-recovered reorg, so it
-    // ALWAYS exceeds the reorg horizon BY CONSTRUCTION (margin = expiry-delta + 1 + reorg) — static.
+    // The margin below the NU7 activation: (40 + 1) + 200, the builder's pre-NU7 delta plus the
+    // irreversible burial (15,000 s at 75 s; ADR-0579 Decision 6). From the activation it is
+    // (120 + 1) + 600 = 721, read through the burial predicate (`docs/plan/nu7-wave.md` §3 step 5).
+    assert_eq!(EPHEMERAL_RECLAIM_DEADNESS_BLOCKS, 241);
+    // The deadness margin buries the tx0's expiry irreversibly, and the burial is never shallower
+    // than the reorg horizon, so the margin ALWAYS exceeds it (margin = expiry-delta + 1 + burial).
     const { assert!(EPHEMERAL_RECLAIM_DEADNESS_BLOCKS > REORG_MAX_BLOCKS) };
     assert_eq!(MAX_TEX_REPROPOSE_ATTEMPTS, 3);
     // The per-intent re-propose cap MUST stay below the gap window so one stubborn intent can never
@@ -1244,6 +1383,16 @@ fn bridge_enums_cover_core_variants() {
             "PoolService",
         ),
         ("src/state.rs", "TxStatus", "src/api/state.rs", "TxStatus"),
+        // The NU7 wave's step 4: the phase of a payment a network upgrade
+        // cancelled. A fourth core phase MUST fail CI here — folded to the
+        // bridge's `Unknown` it would render as not final, hiding the phase the
+        // core computed.
+        (
+            "src/state.rs",
+            "CancelPhase",
+            "src/api/state.rs",
+            "CancelPhase",
+        ),
         // Stage S8 `obligation` (R02): the per-transaction delivery reading. A
         // fifth core reading MUST fail CI here — folded to the bridge's `Unknown`
         // it would render as "saved" with no promise over a payment the wallet
@@ -3225,8 +3374,8 @@ const CRATES_IO: &str = "registry+https://github.com/rust-lang/crates.io-index";
 /// REGISTRY. This is the lock-side twin of `core_and_bridge_have_no_relim_deps`
 /// — that test reads the MANIFESTS and refuses a declared path/git dep; this
 /// one reads the resolved LOCK, which is the artifact a publish actually
-/// depends on and the only place a `[patch]`, a vendor directory or a
-/// transitive git dep shows up. ADR-0550 made the plugin consume
+/// depends on and where a `[patch]` or a transitive git dep shows up (a cargo
+/// config's `paths` or vendor `replace-with` does not). ADR-0550 made the plugin consume
 /// `sdk/dialer-tor` by path, so the pressure to reach for a patch stanza is
 /// real and the lock is where that would land silently.
 ///

@@ -40,7 +40,7 @@ call.**
 
 ```yaml
 dependencies:
-  zec_wallet_ui: ^0.0.3
+  zec_wallet_ui: ^0.0.4
   zec_wallet_ui_platform: ^0.0.3
 ```
 

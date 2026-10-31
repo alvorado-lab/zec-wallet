@@ -76,9 +76,13 @@ class ShieldOutcomeUnknown extends ShieldState {
 /// not be prepared/signed for a reason with no finer mapping ([couldNotPrepare]).
 /// The sheet offers "try again" (re-prepare) or honest copy — never a code (§6).
 class ShieldUnavailable extends ShieldState {
-  const ShieldUnavailable(this.reason);
+  const ShieldUnavailable(this.reason, {this.blocksLeft});
 
   final ShieldFaultReason reason;
+
+  /// For [ShieldFaultReason.upgradePaused] only: the SDK's `blocksLeft`, the
+  /// wait the sheet names. `null` for every other reason.
+  final int? blocksLeft;
 }
 
 /// The payload-free shield-fault categories (the honest message axis; no codes).
@@ -114,6 +118,13 @@ enum ShieldFaultReason {
   /// never the title-only dead-end [couldNotPrepare] renders. Found by the
   /// Batch C arch pass: P2-2 first reached only the Send classifier.
   couldNotPrepareTransient,
+
+  /// A Zcash network upgrade activates within 20 blocks, so the SDK refuses
+  /// new transactions, a shield among them, until it has (ADR-0580). Nothing
+  /// moved; the sheet names the wait ([ShieldUnavailable.blocksLeft]) and
+  /// offers the retry, which works again right after the upgrade. The
+  /// automatic shield treats it as a quiet deferral, never a failure cue.
+  upgradePaused,
 }
 
 /// Map a `proposeShield` failure to a [ShieldState]. Reads the typed
@@ -146,6 +157,12 @@ ShieldState classifyShieldPrepareFailure(Object error) {
       // dead-end the wildcard renders.
       WalletErrorKind_ProposeTransient() => const ShieldUnavailable(
         ShieldFaultReason.couldNotPrepareTransient,
+      ),
+      // ADR-0580: the pre-upgrade pause reaches Shield as it reaches Send, with
+      // the wait; the wildcard's title-only "couldn't shield" would be false.
+      WalletErrorKind_UpgradeImminent(:final blocksLeft) => ShieldUnavailable(
+        ShieldFaultReason.upgradePaused,
+        blocksLeft: blocksLeft,
       ),
       _ => const ShieldUnavailable(ShieldFaultReason.couldNotPrepare),
     };
@@ -181,6 +198,13 @@ ShieldState classifyShieldSendFailure(Object error) {
       // terminal "couldn't shield" dead-end that would loop on a full disk.
       WalletErrorKind_DiskFull() => const ShieldUnavailable(
         ShieldFaultReason.storageFull,
+      ),
+      // ADR-0580: a shield reviewed before the pre-upgrade window and confirmed
+      // inside it is refused before any seed is pulled; nothing moved, so the
+      // retryable state with the wait, never the red "couldn't shield".
+      WalletErrorKind_UpgradeImminent(:final blocksLeft) => ShieldUnavailable(
+        ShieldFaultReason.upgradePaused,
+        blocksLeft: blocksLeft,
       ),
       _ => const ShieldDone(SendSignFailed()),
     };

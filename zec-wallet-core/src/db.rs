@@ -58,38 +58,39 @@
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use rand_core::OsRng;
 use rusqlite::{Connection, OpenFlags};
 use secrecy::SecretVec;
 use zcash_client_sqlite::WalletDb;
 use zcash_client_sqlite::error::SqliteClientError;
-use zcash_client_sqlite::util::SystemClock;
 use zcash_client_sqlite::wallet::init::{WalletMigrationError, init_wallet_db};
 
 use crate::constants::{SQLITE_BUSY_TIMEOUT_MS, WALLET_SCHEMA_VERSION};
 use crate::error::WalletError;
-use crate::money::Network;
+use crate::money::{Network, WalletParams};
+use crate::rng::{WalletDbClock, WalletRng};
 use crate::seal::WalletDbKey;
 
 /// The wallet's `zcash_client_sqlite` data handle: OUR SQLCipher-keyed
 /// `rusqlite::Connection`, wrapped with the runtime-switchable consensus
-/// network, the system clock, and `OsRng` (the upstream API's capabilities —
-/// none mint OUR key material; the DB key is sealed in seal.rs). This is a
+/// network, and the system clock and the OS generator, both from [`crate::rng`]
+/// (the upstream API's capabilities; none mint OUR key material, and the DB key
+/// is sealed in seal.rs). Each create takes a fresh clock and generator handle
+/// from the same seam, not this handle's own generator. This is a
 /// librustzcash type and is `pub(crate)` by contract — it NEVER appears in the
 /// public Dart/Rust API (ADR-0005 r5: upstream nu-churn is absorbed inside the
 /// core). The async `Wallet` handle holds one of these (behind its lock +
 /// lifecycle) for the life of an open wallet; the sync/send engines (inc-2c/2d)
 /// drive it inside `spawn_blocking`.
-pub(crate) type WalletConn = WalletConnFor<zcash_protocol::consensus::Network>;
+pub(crate) type WalletConn = WalletConnFor<WalletParams>;
 
 /// [`WalletConn`] with the consensus parameters left open — the ONE shape a
 /// money-path write may be generic in. Connection, clock and RNG stay concrete:
 /// `sync::put_subtree_roots` runs over the live `Network` wallet and over the
 /// funded `LocalNetwork` harness (`ironwood_spendability`), and nothing else about
 /// the handle differs between them. Named so the widening is spelled once here
-/// rather than as an inline `WalletDb<Connection, P, SystemClock, OsRng>` at each
-/// site (arch review, §4ac row 9).
-pub(crate) type WalletConnFor<P> = WalletDb<Connection, P, SystemClock, OsRng>;
+/// rather than as an inline `WalletDb<Connection, P, WalletDbClock, WalletRng>` at
+/// each site (arch review, §4ac row 9).
+pub(crate) type WalletConnFor<P> = WalletDb<Connection, P, WalletDbClock, WalletRng>;
 
 /// Is the SQLite this connection runs SQLCipher? `PRAGMA cipher_version` answers
 /// its version on SQLCipher and NO row on plain SQLite, where `PRAGMA key` is an
@@ -726,8 +727,10 @@ pub(crate) fn provision_db(
 /// `seed = None` — a fresh wallet has no derived account) and [`open_db_migrated`]
 /// (migrate-up at open, `seed` = the loaded custody seed). `from_connection`
 /// requires `load_module` to have run on the connection (both openers do it);
-/// `SystemClock`/`OsRng` are the upstream API's clock/rng capabilities — neither
-/// generates any of OUR key material (the DB key is minted in seal.rs).
+/// [`crate::rng::wallet_db_clock`] and [`crate::rng::wallet_rng`], spelled by
+/// their full paths as every gated site must spell them, are the upstream API's
+/// clock/rng capabilities; neither generates any of OUR key material (the DB key
+/// is minted in seal.rs).
 ///
 /// **The `Some(seed)` retry loop (§3.2b, now reachable since accounts exist).**
 /// We try `init_wallet_db(None)` first; once a DERIVED ACCOUNT exists, an app
@@ -763,13 +766,19 @@ fn migrate(
     // store; an existing wallet gains it on next open). The aux RUNNING connection
     // (`Inner.aux_db`) is opened separately; this only guarantees the schema is on disk.
     ensure_aux_tables(&conn)?;
-    let mut wdb = WalletDb::from_connection(conn, network.consensus(), SystemClock, OsRng);
+    let mut wdb = WalletDb::from_connection(
+        conn,
+        network.consensus(),
+        crate::rng::wallet_db_clock(),
+        crate::rng::wallet_rng(),
+    );
     match init_wallet_db(&mut wdb, None) {
         Ok(()) => Ok(wdb),
-        // Not reachable against the exact-pinned `=0.22.0` either — RE-CHECKED at the
-        // NU6.3 wave rather than inherited: 0.22.0 adds 19 migrations
-        // (`ironwood_shardtree`, `note_locking`, the `orchard_ironwood_migration_*`
-        // set, …) and none of them validates a seed; `SeedRequired` is still raised
+        // Not reachable against the exact-pinned `=0.23.0` either. RE-CHECKED at the
+        // NU7 wave rather than inherited: 0.23.0 adds four migrations
+        // (`transparent_spend_locator_map`, `v_tx_outputs_diversifier_index`,
+        // `fix_v_transactions_multi_account_totals`, `restore_ua_transparent_receivers`)
+        // and none of them validates a seed; `SeedRequired` is still raised
         // only by the pre-existing `full_account_ids` and `ufvk_support`. This arm
         // activates only when an upstream bump ships a seed-validating migration.
         // Built as forward correctness; covered by the pattern, not a test.

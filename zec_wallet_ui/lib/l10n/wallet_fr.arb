@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Nous n'avons pas pu confirmer cette protection. Consultez Activité avant de réessayer.",
   "walletMoveUnknownTitle": "Vérifiez avant de déplacer à nouveau",
   "walletMoveUnknownBody": "Nous n'avons pas pu confirmer ce déplacement. Consultez Activité avant de réessayer.",
-  "walletTxExplainRetryingExpired": "Cette tentative a expiré avant d'être confirmée par le réseau. Votre portefeuille renverra le paiement de lui-même : ne le renvoyez donc pas vous-même."
+  "walletTxExplainRetryingExpired": "Cette tentative a expiré avant d'être confirmée par le réseau. Votre portefeuille renverra le paiement de lui-même : ne le renvoyez donc pas vous-même.",
+  "walletActivityCancelledByUpgrade": "Annulé par une mise à niveau",
+  "walletTxExplainCancelledNotFinal": "Une mise à niveau du réseau a annulé ce paiement avant sa confirmation. Ce n'est pas encore définitif, ne le renvoyez donc pas.",
+  "walletTxExplainCancelledHeld": "Une mise à niveau du réseau a annulé ce paiement. Votre portefeuille conserve le montant jusqu'à l'expiration du paiement.",
+  "walletTxExplainCancelledReleased": "Une mise à niveau du réseau a annulé ce paiement avant sa confirmation. Le montant est de nouveau disponible.",
+  "walletTxExplainRetryingCancelled": "Une mise à niveau du réseau a annulé cette tentative avant sa confirmation. Votre portefeuille renverra le paiement de lui-même, ne le renvoyez donc pas vous-même.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{Le réseau Zcash sera mis à niveau dans environ 1 minute. Les envois sont suspendus jusque-là pour que votre paiement ne reste pas bloqué.} other{Le réseau Zcash sera mis à niveau dans environ {minutes} minutes. Les envois sont suspendus jusque-là pour que votre paiement ne reste pas bloqué.}}",
+  "walletShieldPausedTitle": "La protection est en pause"
 }

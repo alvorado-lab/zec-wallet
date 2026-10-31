@@ -21,9 +21,10 @@
 //! unexpired, in-flight tx0 (a legitimate exchange deposit). "Highest outstanding" is the
 //! most-recently-reserved, i.e. the MOST LIKELY LIVE one; self-minting + sweeping its index would
 //! race its tx1 and could CANCEL a real deposit. So the reclaim targets ONLY an index whose
-//! reservation is PROVABLY DEAD — its exposure height is
-//! [`EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`](crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS) below
-//! the tip (any tx0 that reserved it is past-expiry AND buried) — and picks the HIGHEST such index.
+//! reservation is PROVABLY DEAD — any tx0 that reserved it is past its expiry AND that expiry is
+//! irreversibly buried ([`is_provably_dead`]: 241 blocks below the tip before the NU7 activation,
+//! [`EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`](crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS), and
+//! 721 from it) — and picks the HIGHEST such index.
 //! No provably-dead index ⇒ [`ReclaimOutcome::NothingToReclaim`] (the ceiling is genuinely
 //! transient; the live tx0s self-heal when they mine). The "double-deposit-free" property holds ONLY
 //! under this gate.
@@ -41,7 +42,7 @@
 
 use zcash_address::{ToAddress, ZcashAddress};
 use zcash_client_backend::wallet::{Exposure, TransparentAddressMetadata};
-use zcash_protocol::consensus::NetworkType;
+use zcash_protocol::consensus::{BlockHeight, NetworkType, Parameters};
 use zcash_protocol::value::Zatoshis as ProtoZat;
 use zcash_transparent::address::TransparentAddress;
 
@@ -72,9 +73,9 @@ pub enum ReclaimOutcome {
     },
     /// A self-mint was signed + persisted but the endpoint did NOT accept the broadcast (a transport
     /// miss on a flaky link). Money-safe + self-healing: the persisted-but-unbroadcast tx expires
-    /// (~40 blocks) and frees its notes, so a re-run re-mints cleanly (no double-spend, no stuck
-    /// state). The host renders "couldn't reach the network — try again"; `amount_zat` is the
-    /// attempted principal (never left the wallet).
+    /// (~50 minutes: 40 blocks before NU7, 120 from it) and frees its notes, so a re-run re-mints
+    /// cleanly (no double-spend, no stuck state). The host renders "couldn't reach the network —
+    /// try again"; `amount_zat` is the attempted principal (never left the wallet).
     NotBroadcast {
         /// The attempted self-mint principal (never spent — the tx did not reach an endpoint).
         amount_zat: i64,
@@ -99,19 +100,37 @@ impl std::fmt::Debug for ReclaimOutcome {
     }
 }
 
-/// `true` iff a reservation exposed at `exposed_at_height` is PROVABLY DEAD at `tip` — any tx0 that
-/// reserved it is past-expiry AND that finding is buried beyond the reorg horizon
-/// ([`EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`](crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS)).
-/// SATURATING: an exposure height somehow ABOVE the tip (a mid-reorg read) yields `0`, i.e. NOT
-/// dead — fail-safe (never reclaim an index that could still be live).
-pub(crate) fn is_provably_dead(exposed_at_height: u32, tip: u32) -> bool {
-    tip.saturating_sub(exposed_at_height) >= crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS
+/// `true` iff a reservation exposed at `exposed_at_height` is PROVABLY DEAD at `tip` on `params`:
+/// any tx0 that reserved it is past its expiry AND that expiry is
+/// [irreversibly buried](crate::stranded::irreversibly_buried) at `tip` (ADR-0579 Decision 6).
+///
+/// The reservation stamps the reserve-time tip, so the tx0 targets the NEXT block,
+/// `exposed_at_height + 1`, and the builder gives it the default delta of THAT height's branch
+/// ([`crate::chain_time::default_expiry_delta`]): an index exposed at the block before the NU7
+/// activation targets the activation and takes NU7's 120, not the 40 of the branch it was exposed
+/// under. Its last mineable block is that target plus the delta, and the index is dead once the
+/// burial predicate says that block is irreversibly buried, each block of the span counted at its
+/// own spacing. So the margin `tip − exposed_at_height` is `(delta + 1)` plus the burial depth:
+/// 241 below the activation ([`EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`](crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS)),
+/// `(120 + 1) + 600` = 721 from it, and between the two where the span straddles it.
+///
+/// FAIL-SAFE: an exposure height somehow AT or ABOVE the tip (a mid-reorg read) puts the expiry
+/// above the tip, which the predicate reads as not buried, so NOT dead (never reclaim an index that
+/// could still be live). The heights saturate at the top of the range, which delays, never hastens.
+pub(crate) fn is_provably_dead<P: Parameters>(
+    params: &P,
+    exposed_at_height: u32,
+    tip: u32,
+) -> bool {
+    let target = BlockHeight::from_u32(exposed_at_height) + 1;
+    let expiry = target + crate::chain_time::default_expiry_delta(params, target);
+    crate::stranded::irreversibly_buried(params, u32::from(expiry), tip)
 }
 
 /// Select the HIGHEST provably-dead reserved ephemeral to reclaim (Mechanism A: minting a first-use
 /// on the highest dead index advances `gap_start` past EVERY lower leak in one tx). Pure over the
-/// enumerated `(address, metadata)` set + the `tip`; returns the address to self-mint to, or `None`
-/// when no reservation is provably dead (⇒ [`ReclaimOutcome::NothingToReclaim`]).
+/// enumerated `(address, metadata)` set + the `tip` on `params`; returns the address to self-mint
+/// to, or `None` when no reservation is provably dead (⇒ [`ReclaimOutcome::NothingToReclaim`]).
 ///
 /// A candidate qualifies iff its exposure is a known [`Exposure::Exposed`] height that
 /// [`is_provably_dead`] AND it carries a known [`address_index`](TransparentAddressMetadata::address_index)
@@ -120,7 +139,8 @@ pub(crate) fn is_provably_dead(exposed_at_height: u32, tip: u32) -> bool {
 /// target that reopens the widest window (indices below it fall under `gap_start` harmlessly). Ties
 /// on index cannot occur (an index is reserved at most once), but a stable `max_by_key` is used
 /// regardless.
-pub(crate) fn highest_dead_target(
+pub(crate) fn highest_dead_target<P: Parameters>(
+    params: &P,
     reserved: &[(TransparentAddress, TransparentAddressMetadata)],
     tip: u32,
 ) -> Option<TransparentAddress> {
@@ -132,7 +152,7 @@ pub(crate) fn highest_dead_target(
                 Exposure::Exposed { at_height, .. } => u32::from(at_height),
                 Exposure::Unknown | Exposure::CannotKnow => return None,
             };
-            is_provably_dead(at, tip).then_some((idx, *addr))
+            is_provably_dead(params, at, tip).then_some((idx, *addr))
         })
         .max_by_key(|(idx, _)| *idx)
         .map(|(_, addr)| addr)
@@ -165,9 +185,12 @@ mod tests {
     use super::*;
     use crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS;
     use zcash_client_backend::wallet::GapMetadata;
-    use zcash_primitives::transaction::builder::DEFAULT_TX_EXPIRY_DELTA;
-    use zcash_protocol::consensus::BlockHeight;
+    use zcash_protocol::consensus::{BlockHeight, MAIN_NETWORK};
     use zcash_transparent::keys::{NonHardenedChildIndex, TransparentKeyScope};
+
+    /// A mainnet tip above Blossom and below the NU7 activation, where an index's margin is
+    /// `EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`.
+    const PRE_NU7_TIP: u32 = 2_000_000;
 
     fn ephemeral(tag: u8) -> TransparentAddress {
         TransparentAddress::PublicKeyHash([tag; 20])
@@ -189,60 +212,110 @@ mod tests {
 
     #[test]
     fn deadness_gate_is_the_expiry_plus_reorg_margin() {
-        let tip = 1_000;
+        let tip = PRE_NU7_TIP;
         // Exactly AT the margin is dead (boundary: accept).
         assert!(is_provably_dead(
+            &MAIN_NETWORK,
             tip - EPHEMERAL_RECLAIM_DEADNESS_BLOCKS,
             tip
         ));
         // One block YOUNGER than the margin is NOT dead (could still hold a live tx0).
         assert!(!is_provably_dead(
+            &MAIN_NETWORK,
             tip - EPHEMERAL_RECLAIM_DEADNESS_BLOCKS + 1,
             tip
         ));
         // Comfortably old ⇒ dead; brand-new (this block) ⇒ not dead.
-        assert!(is_provably_dead(0, tip));
-        assert!(!is_provably_dead(tip, tip));
+        assert!(is_provably_dead(&MAIN_NETWORK, 0, tip));
+        assert!(!is_provably_dead(&MAIN_NETWORK, tip, tip));
         // SATURATING: exposure above tip (a mid-reorg read) is NOT dead — fail-safe.
-        assert!(!is_provably_dead(tip + 5, tip));
+        assert!(!is_provably_dead(&MAIN_NETWORK, tip + 5, tip));
     }
 
     #[test]
     fn deadness_margin_meets_the_engine_arithmetic_for_a_full_reorg_burial() {
-        // MONEY-SAFETY DERIVATION PIN (crypto+security review; review C hardened this to
-        // DERIVE from the engine symbol, not restate the literal). Re-derive the boundary from first
-        // principles against the AUDITED constants so an upstream expiry-delta bump moves the whole
-        // scenario in lockstep — the test must never pass merely because it echoes the definition.
-        let delta = DEFAULT_TX_EXPIRY_DELTA; // the Builder's expiry delta (engine symbol, not a literal)
-        let reorg = crate::constants::REORG_MAX_BLOCKS;
+        // MONEY-SAFETY DERIVATION PIN, re-derived for the irreversible burial (ADR-0579 Decision 6;
+        // `docs/plan/nu7-wave.md` §3 steps 5 and 7m). Both inputs are DERIVED from the audited
+        // sources, never restated: the delta is the builder's own `default_tx_expiry_delta` at the
+        // tx0's target branch, and the depth is the burial predicate's, found by asking
+        // `irreversibly_buried` where it first holds. A change to either moves the margin in
+        // lockstep — the test must never pass merely because it echoes the definition. The gate's
+        // own boundary at this margin is the row
+        // `the_deadness_gate_is_dead_exactly_at_the_derived_margin_below_the_activation`, in
+        // `margin_across_the_activation` below, which reads the gate's height-aware signature.
+        use zcash_primitives::transaction::builder::default_tx_expiry_delta;
+        use zcash_protocol::consensus::{BranchId, MAIN_NETWORK};
+        let h = 2_000_000u32; // an exposure above Blossom and far below the NU7 activation
+        let target = BlockHeight::from_u32(h + 1);
+        let delta = default_tx_expiry_delta(BranchId::for_height(&MAIN_NETWORK, target));
         // A reservation stamps `exposed = the reserve-time chain tip H`; the tx0's target is `H+1`, so
-        // its expiry (LAST mineable block) is `E = H + 1 + delta`. After a maximal `reorg`-deep reorg
-        // from tip `T` the next block to mine is `(T − reorg) + 1`, so the tx0 is STILL mineable while
-        // `(T − reorg) + 1 ≤ E`, i.e. `T ≤ E − 1 + reorg`. Measuring from `exposed`, the LAST still-live
-        // tip is offset `(1 + delta) − 1 + reorg = delta + reorg`, and the FIRST provably-dead tip is
-        // offset `delta + reorg + 1` — which is exactly `(delta + 1) + reorg`, the margin.
-        let h = 500_000u32;
-        let last_live_tip = h + (delta + reorg); // one short of burial: a maximal reorg re-enables tx0
-        let first_dead_tip = h + (delta + reorg + 1); // tx0's expiry buried beyond a full reorg horizon
-        assert!(
-            !is_provably_dead(h, last_live_tip),
-            "one block short of a full reorg horizon — a maximal reorg re-enables the tx0, must NOT be dead",
-        );
-        assert!(
-            is_provably_dead(h, first_dead_tip),
-            "the tx0's expiry block is buried beyond a full reorg horizon — dead",
-        );
-        // The constant IS that first-dead offset, derived from the engine symbol (guards a revert to the
-        // off-by-one `delta + reorg` = 140, which left the boundary one block short of a full reorg).
+        // its expiry (LAST mineable block) is `E = H + 1 + delta`.
+        let expiry = h + 1 + delta;
+        // The burial depth: the first tip at which `E` is irreversibly owned by the chain. Short of it,
+        // a reorg the burial covers can rewind the chain below `E` and mine the tx0 there.
+        let depth = (1..=1_000u32)
+            .find(|d| crate::stranded::irreversibly_buried(&MAIN_NETWORK, expiry, expiry + d))
+            .expect("the expiry is buried within 1,000 blocks");
+        // So the LAST still-live tip is `E + depth − 1` and the FIRST provably-dead tip `E + depth`:
+        // offset `(delta + 1) + depth` from `exposed`. The constant IS that offset below the
+        // activation (guards the off-by-one `delta + depth`, one block short of the burial).
         assert_eq!(
             EPHEMERAL_RECLAIM_DEADNESS_BLOCKS,
-            delta + reorg + 1,
-            "the deadness margin must be (tx-expiry-delta + 1) + reorg-horizon",
+            (delta + 1) + depth,
+            "the deadness margin must be (tx-expiry-delta + 1) + the burial depth",
         );
-        // Current concrete value — a TRIPWIRE, not the derivation: if this fails, the engine's expiry
-        // delta or the reorg horizon changed. Re-derive the scenario above, then update this line.
-        assert_eq!(EPHEMERAL_RECLAIM_DEADNESS_BLOCKS, 141);
+        // Current concrete value — a TRIPWIRE, not the derivation: if this fails, the engine's
+        // pre-NU7 delta or the burial changed. Re-derive the scenario above, then update this line.
+        assert_eq!(EPHEMERAL_RECLAIM_DEADNESS_BLOCKS, 241);
     }
+
+    /// **The tester-build gate** (`docs/plan/nu7-wave.md` §5): no tester build ships from a
+    /// tree where this is red if that build can still be running at mainnet height 3,543,404.
+    /// From the NU7 activation the builder's default expiry delta is 120 blocks
+    /// (`default_tx_expiry_delta` at the `Nu7` branch, `zcash_primitives` 0.31). An index
+    /// exposed at `H - 1`, the block before the activation, has a tx0 that targets `H`, so its
+    /// expiry is `H + 120`, and until the burial predicate holds for that block a reorg the
+    /// burial covers can still mine the tx0: 600 blocks of 25 s. The last live tip is therefore
+    /// `(H - 1) + 720`, which the contract fixes (step 5: "not dead at 720, dead at 721"). Both
+    /// terms are read from the crate and the predicate, never from `REORG_MAX_BLOCKS`; a margin
+    /// derived from the pre-NU7 delta (141, then 241) reads the index dead at that tip and the
+    /// reclaim could self-mint over a deposit in flight (the dead side, 721, is another row's).
+    #[test]
+    fn reclaim_margin_covers_the_nu7_delta() {
+        use zcash_primitives::transaction::builder::default_tx_expiry_delta;
+        use zcash_protocol::consensus::{BranchId, NetworkUpgrade, Parameters};
+        // The mainnet NU7 activation, read from the pinned crate, and the block before it.
+        let nu7 = MAIN_NETWORK
+            .activation_height(NetworkUpgrade::Nu7)
+            .expect("mainnet NU7");
+        let h = u32::from(nu7) - 1;
+        // The tx0 targets `h + 1 = H` and takes the delta of THAT block's branch.
+        let delta = default_tx_expiry_delta(BranchId::for_height(&MAIN_NETWORK, nu7));
+        let expiry = u32::from(nu7) + delta;
+        // The burial depth of the expiry block: the first count of blocks after it at which the
+        // predicate holds. One block short of it the tx0 is still mineable after a reorg.
+        let depth = (1..=10_000u32)
+            .find(|d| crate::stranded::irreversibly_buried(&MAIN_NETWORK, expiry, expiry + d))
+            .expect("the expiry is buried within 10,000 blocks");
+        let last_live_tip = expiry + depth - 1;
+        assert_eq!(
+            last_live_tip - h,
+            720,
+            "the contract's last live offset, (120 + 1) + 600 - 1, re-derived from the crate's \
+             delta ({delta}) and the burial depth ({depth})"
+        );
+        assert!(
+            !is_provably_dead(&MAIN_NETWORK, h, last_live_tip),
+            "the reclaim margin does not cover a tx0 built under NU7's {delta}-block default \
+             expiry: an index exposed at {h} reads dead at tip {last_live_tip}, where a reorg the \
+             burial covers can still mine its tx0 (NU7 wave step 5)"
+        );
+    }
+
+    // The NU7 wave's step 5 (its reclaim half) and step 7m: the test author's rows that read the
+    // height-aware deadness gate across the activation, joined at adjudication.
+    #[cfg(test)]
+    mod margin_across_the_activation;
 
     #[test]
     fn mint_amount_clears_the_engine_sweep_economic_floor() {
@@ -272,7 +345,7 @@ mod tests {
 
     #[test]
     fn picks_the_highest_provably_dead_index() {
-        let tip = 1_000;
+        let tip = PRE_NU7_TIP;
         let old = tip - EPHEMERAL_RECLAIM_DEADNESS_BLOCKS - 10; // comfortably dead
         // Indices 0,1,2 all dead (reserved at old heights); the highest (2) is the target — minting
         // on it advances gap_start past 0 and 1 too.
@@ -282,7 +355,7 @@ mod tests {
             (ephemeral(0xA1), meta(1, old)),
         ];
         assert_eq!(
-            highest_dead_target(&reserved, tip),
+            highest_dead_target(&MAIN_NETWORK, &reserved, tip),
             Some(ephemeral(0xA2)),
             "the highest dead index is the reclaim target"
         );
@@ -293,7 +366,7 @@ mod tests {
         // The BLOCKER guard: leaks 0,1 are dead but index 2 is a LIVE in-flight tx0 (young).
         // "Highest outstanding" would be 2 — but self-minting on it races a legitimate deposit, so
         // the reclaim targets the highest DEAD (1), never the live one.
-        let tip = 1_000;
+        let tip = PRE_NU7_TIP;
         let old = tip - EPHEMERAL_RECLAIM_DEADNESS_BLOCKS - 10;
         let young = tip - 5; // in-flight, not provably dead
         let reserved = vec![
@@ -302,7 +375,7 @@ mod tests {
             (ephemeral(0xB2), meta(2, young)),
         ];
         assert_eq!(
-            highest_dead_target(&reserved, tip),
+            highest_dead_target(&MAIN_NETWORK, &reserved, tip),
             Some(ephemeral(0xB1)),
             "the live highest index is skipped; the highest DEAD index wins"
         );
@@ -312,22 +385,22 @@ mod tests {
     fn no_dead_reservation_is_nothing_to_reclaim() {
         // Every reservation is young (a genuinely transient ceiling — the tx0s may still mine). No
         // target ⇒ the method returns NothingToReclaim (never mint on a maybe-live index).
-        let tip = 1_000;
+        let tip = PRE_NU7_TIP;
         let young = tip - 5;
         let reserved = vec![
             (ephemeral(0xC0), meta(0, young)),
             (ephemeral(0xC1), meta(1, young)),
         ];
-        assert_eq!(highest_dead_target(&reserved, tip), None);
+        assert_eq!(highest_dead_target(&MAIN_NETWORK, &reserved, tip), None);
         // An empty set (no ephemeral ever reserved) is also None.
-        assert_eq!(highest_dead_target(&[], tip), None);
+        assert_eq!(highest_dead_target(&MAIN_NETWORK, &[], tip), None);
     }
 
     #[test]
     fn skips_reservations_with_unknown_exposure_or_no_index() {
         // Fail-safe: an `Unknown` exposure is not provably dead (skip); a well-known dead index is
         // still selected alongside it.
-        let tip = 1_000;
+        let tip = PRE_NU7_TIP;
         let old = tip - EPHEMERAL_RECLAIM_DEADNESS_BLOCKS - 10;
         let unknown = TransparentAddressMetadata::derived(
             TransparentKeyScope::EPHEMERAL,
@@ -337,7 +410,7 @@ mod tests {
         );
         let reserved = vec![(ephemeral(0xD9), unknown), (ephemeral(0xD3), meta(3, old))];
         assert_eq!(
-            highest_dead_target(&reserved, tip),
+            highest_dead_target(&MAIN_NETWORK, &reserved, tip),
             Some(ephemeral(0xD3)),
             "an unknown-exposure entry (index 9) is skipped; the known dead index 3 wins"
         );

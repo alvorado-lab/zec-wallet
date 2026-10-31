@@ -18,6 +18,7 @@ import '../../../shared/wallet_notice.dart';
 import '../onboarding/onboarding_providers.dart';
 import '../send/zec_amount.dart';
 import '../sync_status_presentation.dart' show walletCompactTimeFormat;
+import '../upgrade_pause.dart' show upgradePausedText;
 import '../wallet_providers.dart';
 import '../wallet_sync_controller.dart' show walletSyncPassesRunProvider;
 import '../wallet_rescan_controller.dart'
@@ -1954,6 +1955,12 @@ class _FormFault extends StatelessWidget {
                 formatZec(neededZat),
                 formatZec(spendableZat),
               ),
+      // ADR-0580: the same sentence and wait a send shows; the deposit this
+      // execute would sign is paused, not failed.
+      SwapUpgradePausedFault(:final blocksLeft) => upgradePausedText(
+        l10n,
+        blocksLeft,
+      ),
     };
 
     // A11y (#364 S5, send-form parity): announce the fault the moment it

@@ -921,6 +921,22 @@ impl Wallet {
         crate::consensus::SigningPermit::granted(snapshot.and_then(|s| s.verdict).as_ref())
     }
 
+    /// The pre-upgrade send pause (ADR-0580), read BEFORE a seed is pulled: the twin of
+    /// [`Self::signing_permit`] above. A sign the pause will refuse inside
+    /// `send::create_signed_core` must cost the user nothing first: no credential
+    /// prompt, no key derivation, no consumed proposal. Reads the recorded tip under a
+    /// brief db lock, released before the caller pulls the seed (the off-lock
+    /// `acquire_seed` contract). The check inside the create, under the lock the create
+    /// holds, stays the authority; this one only makes the refusal early.
+    async fn refuse_if_upgrade_imminent(&self) -> Result<(), WalletError> {
+        let inner = Arc::clone(&self.inner);
+        run_blocking(move || {
+            let guard = inner.db.lock().expect("wallet db mutex poisoned");
+            send::assert_no_upgrade_imminent(&guard.db, &inner.network.consensus())
+        })
+        .await
+    }
+
     /// #397 (spec §3.7 D4/D5): is this a WATCH-ONLY wallet? Lock-free (the
     /// kind is immutable after open — it IS the manifest's persistence mode).
     /// The reference UI keys its chrome on this (badge, hidden spend
@@ -2176,10 +2192,11 @@ impl Wallet {
             // same file, judged against the scanned tip the way `v_transactions`
             // judges expiry — and before the destructive (5)/(6). Same typed,
             // retryable refusal: the fence lifts when the transaction mines or
-            // expires (~`DEFAULT_TX_EXPIRY_DELTA` blocks), the priced widening of
+            // expires (the default delta: pre-NU7 40 blocks, NU7 120), the priced widening of
             // the availability residual. Fail-closed on a read fault, like (4.5).
             let tip = crate::history::scanned_tip(&aux_guard)?;
-            if !crate::delivery::enumerate(&aux_guard, tip)?.is_empty() {
+            let params = inner.network.consensus();
+            if !crate::delivery::enumerate(&aux_guard, &params, tip)?.is_empty() {
                 return Err(WalletError::RescanWithInFlightSend);
             }
         }
@@ -2528,10 +2545,7 @@ impl Wallet {
                     // consumed into the UFVK here.
                     let seed = inner.seed.as_ref().ok_or(WalletError::SeedRequired)?;
                     let usk = derive_spending_key(network, seed.seed())?;
-                    Ok(crate::derivation::encode_ufvk(
-                        network,
-                        &usk.to_unified_full_viewing_key(),
-                    ))
+                    crate::derivation::encode_ufvk(network, &usk.to_unified_full_viewing_key())
                 }
             }
         })
@@ -2734,9 +2748,11 @@ impl Wallet {
         let inner = Arc::clone(&self.inner);
         let now = inner.clock.now_unix();
         run_blocking(move || {
+            let params = inner.network.consensus();
             let guard = inner.aux_db.lock().expect("aux db mutex poisoned");
-            let mut page = crate::history::list_transactions(&guard, limit, after.as_deref())?;
-            annotate_delivery(&guard, now, &mut page.rows)?;
+            let mut page =
+                crate::history::list_transactions(&guard, &params, limit, after.as_deref())?;
+            annotate_delivery(&guard, &params, now, &mut page.rows)?;
             Ok(page)
         })
         .await
@@ -2755,10 +2771,11 @@ impl Wallet {
         let inner = Arc::clone(&self.inner);
         let now = inner.clock.now_unix();
         run_blocking(move || {
+            let params = inner.network.consensus();
             let guard = inner.aux_db.lock().expect("aux db mutex poisoned");
-            let row = crate::history::transaction_by_txid(&guard, &txid)?;
+            let row = crate::history::transaction_by_txid(&guard, &params, &txid)?;
             let mut rows: Vec<TxSummary> = row.into_iter().collect();
-            annotate_delivery(&guard, now, &mut rows)?;
+            annotate_delivery(&guard, &params, now, &mut rows)?;
             Ok(rows.pop())
         })
         .await
@@ -2779,7 +2796,8 @@ impl Wallet {
             let guard = inner.aux_db.lock().expect("aux db mutex poisoned");
             let tip = crate::history::scanned_tip(&guard)?;
             let view = crate::delivery::DeliveryView::load(&guard)?;
-            view.state_of(&guard, tip, now, txid.to_internal().as_ref())
+            let params = inner.network.consensus();
+            view.state_of(&guard, &params, tip, now, txid.to_internal().as_ref())
         })
         .await
     }
@@ -3678,6 +3696,11 @@ impl Wallet {
         // swap deposit the network will reject is worse than a refused one — it
         // burns a quote deadline as well as a proving slot.
         let permit = self.signing_permit().await?;
+        // ADR-0580: the pre-upgrade pause, before the seed pull. The row stays `Queued`
+        // either way. A deposit's caller swallows this like any sign fault (the drain sends
+        // the deposit after the activation, or its quote lapses and the purge ends it,
+        // nothing sent); a parked "Send now" hands it to the host, which says why.
+        self.refuse_if_upgrade_imminent().await?;
         // Drive the sign through the SAME proven drain core. Every outcome is money-safe
         // (Broadcast ⇒ durable `Sent`, its raw group handed back for the caller's detached
         // prompt kick; the rest ⇒ durable `Queued` or `Expired`→deleted, nothing to kick). A
@@ -3863,6 +3886,10 @@ impl Wallet {
         // before a proving slot is spent: a transaction we know the network will
         // reject must cost the user nothing.
         let permit = self.signing_permit().await?;
+        // ADR-0580: the pre-upgrade pause, at the same point and for the same reason. The
+        // token is left un-consumed, so the same proposal answers this again until the
+        // window ends, and then `ProposalStale` (re-propose, built under the new branch).
+        self.refuse_if_upgrade_imminent().await?;
         // Derive the USK + verify-seed + consume-token + sign + persist, ALL on the
         // blocking pool. The USK is derived INSIDE this closure, used, and dropped here
         // — never held across an `.await`, never stored (§4.2 confinement, load-bearing
@@ -4312,7 +4339,8 @@ impl Wallet {
             let reconciled = run_blocking(move || {
                 let db_guard = inner.db.lock().expect("wallet db mutex poisoned");
                 let mut aux_guard = inner.aux_db.lock().expect("aux db mutex poisoned");
-                send::reconcile_inflight(&db_guard.db, &mut aux_guard, &intent, now_unix)
+                let params = inner.network.consensus();
+                send::reconcile_inflight(&db_guard.db, &params, &mut aux_guard, &intent, now_unix)
             })
             .await;
             match reconciled {
@@ -4399,6 +4427,17 @@ impl Wallet {
         // the per-row check below costs nothing.
         let drain_permit = self.signing_permit().await.ok();
         if self.inner.can_derive_signing_key() && !cancel.is_cancelled() {
+            // ADR-0580: the pre-upgrade pause, read once for the pass, before any seed is
+            // pulled, and only here, where the drain could sign. Inside an activation's
+            // window every row is DEFERRED: counted `retried` (the transient class
+            // `prepare_queued` gives the same refusal from its propose) and left `Queued` for
+            // a pass after the activation. Only the pause's own refusal defers; any other
+            // fault reading the tip leaves the rows to the per-row path, whose propose and
+            // create run the same check under the lock they hold.
+            let paused = matches!(
+                self.refuse_if_upgrade_imminent().await,
+                Err(WalletError::UpgradeImminent { .. })
+            );
             let queued = {
                 let inner = Arc::clone(&self.inner);
                 run_blocking(move || {
@@ -4419,6 +4458,10 @@ impl Wallet {
                     summary.refused_stale += 1;
                     continue;
                 };
+                if paused {
+                    summary.retried += 1;
+                    continue;
+                }
                 // Lower the stored URI off the lock through the SAME audited door `propose` uses. A
                 // URI we wrote via `encode_payment_uri` MUST re-parse; a failure is corruption —
                 // leave the row (never silently drop a real send), count it, move on.
@@ -4541,7 +4584,7 @@ impl Wallet {
             let owed = run_blocking(move || {
                 let guard = inner.aux_db.lock().expect("aux db mutex poisoned");
                 let tip = crate::history::scanned_tip(&guard)?;
-                crate::delivery::enumerate(&guard, tip)
+                crate::delivery::enumerate(&guard, &inner.network.consensus(), tip)
             })
             .await;
             match owed {
@@ -4846,9 +4889,9 @@ impl Wallet {
         .await
     }
 
-    /// Provision account 0 LIVE (§3.2f, inc-2c-iv-c): resolve the birthday from
-    /// the endpoint's tip (or `configured`) anchored by the TRUSTED bundled
-    /// frontier — NEVER a live `get_tree_state` — then import account 0
+    /// Provision account 0 LIVE (§3.2f, inc-2c-iv-c): resolve the birthday from the
+    /// endpoint's tip (or `configured`) on the bundled row, no live `get_tree_state`
+    /// (the first pass's live one seeds the trees: `provision`'s doc), then import account 0
     /// (idempotent). With no `configured` birthday the default is create-vs-restore
     /// aware (`self.freshly_generated` + the `self.created_at` stamp, #356-F4): a
     /// fresh wallet starts at `min(~tip, estimate_birthday(created_at))` — bounded
@@ -7308,6 +7351,13 @@ impl Wallet {
         if !self.inner.can_derive_signing_key() {
             return Err(WalletError::SeedRequired);
         }
+        // ADR-0580: the pre-upgrade pause. The sweep signs one transaction per funded
+        // address, and it runs only when the user asks, so inside an activation's window it
+        // is refused whole and typed, before any address is probed or any seed pulled:
+        // nothing moved, and the host says why. The user runs it again once the upgrade is
+        // through. A window that opens mid-sweep is not an error: `sweep_one` checks again per
+        // address and the sweep returns what it swept before the window (`SweepOne::Paused`).
+        self.refuse_if_upgrade_imminent().await?;
 
         // Enumerate ALL reserved ephemerals + the tip under ONE db lock. Fast-path: no account / no
         // reserved ephemeral (a wallet that has made no TEX send) ⇒ empty ⇒ no RPC, silent. WIDE window (the tip AS the depth) so the
@@ -7374,6 +7424,16 @@ impl Wallet {
                 SweepOne::Nothing => {}
                 // A per-ephemeral transport / stale / build / broadcast-miss fault — re-runnable.
                 SweepOne::Failed => summary.failed += 1,
+                // ADR-0580: the pre-upgrade window opened mid-sweep. What was swept before it
+                // stands (each of those transactions is persisted and was accepted); this funded
+                // address is `failed` (its funds stay on-chain, re-sweepable) and the unattempted
+                // tail `truncated`, so the host's copy says some funds still need another try.
+                // Stop: every later address would meet the same pause.
+                SweepOne::Paused => {
+                    summary.failed += 1;
+                    summary.truncated += targets.len() - i - 1;
+                    break;
+                }
             }
         }
         summary.emit();
@@ -7419,6 +7479,14 @@ impl Wallet {
         // chain and re-sweep on a later pass — and it is strictly better than
         // proving a transaction every node will reject.
         let permit = self.signing_permit().await?;
+        // ADR-0580: the pre-upgrade pause again, per address and before this address's seed
+        // pull, because a window can open while the sweep waits on the network (the entry
+        // check ran before the first probe). It stops the sweep with what was swept so far,
+        // never an error over funds already swept.
+        match self.refuse_if_upgrade_imminent().await {
+            Err(WalletError::UpgradeImminent { .. }) => return Ok(SweepOne::Paused),
+            other => other?,
+        }
 
         // (2-4) inject + propose-at-economic-floor + sign, ONE blocking section (no `.await` within, so
         // the §4.2 confinement holds: the seed drops the instant the USK is derived, the USK is dropped
@@ -7497,6 +7565,9 @@ impl Wallet {
             ) => {
                 return Err(e);
             }
+            // ADR-0580: a window that opened between the check above and this address's propose
+            // (a sync recorded a tip inside it meanwhile). The same stop as the check: `Paused`.
+            Err(WalletError::UpgradeImminent { .. }) => return Ok(SweepOne::Paused),
             Err(_) => return Ok(SweepOne::Failed),
         };
 
@@ -7605,6 +7676,11 @@ impl Wallet {
         if !self.inner.can_derive_signing_key() {
             return Err(WalletError::SeedRequired);
         }
+        // ADR-0580: the pre-upgrade pause, at the entry like the sweep's. The reclaim runs
+        // only when the user asks, so inside an activation's window it is refused whole and
+        // typed, before any reservation is read or any seed pulled: nothing minted, nothing
+        // moved, and the host says why. The user runs it again once the upgrade is through.
+        self.refuse_if_upgrade_imminent().await?;
 
         // Core single-flight (review A3/H1): the Dart layer already latches, but a non-Dart
         // embedder or two concurrent FFI callers would each sign a REDUNDANT mint (idempotent +
@@ -7648,9 +7724,12 @@ impl Wallet {
         let Some(tip) = tip else {
             return Ok(ReclaimOutcome::NothingToReclaim);
         };
-        // The DEADNESS GATE + highest-dead selection (pure). No provably-dead leak ⇒ NothingToReclaim
-        // (the ceiling is genuinely transient; never mint on a maybe-live index).
-        let Some(target) = crate::reclaim::highest_dead_target(&reserved, tip) else {
+        // The DEADNESS GATE + highest-dead selection (pure, on this wallet's network: each margin
+        // reads the branch its tx0 targeted). No provably-dead leak ⇒ NothingToReclaim (the ceiling
+        // is genuinely transient; never mint on a maybe-live index).
+        let Some(target) =
+            crate::reclaim::highest_dead_target(&self.inner.network.consensus(), &reserved, tip)
+        else {
             return Ok(ReclaimOutcome::NothingToReclaim);
         };
 
@@ -7710,13 +7789,16 @@ impl Wallet {
             // durable + self-heals via expiry). `InsufficientFunds` is included: the user must add
             // shielded funds to reclaim — surfacing it honestly beats a silent no-op. So is `DiskFull`
             // (R12 §4.2): a full disk does not free itself on re-run, and the user must be told why.
+            // And the pre-upgrade pause (ADR-0580), for a window that opened after the check
+            // above: `NotBroadcast`'s "couldn't reach the network" would be false for it.
             Err(
                 e @ (WalletError::SeedRequired
                 | WalletError::SeedMismatch
                 | WalletError::InvalidSeedLength { .. }
                 | WalletError::InsufficientFunds { .. }
                 | WalletError::StoreCorrupt
-                | WalletError::DiskFull),
+                | WalletError::DiskFull
+                | WalletError::UpgradeImminent { .. }),
             ) => return Err(e),
             // Every other fault (re-anchor `ProposalStale`, build `SignFailed`, structural
             // `ProposeFailed`) — the mint did not sign; nothing moved, re-runnable.
@@ -7839,7 +7921,7 @@ impl Wallet {
                 };
                 // `list_stranded_intents` guarantees a non-empty txids group; tx0 is the unshielding tx.
                 let tx0_mined = account::tx_mined_height(&db_guard.db, intent.txids[0])?;
-                if !crate::stranded::should_reap(tx0_mined, tip) {
+                if !crate::stranded::should_reap(db_guard.db.params(), tx0_mined, tip) {
                     return Ok(false);
                 }
                 let mut aux_guard = inner.aux_db.lock().expect("aux db mutex poisoned");
@@ -9867,7 +9949,7 @@ impl Wallet {
                 // belongs to some other watch-only wallet, and silently
                 // keeping the old account would gaslight the caller.
                 if let Some(existing) = account::account_ufvk_encoding(&open.db, network)?
-                    && existing != crate::derivation::encode_ufvk(network, &decoded)
+                    && existing != crate::derivation::encode_ufvk(network, &decoded)?
                 {
                     return Err(WalletError::WalletAlreadyExists);
                 }
@@ -10998,6 +11080,34 @@ impl crate::swap::DepositSender for WalletDepositSender {
                     _ => crate::error::SwapError::DepositSendFailed,
                 }
             })
+    }
+
+    /// ADR-0580: the wallet's pre-upgrade pause, for the swap service to ask before an
+    /// OutOfZec execute claims its quote. The pause crosses as the swap error of the same
+    /// name, with its two heights; any other fault reading the tip refuses the execute as
+    /// `SwapStateUnavailable`, before anything is consumed (fail closed, payload-free).
+    async fn upgrade_pause(&self) -> Result<(), crate::error::SwapError> {
+        let inner = self
+            .inner
+            .upgrade()
+            .ok_or(crate::error::SwapError::SwapStateUnavailable)?;
+        match Wallet::from_shared(inner)
+            .refuse_if_upgrade_imminent()
+            .await
+        {
+            Ok(()) => Ok(()),
+            Err(WalletError::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            }) => Err(crate::error::SwapError::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            }),
+            Err(e) => {
+                log_swap_port_error(&e);
+                Err(crate::error::SwapError::SwapStateUnavailable)
+            }
+        }
     }
 }
 
@@ -12160,6 +12270,11 @@ enum SweepOne {
     Nothing,
     /// A per-ephemeral transport / stale / build / broadcast-miss fault — COUNT+SKIP, re-runnable.
     Failed,
+    /// The pre-upgrade pause (ADR-0580) opened while the sweep was running: this ephemeral was
+    /// found funded but not signed, and no later one would sign either. The caller stops, counts
+    /// this one `failed` (its funds stay on-chain, re-sweepable) and the unattempted tail
+    /// `truncated`, and returns what was swept before the window.
+    Paused,
 }
 
 /// RAII single-flight guard for the reclaim self-mint (review A3/H1). Clears
@@ -12483,6 +12598,7 @@ impl ResubmitSummary {
 /// delivery state only when a live intent will send it again. One view per call.
 fn annotate_delivery(
     aux: &rusqlite::Connection,
+    params: &crate::money::WalletParams,
     now_unix: u64,
     rows: &mut [TxSummary],
 ) -> Result<(), WalletError> {
@@ -12492,7 +12608,8 @@ fn annotate_delivery(
     let tip = crate::history::scanned_tip(aux)?;
     let view = crate::delivery::DeliveryView::load(aux)?;
     for row in rows {
-        row.delivery = view.state_of(aux, tip, now_unix, row.txid.to_internal().as_ref())?;
+        row.delivery =
+            view.state_of(aux, params, tip, now_unix, row.txid.to_internal().as_ref())?;
     }
     Ok(())
 }
@@ -18090,8 +18207,8 @@ mod tests {
         // #407 R1 — THE REGRESSION PIN FOR A REMOVED GUARD, and the exact fixture that used to
         // assert the opposite. #403 R7 stopped the kick once 600 s of REAL time had passed since
         // it began, reasoning that a doze-resumed round might broadcast an expired transaction.
-        // Two things were wrong with that. The window it protected is ~50 min (40-block
-        // `DEFAULT_TX_EXPIRY_DELTA`) with a GUARANTEED ≥ 20-block floor after `send`'s re-anchor
+        // Two things were wrong with that. The window it protected is ~50 min (the default
+        // delta: pre-NU7 40 blocks, NU7 120) with a GUARANTEED ≥ 20-block floor after `send`'s re-anchor
         // — so at 600 s the transaction is almost always still VALID. And it could only fire on
         // `deposit_deadline: None`, i.e. `KickOrigin::ParkedAuthorization`, the one origin with no
         // §6.1 drain fallback: at a sync-off or failed-start host, the round it skipped was the
@@ -20926,7 +21043,8 @@ mod tests {
         let usk = derive_spending_key(Network::Main, &seed_bytes).expect("usk");
         assert_eq!(
             exported,
-            crate::derivation::encode_ufvk(Network::Main, &usk.to_unified_full_viewing_key()),
+            crate::derivation::encode_ufvk(Network::Main, &usk.to_unified_full_viewing_key())
+                .expect("a derived UFVK encodes"),
             "export equals the audited offline derivation"
         );
         // The export artifact views the exporter's account: decode → default
@@ -24546,7 +24664,7 @@ mod tests {
             conn,
             w.inner.network.consensus(),
             zcash_client_sqlite::util::SystemClock,
-            rand_core::OsRng,
+            crate::rng::wallet_rng(),
         );
     }
 
@@ -24672,8 +24790,9 @@ mod tests {
         let vault = test_vault();
         let (w, _addr, _taddr) = synced_wallet_with_taddr(dir.path(), &vault).await;
         let _eph = reserve_one_ephemeral(&w).await; // exposed at 281_000
-        // Advance the chain tip comfortably past the deadness margin (141 blocks) so the reservation
-        // is provably dead (its tx0, had one existed, is past-expiry AND buried).
+        // Advance the chain tip comfortably past the deadness margin (this far below the NU7
+        // activation, at most `EPHEMERAL_RECLAIM_DEADNESS_BLOCKS`) so the reservation is provably
+        // dead (its tx0, had one existed, is past-expiry AND irreversibly buried).
         let dead_tip = 281_000 + crate::constants::EPHEMERAL_RECLAIM_DEADNESS_BLOCKS as u64 + 10;
         let mut client = FakeChain::to_tip(dead_tip);
         w.sync_once(&mut client, &CancelToken::new(), NOOP_PROGRESS)
@@ -24828,6 +24947,152 @@ mod tests {
         );
         w.inner.reclaim_in_flight.store(false, Ordering::Release);
         w.close().await.expect("close");
+    }
+
+    // ── NU7 wave step 5 (the reclaim half): the deadness gate across the activation ──
+    //
+    // The same METHOD wiring, on testnet's own NU7 activation. An index is provably dead once the
+    // expiry of the tx0 that reserved it is irreversibly buried: the tx0 targets the block after the
+    // exposure, its expiry is that target plus the builder's default delta AT THE TARGET'S BRANCH (40
+    // before NU7, 120 from it), and the burial is 15,000 s of chain time (200 blocks at 75 s, 600 at
+    // 25 s, summed across the activation; ADR-0579 Decision 6). So the reclaim declines one block
+    // short of the margin and reaches the mint AT it (`docs/plan/nu7-wave.md` §3 step 5). Every
+    // wallet here sits above testnet's Blossom height, where 75 s and 25 s are the only spacings.
+
+    /// Testnet's NU7 activation, read from the pinned crate and checked against the contract's
+    /// number, so no row below stands on a moved activation.
+    fn testnet_nu7() -> u64 {
+        use zcash_protocol::consensus::{NetworkUpgrade, Parameters, TEST_NETWORK};
+        let h = TEST_NETWORK
+            .activation_height(NetworkUpgrade::Nu7)
+            .expect("the pinned crate carries testnet's NU7 height");
+        assert_eq!(
+            u32::from(h),
+            4_465_026,
+            "the crate's testnet NU7 height is not the contract's; re-read it before trusting \
+             these rows"
+        );
+        u64::from(u32::from(h))
+    }
+
+    /// One testnet wallet holding ONE reservation exposed at `exposed`, synced on to each of `tips`
+    /// in turn (ascending): at each, whether the reclaim reached the mint (`true`: the index was
+    /// selected as provably dead and the unfunded propose surfaced `InsufficientFunds`) or declined
+    /// (`false`: `NothingToReclaim`). Nothing is ever broadcast.
+    async fn reclaim_reaches_the_mint_at(exposed: u64, tips: &[u64]) -> Vec<bool> {
+        use crate::reclaim::ReclaimOutcome;
+        use crate::sync::CancelToken;
+        use crate::sync::testing::FakeChain;
+        use zcash_client_backend::wallet::Exposure;
+        let dir = tempfile::tempdir().expect("tempdir");
+        let vault = test_vault();
+        let w = wallet_with_account_at(dir.path(), &vault, exposed - 10).await;
+        w.sync_once(
+            &mut FakeChain::to_tip(exposed),
+            &CancelToken::new(),
+            NOOP_PROGRESS,
+        )
+        .await
+        .expect("sync to the exposure height");
+        w.seed_current_consensus_for_test();
+        let eph = reserve_one_ephemeral(&w).await;
+        // The fixture proves itself: the engine stamped the reservation with the tip it was made
+        // at, so every margin below is measured from `exposed` and from nothing else.
+        let inner = Arc::clone(&w.inner);
+        let tip_now = u32::try_from(exposed).expect("a block height");
+        let reserved = run_blocking(move || {
+            let g = inner.db.lock().expect("wallet db mutex poisoned");
+            account::all_reserved_ephemeral_addresses(&g.db, tip_now)
+        })
+        .await
+        .expect("enumerate the reservations");
+        let (_, md) = reserved
+            .iter()
+            .find(|(addr, _)| *addr == eph)
+            .expect("fixture: the reservation is enumerated");
+        match md.exposure() {
+            Exposure::Exposed { at_height, .. } => assert_eq!(
+                u64::from(u32::from(at_height)),
+                exposed,
+                "fixture: the reservation is exposed at the tip it was made at"
+            ),
+            _ => panic!("fixture: the reservation carries no exposure height"),
+        }
+        let mut reached = Vec::new();
+        for &tip in tips {
+            w.sync_once(
+                &mut FakeChain::to_tip(tip),
+                &CancelToken::new(),
+                NOOP_PROGRESS,
+            )
+            .await
+            .expect("advance the tip");
+            let broadcaster = FakeBroadcaster::accepting();
+            reached.push(match w.reclaim_ephemeral_slots_with(&broadcaster).await {
+                Ok(ReclaimOutcome::NothingToReclaim) => false,
+                Err(WalletError::InsufficientFunds { .. }) => true,
+                other => panic!(
+                    "exposed at {exposed}, tip {tip}: the reclaim either declines or reaches the \
+                     unfunded mint, got {other:?}"
+                ),
+            });
+            assert_eq!(
+                broadcaster.call_count(),
+                0,
+                "nothing is broadcast at tip {tip}"
+            );
+        }
+        w.close().await.expect("close");
+        reached
+    }
+
+    /// Below the activation the reclaim waits (40 + 1) + 200 = 241 blocks: it declines at 240 and
+    /// reaches the mint at 241. The row at 141 is where the margin before this step called the index
+    /// dead, while a 200-block reorg could still mine its tx0.
+    #[tokio::test]
+    async fn the_reclaim_waits_its_pre_activation_margin_on_a_testnet_wallet() {
+        let exposed = testnet_nu7() - 50_000;
+        let tips = [exposed + 141, exposed + 240, exposed + 241];
+        assert_eq!(
+            reclaim_reaches_the_mint_at(exposed, &tips).await,
+            [false, false, true],
+            "exposed at {exposed}, the tips {tips:?}: dead only at the margin, 241 blocks on"
+        );
+    }
+
+    /// From the activation the reclaim waits (120 + 1) + 600 = 721 blocks, both for an index exposed
+    /// at `H - 1`, whose tx0 targets `H` and so carries NU7's 120-block delta, and for one exposed
+    /// after `H`: it declines at 720 and reaches the mint at 721.
+    #[tokio::test]
+    async fn the_reclaim_waits_the_nu7_margin_from_the_block_before_the_activation() {
+        let h = testnet_nu7();
+        for exposed in [h - 1, h + 10] {
+            let tips = [exposed + 241, exposed + 720, exposed + 721];
+            assert_eq!(
+                reclaim_reaches_the_mint_at(exposed, &tips).await,
+                [false, false, true],
+                "exposed at {exposed} (H = {h}), the tips {tips:?}: dead only at 721 blocks on"
+            );
+        }
+    }
+
+    /// Not in the contract's list. An index exposed BELOW `H - 1` has a tx0 targeted under the
+    /// pre-NU7 branch (delta 40), but its expiry's burial is counted in NU7's 25 s blocks: exposed
+    /// at `H - 2`, the expiry is `H + 39` and is buried 600 blocks later, 641 after the exposure;
+    /// exposed at `H - 100`, the expiry `H - 59` sits 58 blocks of 75 s below `H` and is buried 426
+    /// blocks of 25 s after it, 525 after the exposure. A gate keyed only on the target's branch (241
+    /// below, 721 from) reaches the mint at 241, when a 600-block reorg can still mine the tx0.
+    #[tokio::test]
+    async fn the_reclaim_waits_for_a_pre_activation_expiry_buried_in_nu7_blocks() {
+        let h = testnet_nu7();
+        for (exposed, margin) in [(h - 2, 641), (h - 100, 525)] {
+            let tips = [exposed + 241, exposed + margin - 1, exposed + margin];
+            assert_eq!(
+                reclaim_reaches_the_mint_at(exposed, &tips).await,
+                [false, false, true],
+                "exposed at {exposed} (H = {h}), the tips {tips:?}: dead only at {margin} blocks on"
+            );
+        }
     }
 
     // ── §3.2i-2 2e-2b-ii: the stranded SURFACE (list_stranded) + skip-funded + reap ──
@@ -31568,8 +31833,6 @@ mod tests {
     /// a note built against some other key would be undecryptable, and the row
     /// would then prove nothing but that an unreadable block scans cleanly.
     async fn ironwood_receipt_for(w: &Wallet, at: u64, value: u64) -> IronwoodReceipt {
-        use rand_core::OsRng;
-
         use zcash_client_backend::data_api::testing::{AddressType, IronwoodFvk, TestFvk};
         use zcash_client_backend::proto::compact_formats::CompactTx;
         use zcash_keys::keys::UnifiedFullViewingKey;
@@ -31597,7 +31860,7 @@ mod tests {
             AddressType::DefaultExternal,
             zcash_protocol::value::Zatoshis::const_from_u64(value),
             0,
-            &mut OsRng,
+            &mut crate::rng::wallet_rng(),
         );
         assert_eq!(
             ctx.ironwood_actions.len(),
@@ -34024,16 +34287,18 @@ mod tests {
 
     /// The number three documents got wrong, pinned on both networks through
     /// the SHIPPED create: a freshly generated seed's eager FR-24 import is
-    /// born at the anchor ceiling's birthday — the newest bundled row strictly
-    /// below `newest_known_activation + 1`, plus one — which sits BELOW the
-    /// bundle's newest row on both networks; never the tail + 1 (INC-024's
-    /// row, §4n-run and the R2 ruling say "tail + 1 = 3,459,781" for mainnet;
-    /// the R2 plant imports that through a synthetic anchor, and no resolver
-    /// can). Two consequences the guard's docs rest on: the incident's shipped
-    /// population is every server below the anchor row − 1 (3,427,310 mainnet
-    /// today), not "below the tail"; and the at-or-above cell is unreachable
-    /// from any shipped resolver (a resolved birthday < the row ≤ the
-    /// reference). Mutant (corrected at the T0-1c-R3 adjudication, measured):
+    /// born on the newest bundled row strictly below the bundle's newest row,
+    /// plus one (3,457,281 mainnet, 4,295,171 testnet; since the NU7 wave's
+    /// step 3 listed `Nu7` the anchor ceiling sits above the whole bundle, so
+    /// the strict-below rule decides) — BELOW the bundle's newest row on both
+    /// networks; never the tail + 1 (INC-024's row, §4n-run and the R2 ruling
+    /// say "tail + 1 = 3,459,781" for mainnet; the R2 plant imports that through
+    /// a synthetic anchor, and no resolver can). Two consequences the guard's
+    /// docs rest on: the incident's shipped population is every server below
+    /// the birthday's row (3,457,280 mainnet today), not "below the tail"; and
+    /// the at-or-above cell is unreachable from any shipped resolver (a
+    /// resolved birthday < the row ≤ the reference). Mutant (corrected at the
+    /// T0-1c-R3 adjudication, measured):
     /// NOT "the ceiling removed" — this row SURVIVES that (its expectation is
     /// computed through the same `bundled_treestate` it mutates, so both sides
     /// move together, and the strict-below alone keeps the birthday off the
@@ -34045,7 +34310,7 @@ mod tests {
     /// and `…never_anchors_an_empty_ironwood_frontier_above_activation`, not
     /// by this row.
     #[tokio::test]
-    async fn a_fresh_eager_create_is_born_at_the_anchor_ceiling_not_the_tail_on_both_networks() {
+    async fn a_fresh_eager_create_is_born_below_the_newest_row_not_the_tail_on_both_networks() {
         for net in [Network::Main, Network::Test] {
             let dir = tempfile::tempdir().expect("tempdir");
             let vault = test_vault();
@@ -34067,13 +34332,13 @@ mod tests {
                 .last()
                 .map(|r| r.0)
                 .expect("a tree-state tail");
-            let ceiling_birthday = resolved_birthday(net, tail);
+            let strict_below_birthday = resolved_birthday(net, tail);
             println!(
-                "[T0-1c-R3 G11] {net:?}: fresh FR-24 birthday {birthday}; anchor-ceiling \
-                 birthday {ceiling_birthday}; tail {tail}; row {row}"
+                "[T0-1c-R3 G11] {net:?}: fresh FR-24 birthday {birthday}; strict-below \
+                 birthday {strict_below_birthday}; tail {tail}; row {row}"
             );
             assert_eq!(
-                birthday, ceiling_birthday,
+                birthday, strict_below_birthday,
                 "{net:?}: the fresh birthday is the anchor row + 1"
             );
             assert!(
@@ -34091,7 +34356,7 @@ mod tests {
 
     /// INC-024, geometry 1, through the shipped create AND the shipped pass: a
     /// freshly generated seed imports account 0 OFFLINE at create (FR-24) at the
-    /// anchor ceiling's birthday — 4,125,171 on testnet, NOT the tail + 1 (no
+    /// birthday the strict-below rule gives — 4,295,171 on testnet, NOT the tail + 1 (no
     /// resolver can write that; the number decides which servers the incident
     /// reaches, so it is asserted, not assumed) — and the first pass runs
     /// against a validator stuck below it (the fixture chain at `FIX_TIP`, below
@@ -34133,7 +34398,7 @@ mod tests {
         assert_eq!(
             birthday,
             resolved_birthday(Network::Test, row),
-            "the fresh birthday is the anchor row + 1 (the ceiling), not the tail + 1"
+            "the fresh birthday is the row strictly below the newest, plus one, not the tail + 1"
         );
         assert!(
             birthday > FIX_TIP + 1,
@@ -34214,7 +34479,7 @@ mod tests {
 
     /// INC-024, geometry 2 (the adjudicator's probe P-1): a configured birthday
     /// one below the testnet row — at or below the tail, so FR-24 imports it
-    /// eagerly at create, resolved to the anchor ceiling's birthday — against
+    /// eagerly at create, at the strict-below rule's birthday — against
     /// the fixture chain at `FIX_TIP`. On the R2 join: PANIC,
     /// `BlockHeight(4125171)..BlockHeight(280101) is invalid for ScanRange(Historic)`.
     /// Now the same behind pass as the fresh geometry, twice, the loop alive,
@@ -39552,6 +39817,23 @@ mod tests {
     #[cfg(test)]
     mod s7_money;
 
+    // The NU7 wave's step 4, the activation check: the test author's rows on a
+    // chain that straddles the activation, through the five expiry readers, the
+    // signing guard and the history page, written blind and joined at the built
+    // signatures in the file's `join` module.
+    #[cfg(test)]
+    mod nu7_activation;
+    // The same step's rows against the names the implementer added (the kernel
+    // and its three answers, the header reader, the burial predicate, the
+    // cancelled reading and its phase), joined in the file's `named` module.
+    #[cfg(test)]
+    mod nu7_activation_named;
+    // ADR-0580, the pre-upgrade send pause (step 4's fold): the rule's boundary on
+    // mainnet, testnet and the straddling chain; propose and sign over the funded
+    // harness; and every signing entry of a live handle, before any seed is pulled.
+    #[cfg(test)]
+    mod upgrade_pause;
+
     /// S7 C2: the two ALLOCATION paths burn the default UA's diversifier index. Seed
     /// `[0x00; 32]` has `d0 = 1` (pinned by `account::tests::a_swap_destination_never_
     /// takes_the_default_address_index`), and a fresh counter reserves 1 first — so a
@@ -39640,4 +39922,16 @@ mod tests {
     // appended at the END so no cited line above moves.
     #[cfg(test)]
     mod s15_roots;
+
+    // The NU7 wave's step 2b, the generator seam: the test author's rows that
+    // compile at the contract commit, appended at the END like the others.
+    #[cfg(test)]
+    mod generator_seam;
+    // The same item's row for the entropy failure, which arms the seam's test
+    // hook (`crate::rng::testing::fail_next_draw`, the implementer's half). It
+    // could not compile at the contract commit, so it was declared under
+    // `#[cfg(any())]` until the join, which deleted the attribute (the
+    // `s9_bound` shape).
+    #[cfg(test)]
+    mod generator_seam_named;
 }

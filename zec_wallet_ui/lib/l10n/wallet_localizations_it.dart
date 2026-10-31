@@ -3301,4 +3301,40 @@ class WalletLocalizationsIt extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Questo tentativo è scaduto prima che la rete lo confermasse. Il portafoglio invierà di nuovo il pagamento da solo, quindi non inviarlo di nuovo tu.';
+
+  @override
+  String get walletActivityCancelledByUpgrade =>
+      'Annullato dall\'aggiornamento';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Un aggiornamento della rete ha annullato questo pagamento prima della conferma. Non è ancora definitivo, quindi non inviarlo di nuovo.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Un aggiornamento della rete ha annullato questo pagamento. Il portafoglio trattiene l\'importo fino alla scadenza del pagamento.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Un aggiornamento della rete ha annullato questo pagamento prima della conferma. L\'importo è di nuovo disponibile.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Un aggiornamento della rete ha annullato questo tentativo prima della conferma. Il portafoglio invierà di nuovo il pagamento da solo, quindi non inviarlo di nuovo tu.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'La rete Zcash verrà aggiornata tra circa $minutes minuti. Fino ad allora gli invii sono in pausa, così il tuo pagamento non può bloccarsi.',
+      one:
+          'La rete Zcash verrà aggiornata tra circa 1 minuto. Fino ad allora gli invii sono in pausa, così il tuo pagamento non può bloccarsi.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'La schermatura è in pausa';
 }

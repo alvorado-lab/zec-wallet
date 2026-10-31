@@ -3288,4 +3288,43 @@ class WalletLocalizationsPl extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Ta próba wygasła, zanim sieć ją potwierdziła. Twój portfel sam wyśle płatność ponownie, więc nie wysyłaj jej ponownie samodzielnie.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Anulowano przez aktualizację';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Aktualizacja sieci anulowała tę płatność przed jej potwierdzeniem. To jeszcze nie jest ostateczne, więc nie wysyłaj jej ponownie.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Aktualizacja sieci anulowała tę płatność. Portfel wstrzymuje kwotę do wygaśnięcia płatności.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Aktualizacja sieci anulowała tę płatność przed jej potwierdzeniem. Kwota jest znowu dostępna.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Aktualizacja sieci anulowała tę próbę przed jej potwierdzeniem. Portfel sam wyśle płatność ponownie, więc nie wysyłaj jej ponownie samodzielnie.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Sieć Zcash zostanie zaktualizowana za około $minutes minuty. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.',
+      many:
+          'Sieć Zcash zostanie zaktualizowana za około $minutes minut. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.',
+      few:
+          'Sieć Zcash zostanie zaktualizowana za około $minutes minuty. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.',
+      one:
+          'Sieć Zcash zostanie zaktualizowana za około $minutes minutę. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Ochrona środków jest wstrzymana';
 }

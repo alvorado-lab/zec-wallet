@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.0.4
+
+- **Requires `zec_wallet` 0.0.5**, which every app needs before the NU7
+  network upgrade activates on mainnet, at block 3,543,405 (about 2026-11-06
+  02:00 UTC). The working set is `zec_wallet: ^0.0.5`,
+  `zec_wallet_ui: ^0.0.4`, `zec_wallet_ui_platform: ^0.0.3` and
+  `zec_wallet_tor: ^0.0.4`. The platform and Tor packages did not change in
+  this release, so their own pub.dev pages still show older `zec_wallet_ui`
+  and `zec_wallet` lines; use the working set above. `zec_wallet`'s changelog
+  has the full upgrade steps.
+- A payment that a network upgrade cancelled reads "Cancelled by upgrade" in
+  the activity list (or "Retrying" while the wallet sends it again), never
+  "Pending" or "Expired". Its details say where it
+  stands, as `zec_wallet` reports it: not final yet, so it must not be sent
+  again; final, with the amount held until the payment's own expiry; or
+  released, with the amount spendable again. Only a released payment is struck
+  through and shows that the funds were kept.
+- In the last 20 blocks (about 25 minutes) before a network upgrade, sending
+  shows "The Zcash network upgrades in about N minutes. Sending is paused
+  until then so your payment can't get stuck." and starts no payment. The
+  shield sheet (under "Shielding is paused"), the move-to-public screen, a
+  parked payment's "Send now", fund recovery, the one-time address reopen and
+  the swap form for a swap out of ZEC show the same message. Automatic
+  shielding waits quietly.
+- When a network upgrade cancels a retry, the payment's details say so and
+  tell the user the wallet will send it again by itself.
+- Known limit: on a server that does not report its network, the "Sending
+  still works for about N more hours" line can show up to three times the
+  real time after NU7 (`zec_wallet`'s changelog, Limits).
+- New strings, in all 16 languages: `walletActivityCancelledByUpgrade`,
+  `walletTxExplainCancelledNotFinal`, `walletTxExplainCancelledHeld`,
+  `walletTxExplainCancelledReleased`, `walletTxExplainRetryingCancelled`,
+  `walletShieldPausedTitle` and the pause message
+  (`walletSendFaultUpgradePaused`).
+
 ## 0.0.3
 
 - Requires `zec_wallet` 0.0.4, a security release (see its changelog).

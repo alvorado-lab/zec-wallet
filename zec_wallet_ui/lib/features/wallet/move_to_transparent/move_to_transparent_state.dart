@@ -152,6 +152,13 @@ MoveToTransparentState classifyMoveSendFailure(
         ownAddress: ownAddress,
         fault: const SendCategoricalFault(SendFaultReason.storageFull),
       ),
+      // ADR-0580: the pre-upgrade pause, refused before any seed was pulled.
+      // Nothing moved: back to the amount form with the wait, as the send flow
+      // does, never the red "couldn't move".
+      WalletErrorKind_UpgradeImminent(:final blocksLeft) => MoveAmountEntry(
+        ownAddress: ownAddress,
+        fault: SendUpgradePausedFault(blocksLeft: blocksLeft),
+      ),
       // signFailed (or anything else): no money moved; the consumed token can't
       // be re-sent, so the result offers "try again" → a fresh flow.
       _ => const MoveSent(SendSignFailed()),

@@ -3295,4 +3295,39 @@ class WalletLocalizationsPt extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Esta tentativa expirou antes de a rede a confirmar. A sua carteira vai enviar o pagamento novamente por si própria, por isso não o volte a enviar por sua conta.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Cancelado por atualização';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Uma atualização da rede cancelou este pagamento antes da confirmação. Ainda não é definitivo, por isso não o envie novamente.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Uma atualização da rede cancelou este pagamento. A sua carteira retém o valor até o pagamento expirar.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Uma atualização da rede cancelou este pagamento antes da confirmação. O valor está de novo disponível.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Uma atualização da rede cancelou esta tentativa antes da confirmação. A sua carteira vai enviar o pagamento novamente por si só, por isso não o envie outra vez.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'A rede Zcash será atualizada dentro de cerca de $minutes minutos. Até lá, os envios estão em pausa para que o seu pagamento não fique preso.',
+      one:
+          'A rede Zcash será atualizada dentro de cerca de 1 minuto. Até lá, os envios estão em pausa para que o seu pagamento não fique preso.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'A proteção está em pausa';
 }

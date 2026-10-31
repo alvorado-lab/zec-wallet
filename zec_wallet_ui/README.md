@@ -1,5 +1,22 @@
 # zec_wallet_ui
 
+**0.0.4 requires `zec_wallet` 0.0.5**, which every app needs before the NU7
+network upgrade activates on mainnet, at block 3,543,405 (about 2026-11-06
+02:00 UTC). The working set, for the packages you use:
+
+```yaml
+dependencies:
+  zec_wallet: ^0.0.5
+  zec_wallet_ui: ^0.0.4
+  zec_wallet_ui_platform: ^0.0.3
+  zec_wallet_tor: ^0.0.4
+```
+
+`zec_wallet_ui_platform` and `zec_wallet_tor` did not change in this release,
+so their own pub.dev pages still show older `zec_wallet_ui` and `zec_wallet`
+lines: use the ones above. The upgrade steps are in
+[`zec_wallet`'s changelog](https://pub.dev/packages/zec_wallet/changelog).
+
 A complete shielded Zcash wallet for your Flutter app, as screens you drop
 in. Onboarding, backup and restore, balance, send and receive, history,
 shielding and swaps are ready to mount under your router, styled by your

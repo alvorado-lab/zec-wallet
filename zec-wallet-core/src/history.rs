@@ -15,6 +15,7 @@
 //! §5.4 NEVER-LOG: this module touches txids + amounts + memo presence; it logs NONE of them.
 
 use rusqlite::{Connection, params};
+use zcash_protocol::consensus::{BranchId, Parameters};
 
 use crate::constants::MAX_TX_PAGE_SIZE;
 use crate::db::map_aux_err;
@@ -40,10 +41,17 @@ use crate::state::{TxStatus, TxSummary};
 /// does, the same test `crate::delivery` uses). A decrypted receive's row also holds the
 /// tx's own expiry (upstream `put_tx_data` writes it), which is not an outcome the wallet
 /// awaits, so it reads NULL here.
+///
+/// The last column is the same row's first 12 raw bytes (version, version group,
+/// consensus branch), under the same `created` gate: the header the expiry kernel
+/// ([`crate::expiry`]) reads to tell whether a network upgrade cancelled the send. The view
+/// carries no `raw`, so it is joined here, and only for the wallet's own transactions.
 const TX_COLUMNS: &str = "txid, mined_height, account_balance_delta, fee_paid, memo_count, block_time, expired_unmined, \
      EXISTS(SELECT 1 FROM v_tx_outputs o WHERE o.txid = v_transactions.txid \
             AND o.output_pool = 0 AND IFNULL(o.is_change, 0) = 0), \
      (SELECT t.expiry_height FROM transactions t WHERE t.txid = v_transactions.txid \
+            AND t.created IS NOT NULL), \
+     (SELECT substr(t.raw, 1, 12) FROM transactions t WHERE t.txid = v_transactions.txid \
             AND t.created IS NOT NULL)";
 
 /// The stable ORDER BY for the whole history, NEWEST first. Pending (unmined) rows sort
@@ -80,6 +88,9 @@ struct RawTxRow {
     /// The wallet-created transaction's stored expiry (NULL for a receive); `0` is
     /// upstream's "never expires" and [`map_row`] reads it as none.
     created_expiry_height: Option<u32>,
+    /// The wallet-created transaction's first 12 raw bytes, for the expiry kernel
+    /// (NULL for a receive, or a row that holds no bytes).
+    created_header: Option<Vec<u8>>,
 }
 
 /// The keyset cursor — the sort position of the LAST row of a page (the `TX_ORDER` key:
@@ -195,8 +206,10 @@ pub struct HistoryPage {
 ///
 /// `scanned_tip` is the highest block the wallet has scanned (`MAX(blocks.height)`), read
 /// once on the SAME connection so the confirmation depths are consistent with the page.
-pub(crate) fn list_transactions(
+/// `params` is what the expiry kernel reads a network upgrade's activation from.
+pub(crate) fn list_transactions<P: Parameters>(
     conn: &Connection,
+    params: &P,
     limit: u32,
     after: Option<&str>,
 ) -> Result<HistoryPage, WalletError> {
@@ -272,15 +285,16 @@ pub(crate) fn list_transactions(
     };
     let mut out = Vec::with_capacity(raws.len());
     for raw in raws {
-        out.push(map_row(raw, scanned_tip)?);
+        out.push(map_row(params, raw, scanned_tip)?);
     }
     Ok(HistoryPage { rows: out, next })
 }
 
 /// Look up ONE transaction by its (display-order) txid — the FR-1 txid-keyed accessor.
 /// `Ok(None)` if this wallet has no row for it (not its tx, or not yet detected).
-pub(crate) fn transaction_by_txid(
+pub(crate) fn transaction_by_txid<P: Parameters>(
     conn: &Connection,
+    params: &P,
     txid: &TxId,
 ) -> Result<Option<TxSummary>, WalletError> {
     let scanned_tip = scanned_tip(conn)?;
@@ -300,7 +314,11 @@ pub(crate) fn transaction_by_txid(
         .query_map(params![internal.as_slice()], read_row)
         .map_err(map_aux_err)?;
     match rows.next() {
-        Some(row) => Ok(Some(map_row(row.map_err(map_aux_err)?, scanned_tip)?)),
+        Some(row) => Ok(Some(map_row(
+            params,
+            row.map_err(map_aux_err)?,
+            scanned_tip,
+        )?)),
         None => Ok(None),
     }
 }
@@ -633,6 +651,8 @@ fn read_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<RawTxRow> {
         has_transparent_output: r.get::<_, Option<i64>>(7)?.unwrap_or(0) != 0,
         // NULL for a receive (the column's `created` gate) or a missing row.
         created_expiry_height: r.get(8)?,
+        // NULL under the same gate, or for a row that holds no bytes.
+        created_header: r.get(9)?,
     })
 }
 
@@ -643,7 +663,20 @@ fn read_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<RawTxRow> {
 /// `scanned_tip` is the confirmation basis (highest scanned block); depth is
 /// `tip − mined_height + 1` (saturating). `Queued`/`Failed` are SDK-side states from the
 /// intent/submit path, never the chain view, so they don't appear here.
-fn map_row(raw: RawTxRow, scanned_tip: Option<u32>) -> Result<TxSummary, WalletError> {
+///
+/// **Cancelled by an upgrade** (ADR-0579 Decision 4) is the expiry kernel's reading, over
+/// the row's own header and stored expiry at the same scanned tip: an unmined wallet-created
+/// transaction whose branch a network upgrade ended reads
+/// [`TxStatus::CancelledByUpgrade`] from the block before the activation, and keeps that
+/// reading once upstream's `expired_unmined` flips at the stored expiry ("cancelled by
+/// upgrade" wins over plain `Expired`). The reading's `stopped_at` is the activation height;
+/// `expiry_height` stays the stored expiry, the release height, and the reading's
+/// `released_at` is that same value. The core computes the phase; the host computes nothing.
+fn map_row<P: Parameters>(
+    params: &P,
+    raw: RawTxRow,
+    scanned_tip: Option<u32>,
+) -> Result<TxSummary, WalletError> {
     // Validate-never-truncate: a non-32-byte txid blob is DB corruption — fail typed
     // (`StoreCorrupt`), never zero-fill (a phantom all-zero id would render + falsely match
     // a lookup). librustzcash stores INTERNAL order; THE audited reversing door (the
@@ -655,7 +688,29 @@ fn map_row(raw: RawTxRow, scanned_tip: Option<u32>) -> Result<TxSummary, WalletE
         .map_err(|_| WalletError::StoreCorrupt)?;
     let txid: TxId = zcash_protocol::TxId::from_bytes(txid_bytes).into();
     let mined_height = raw.mined_height.map(BlockHeight::new);
-    let status = if raw.expired_unmined {
+    let stored_expiry = raw.created_expiry_height.unwrap_or(0);
+    // `0` is "never expires": no height resolves such an outcome, so none is named. The
+    // row's `expiry_height` and a cancelled reading's `released_at` are this one value.
+    let expiry_height = raw
+        .created_expiry_height
+        .filter(|&h| h > 0)
+        .map(BlockHeight::new);
+    // Only an unmined row of the wallet's own (it carries a header) can have been cancelled.
+    let cancelled = match (&raw.created_header, raw.mined_height, scanned_tip) {
+        (Some(header), None, Some(tip)) => {
+            crate::expiry::upgrade_cancel(params, header, stored_expiry, tip)
+                .map(|cancel| (header, cancel))
+        }
+        _ => None,
+    };
+    let status = if let Some((header, (stopped_at, phase))) = cancelled {
+        log_upgrade_cancel(params, header, stopped_at, stored_expiry, phase);
+        TxStatus::CancelledByUpgrade {
+            stopped_at: BlockHeight::new(stopped_at),
+            released_at: expiry_height,
+            phase,
+        }
+    } else if raw.expired_unmined {
         // Unmined past its expiry — funds returned to spendable (§6.1), a normal history row.
         TxStatus::Expired
     } else if let Some(h) = raw.mined_height {
@@ -684,17 +739,46 @@ fn map_row(raw: RawTxRow, scanned_tip: Option<u32>) -> Result<TxSummary, WalletE
         // The delivery reading is not the view's to give: `Wallet::transactions`
         // annotates the page from `crate::delivery` on the same connection.
         delivery: None,
-        // `0` is "never expires": no height resolves such an outcome, so none is named.
-        expiry_height: raw
-            .created_expiry_height
-            .filter(|&h| h > 0)
-            .map(BlockHeight::new),
+        expiry_height,
     })
+}
+
+/// The cancelled-by-upgrade reading's log line (§5.4): branch ids and heights only — the
+/// transaction's own branch, the branch of the upgrade that ended it, the activation height
+/// the network stopped accepting it at, its release height (the stored expiry, `0` for none)
+/// and the phase. Never the txid, an amount or an address: the row it describes is not named.
+/// `debug`, because a history read repeats it on every page that shows the row.
+fn log_upgrade_cancel<P: Parameters>(
+    params: &P,
+    header: &[u8],
+    stopped_at: u32,
+    released_at: u32,
+    phase: crate::state::CancelPhase,
+) {
+    let tx_branch = crate::enhance::header_branch(header).unwrap_or(0);
+    let upgrade_branch = crate::expiry::next_activation(params, header)
+        .map_or(0, |h| u32::from(BranchId::for_height(params, h)));
+    tracing::debug!(
+        target: "wallet.history",
+        tx_branch = format!("{tx_branch:#010x}"),
+        upgrade_branch = format!("{upgrade_branch:#010x}"),
+        stopped_at,
+        released_at,
+        phase = ?phase,
+        "a payment signed before a network upgrade can no longer be mined"
+    );
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use zcash_client_backend::data_api::testing::TestBuilder;
+    use zcash_protocol::local_consensus::LocalNetwork;
+
+    /// The network these rows are read under: upstream's harness default, the one
+    /// `HistoryHarness` builds on. It has no activation after NU5, so no row here reads
+    /// cancelled by an upgrade.
+    const NET: LocalNetwork = TestBuilder::<(), ()>::DEFAULT_NETWORK;
 
     fn row(
         mined_height: Option<u32>,
@@ -714,6 +798,7 @@ mod tests {
             expired_unmined,
             has_transparent_output: false,
             created_expiry_height: None,
+            created_header: None,
         }
     }
 
@@ -723,11 +808,16 @@ mod tests {
         // so the row names none rather than a height every tip is already past.
         let mut never = row(None, -50_000, Some(1_000), 0, None, false);
         never.created_expiry_height = Some(0);
-        assert_eq!(map_row(never, Some(100)).expect("map").expiry_height, None);
+        assert_eq!(
+            map_row(&NET, never, Some(100)).expect("map").expiry_height,
+            None
+        );
         let mut expiring = row(None, -50_000, Some(1_000), 0, None, false);
         expiring.created_expiry_height = Some(140);
         assert_eq!(
-            map_row(expiring, Some(100)).expect("map").expiry_height,
+            map_row(&NET, expiring, Some(100))
+                .expect("map")
+                .expiry_height,
             Some(BlockHeight::new(140))
         );
     }
@@ -739,13 +829,13 @@ mod tests {
         let mut flagged = row(Some(100), -50_000, Some(1_000), 0, None, false);
         flagged.has_transparent_output = true;
         assert!(
-            map_row(flagged, Some(100))
+            map_row(&NET, flagged, Some(100))
                 .expect("map")
                 .has_transparent_output
         );
         let plain = row(Some(100), -50_000, Some(1_000), 0, None, false);
         assert!(
-            !map_row(plain, Some(100))
+            !map_row(&NET, plain, Some(100))
                 .expect("map")
                 .has_transparent_output
         );
@@ -756,6 +846,7 @@ mod tests {
         // A received tx (positive net, no fee, a memo), mined 4 blocks below a tip at 1000 →
         // depth 5; the txid is reversed from internal to display order.
         let s = map_row(
+            &NET,
             row(Some(996), 250_000, None, 1, Some(1_700_000_000), false),
             Some(1000),
         )
@@ -774,6 +865,7 @@ mod tests {
     fn map_row_confirmed_outgoing_is_negative_with_fee() {
         // A sent tx: negative net effect, a fee, no memo.
         let s = map_row(
+            &NET,
             row(
                 Some(900),
                 -1_010_000,
@@ -793,7 +885,7 @@ mod tests {
 
     #[test]
     fn map_row_pending_when_unmined_and_not_expired() {
-        let s = map_row(row(None, 90_000, None, 0, None, false), Some(1000)).expect("map");
+        let s = map_row(&NET, row(None, 90_000, None, 0, None, false), Some(1000)).expect("map");
         assert_eq!(s.status, TxStatus::Pending);
         assert_eq!(s.mined_height, None);
         assert_eq!(s.timestamp, None, "no block time for an unmined tx");
@@ -802,7 +894,7 @@ mod tests {
     #[test]
     fn map_row_expired_takes_precedence_over_pending() {
         // expired_unmined wins even though mined_height is None (it would otherwise be Pending).
-        let s = map_row(row(None, 0, None, 0, None, true), Some(1000)).expect("map");
+        let s = map_row(&NET, row(None, 0, None, 0, None, true), Some(1000)).expect("map");
         assert_eq!(s.status, TxStatus::Expired);
     }
 
@@ -821,14 +913,17 @@ mod tests {
         conn.execute_batch(
             "CREATE TABLE r (txid BLOB, mined_height INTEGER, account_balance_delta INTEGER, \
              fee_paid INTEGER, memo_count INTEGER, block_time INTEGER, expired_unmined INTEGER, \
-             has_transparent_output INTEGER, created_expiry_height INTEGER); \
-             INSERT INTO r VALUES (zeroblob(32), NULL, 123000, NULL, 0, NULL, NULL, NULL, NULL);",
+             has_transparent_output INTEGER, created_expiry_height INTEGER, \
+             created_header BLOB); \
+             INSERT INTO r VALUES (zeroblob(32), NULL, 123000, NULL, 0, NULL, NULL, NULL, NULL, \
+             NULL);",
         )
         .expect("fixture");
         let raw = conn
             .query_row(
                 "SELECT txid, mined_height, account_balance_delta, fee_paid, memo_count, \
-                 block_time, expired_unmined, has_transparent_output, created_expiry_height \
+                 block_time, expired_unmined, has_transparent_output, created_expiry_height, \
+                 created_header \
                  FROM r",
                 [],
                 read_row,
@@ -844,7 +939,7 @@ mod tests {
             !raw.has_transparent_output,
             "a NULL flag reads as un-flagged, not an error"
         );
-        let s = map_row(raw, Some(1000)).expect("map");
+        let s = map_row(&NET, raw, Some(1000)).expect("map");
         assert_eq!(
             s.status,
             TxStatus::Pending,
@@ -856,21 +951,21 @@ mod tests {
     #[test]
     fn map_row_depth_is_one_when_no_blocks_scanned() {
         // No scanned blocks (tip None) → depth floors to 1 (it is at least in a known block).
-        let s = map_row(row(Some(500), 1, None, 0, None, false), None).expect("map");
+        let s = map_row(&NET, row(Some(500), 1, None, 0, None, false), None).expect("map");
         assert_eq!(s.status, TxStatus::Confirmed { depth: 1 });
     }
 
     #[test]
     fn map_row_depth_floors_to_one_when_tip_below_mined_height() {
         // tip below mined_height (can't happen, but saturating) → depth 1, never underflow.
-        let s = map_row(row(Some(500), 1, None, 0, None, false), Some(400)).expect("map");
+        let s = map_row(&NET, row(Some(500), 1, None, 0, None, false), Some(400)).expect("map");
         assert_eq!(s.status, TxStatus::Confirmed { depth: 1 });
     }
 
     #[test]
     fn map_row_rejects_an_out_of_range_delta_typed() {
         // A delta beyond max supply is corruption — surfaced typed, never clamped.
-        let bad = map_row(row(Some(1), i64::MAX, None, 0, None, false), Some(1));
+        let bad = map_row(&NET, row(Some(1), i64::MAX, None, 0, None, false), Some(1));
         assert!(matches!(bad, Err(WalletError::AmountOutOfRange)));
     }
 
@@ -881,7 +976,7 @@ mod tests {
         let mut bad = row(Some(1), 1, None, 0, None, false);
         bad.txid = vec![0xab; 31]; // one byte short
         assert!(matches!(
-            map_row(bad, Some(1)),
+            map_row(&NET, bad, Some(1)),
             Err(WalletError::StoreCorrupt)
         ));
     }
@@ -901,7 +996,7 @@ mod tests {
         provision_db(&path, &key, Network::Main, None).expect("provision");
         let conn = open_existing_keyed_connection(&path, &key).expect("open");
 
-        let first = list_transactions(&conn, 50, None).expect("list runs");
+        let first = list_transactions(&conn, &NET, 50, None).expect("list runs");
         assert!(first.rows.is_empty(), "a fresh DB has no history");
         assert!(first.next.is_none(), "no next page on an empty DB");
         // A cursor page on an empty DB also COMPILES + RUNS + is empty (the keyset WHERE
@@ -911,14 +1006,14 @@ mod tests {
             txid_internal: [0u8; 32],
         }
         .encode();
-        let paged = list_transactions(&conn, 10, Some(&cursor)).expect("paged list runs");
+        let paged = list_transactions(&conn, &NET, 10, Some(&cursor)).expect("paged list runs");
         assert!(
             paged.rows.is_empty(),
             "the cursor page also runs + is empty"
         );
         let txid = TxId::from_display_order([7u8; 32]);
         assert!(
-            transaction_by_txid(&conn, &txid)
+            transaction_by_txid(&conn, &NET, &txid)
                 .expect("lookup runs")
                 .is_none(),
             "an unknown txid yields None, not an error"
@@ -1236,7 +1331,7 @@ mod tests {
                  block_time INTEGER, expired_unmined INTEGER
              );
              CREATE TABLE v_tx_outputs (txid BLOB, output_pool INTEGER, is_change INTEGER);
-             CREATE TABLE transactions (txid BLOB, expiry_height INTEGER, created TEXT);",
+             CREATE TABLE transactions (txid BLOB, expiry_height INTEGER, created TEXT, raw BLOB);",
         )
         .expect("fixture schema");
         let acct_a = vec![0xAAu8; 16];
@@ -1314,7 +1409,7 @@ mod tests {
 
         // Page 1 (whole, limit 50): pending first, then newest confirmed; account B
         // excluded; fewer than the limit ⇒ no next page.
-        let page1 = list_transactions(&conn, 50, None).expect("page1");
+        let page1 = list_transactions(&conn, &NET, 50, None).expect("page1");
         assert_eq!(
             page1.rows.len(),
             3,
@@ -1342,18 +1437,18 @@ mod tests {
 
         // KEYSET pagination across the cursor: limit 2 ⇒ [pending, h200] + a next cursor;
         // following it ⇒ [h100] + no next. The two pages union to all three rows, once each.
-        let p1 = list_transactions(&conn, 2, None).expect("keyset p1");
+        let p1 = list_transactions(&conn, &NET, 2, None).expect("keyset p1");
         assert_eq!(p1.rows.len(), 2);
         assert_eq!(p1.rows[0].status, TxStatus::Pending);
         assert_eq!(p1.rows[1].mined_height, Some(BlockHeight::new(200)));
         let cursor = p1.next.expect("a third row remains ⇒ a next cursor");
-        let p2 = list_transactions(&conn, 2, Some(&cursor)).expect("keyset p2");
+        let p2 = list_transactions(&conn, &NET, 2, Some(&cursor)).expect("keyset p2");
         assert_eq!(p2.rows.len(), 1, "only h100 remains after the cursor");
         assert_eq!(p2.rows[0].mined_height, Some(BlockHeight::new(100)));
         assert!(p2.next.is_none(), "last page ⇒ no further cursor");
 
         // limit caps the page (pending is the single newest row) and yields a next cursor.
-        let one = list_transactions(&conn, 1, None).expect("limit 1");
+        let one = list_transactions(&conn, &NET, 1, None).expect("limit 1");
         assert_eq!(one.rows.len(), 1);
         assert_eq!(one.rows[0].status, TxStatus::Pending);
         assert!(one.next.is_some(), "more rows remain ⇒ a cursor");
@@ -1365,7 +1460,7 @@ mod tests {
             high_display.to_string().starts_with("1f"),
             "internal 00..1f → display 1f..00"
         );
-        let found = transaction_by_txid(&conn, &high_display)
+        let found = transaction_by_txid(&conn, &NET, &high_display)
             .expect("lookup runs")
             .expect("the looked-up tx exists");
         assert_eq!(found.mined_height, Some(BlockHeight::new(200)));
@@ -1376,7 +1471,7 @@ mod tests {
         // a txid we never inserted → None (not an error).
         let missing = TxId::from_display_order([0x99u8; 32]);
         assert!(
-            transaction_by_txid(&conn, &missing)
+            transaction_by_txid(&conn, &NET, &missing)
                 .expect("lookup runs")
                 .is_none()
         );
@@ -1398,7 +1493,7 @@ mod tests {
                  block_time INTEGER, expired_unmined INTEGER
              );
              CREATE TABLE v_tx_outputs (txid BLOB, output_pool INTEGER, is_change INTEGER);
-             CREATE TABLE transactions (txid BLOB, expiry_height INTEGER, created TEXT);
+             CREATE TABLE transactions (txid BLOB, expiry_height INTEGER, created TEXT, raw BLOB);
              INSERT INTO blocks (height) VALUES (1000);",
         )
         .expect("fixture schema");
@@ -1423,7 +1518,7 @@ mod tests {
         }
 
         assert_eq!(
-            list_transactions(&conn, u32::MAX, None)
+            list_transactions(&conn, &NET, u32::MAX, None)
                 .expect("clamped")
                 .rows
                 .len(),
@@ -1431,7 +1526,7 @@ mod tests {
             "a huge limit clamps to MAX_TX_PAGE_SIZE, never the full set",
         );
         assert_eq!(
-            list_transactions(&conn, MAX_TX_PAGE_SIZE, None)
+            list_transactions(&conn, &NET, MAX_TX_PAGE_SIZE, None)
                 .expect("exact")
                 .rows
                 .len(),
@@ -1439,7 +1534,10 @@ mod tests {
             "exactly the ceiling returns the ceiling",
         );
         assert_eq!(
-            list_transactions(&conn, 2, None).expect("small").rows.len(),
+            list_transactions(&conn, &NET, 2, None)
+                .expect("small")
+                .rows
+                .len(),
             2,
             "a small limit still caps below the ceiling",
         );
@@ -1458,7 +1556,7 @@ mod tests {
                  block_time INTEGER, expired_unmined INTEGER
              );
              CREATE TABLE v_tx_outputs (txid BLOB, output_pool INTEGER, is_change INTEGER);
-             CREATE TABLE transactions (txid BLOB, expiry_height INTEGER, created TEXT);",
+             CREATE TABLE transactions (txid BLOB, expiry_height INTEGER, created TEXT, raw BLOB);",
         )
         .expect("fixture schema");
         let acct = vec![0xAAu8; 16];
@@ -1499,7 +1597,7 @@ mod tests {
         conn.execute(out, params![tx_null_chg, 0i64, Option::<i64>::None])
             .expect("null-chg out");
 
-        let page = list_transactions(&conn, 50, None).expect("list");
+        let page = list_transactions(&conn, &NET, 50, None).expect("list");
         assert_eq!(page.rows.len(), 4);
         // TX_ORDER is newest-first: 503, 502, 501, 500.
         assert!(
@@ -1519,7 +1617,7 @@ mod tests {
             "non-change transparent ⇒ flagged"
         );
         // The txid-keyed lookup reads the SAME classifier.
-        let looked = transaction_by_txid(&conn, &page.rows[3].txid)
+        let looked = transaction_by_txid(&conn, &NET, &page.rows[3].txid)
             .expect("lookup runs")
             .expect("row exists");
         assert!(looked.has_transparent_output, "lookup carries the flag");
@@ -1568,7 +1666,7 @@ mod tests {
         let mut cursor: Option<String> = None;
         let mut guard = 0;
         loop {
-            let page = list_transactions(&conn, 2, cursor.as_deref()).expect("page");
+            let page = list_transactions(&conn, &NET, 2, cursor.as_deref()).expect("page");
             for r in &page.rows {
                 seen.push(r.txid.to_string());
             }
@@ -1611,7 +1709,7 @@ mod tests {
         let mut cursor: Option<String> = None;
         let mut guard = 0;
         loop {
-            let page = list_transactions(&conn, 2, cursor.as_deref()).expect("page");
+            let page = list_transactions(&conn, &NET, 2, cursor.as_deref()).expect("page");
             if page
                 .rows
                 .iter()
@@ -1723,7 +1821,7 @@ mod tests {
         let mut cursor: Option<String> = None;
         let mut guard = 0;
         loop {
-            let page = list_transactions(&conn, 2, cursor.as_deref()).expect("page");
+            let page = list_transactions(&conn, &NET, 2, cursor.as_deref()).expect("page");
             for r in &page.rows {
                 seen.push(r.txid.to_string());
             }
@@ -1764,7 +1862,7 @@ mod tests {
         let mut seen = 0;
         let mut cursor: Option<String> = None;
         loop {
-            let page = list_transactions(&conn, 3, cursor.as_deref()).expect("page");
+            let page = list_transactions(&conn, &NET, 3, cursor.as_deref()).expect("page");
             assert!(
                 !page.rows.is_empty(),
                 "a non-null cursor must never lead to an empty page",
@@ -1819,7 +1917,7 @@ mod tests {
         let mut cursor: Option<String> = None;
         let mut guard = 0;
         loop {
-            let page = list_transactions(&conn, 2, cursor.as_deref()).expect("page");
+            let page = list_transactions(&conn, &NET, 2, cursor.as_deref()).expect("page");
             for r in &page.rows {
                 seen.push(r.txid.to_string());
                 walk.push((
@@ -1897,7 +1995,8 @@ mod tests {
             let mut out = Vec::new();
             let mut cursor: Option<String> = None;
             for _ in 0..1000 {
-                let page = list_transactions(conn, page_size, cursor.as_deref()).expect("page");
+                let page =
+                    list_transactions(conn, &NET, page_size, cursor.as_deref()).expect("page");
                 assert!(
                     page.rows.len() as u32 <= page_size,
                     "the limit is honored per page"
@@ -2004,7 +2103,7 @@ mod tests {
             h.scan();
 
             let conn = h.read_conn();
-            let page = list_transactions(&conn, 50, None).expect("list runs on real view");
+            let page = list_transactions(&conn, &NET, 50, None).expect("list runs on real view");
             assert_eq!(page.rows.len(), 3, "all three received txs surface");
             assert!(page.next.is_none(), "three rows fit one page ⇒ no cursor");
             assert!(
@@ -2019,7 +2118,7 @@ mod tests {
             );
             // The internal→display txid door round-trips against a REAL scanned row (not just
             // the fixture): the mined txid looks itself up.
-            let found = transaction_by_txid(&conn, &disp(a))
+            let found = transaction_by_txid(&conn, &NET, &disp(a))
                 .expect("lookup")
                 .expect("present");
             assert_eq!(
@@ -2072,7 +2171,7 @@ mod tests {
             h.scan();
 
             let conn = h.read_conn();
-            let page = list_transactions(&conn, 50, None).expect("list runs on real view");
+            let page = list_transactions(&conn, &NET, 50, None).expect("list runs on real view");
             assert_eq!(
                 page.rows.len(),
                 2,
@@ -2142,7 +2241,7 @@ mod tests {
 
             let conn = h.read_conn();
 
-            let shielded_row = transaction_by_txid(&conn, &disp(shielded))
+            let shielded_row = transaction_by_txid(&conn, &NET, &disp(shielded))
                 .expect("lookup")
                 .expect("the shielded receive is present");
             assert!(
@@ -2150,7 +2249,7 @@ mod tests {
                 "a shielded-only receive must NOT claim a public output leg",
             );
 
-            let t_row = transaction_by_txid(&conn, &disp(t_receive))
+            let t_row = transaction_by_txid(&conn, &NET, &disp(t_receive))
                 .expect("lookup")
                 .expect("the transparent receive surfaces as a row");
             assert!(
@@ -2163,7 +2262,7 @@ mod tests {
                 "the transparent receive is an inbound row",
             );
 
-            let d_row = transaction_by_txid(&conn, &disp(deshield))
+            let d_row = transaction_by_txid(&conn, &NET, &disp(deshield))
                 .expect("lookup")
                 .expect("the created de-shield is present (stored at create)");
             assert!(
@@ -2232,7 +2331,7 @@ mod tests {
             let full_tip = h.current_tip();
             let conn = h.read_conn();
 
-            let before = list_transactions(&conn, 50, None).expect("list before reorg");
+            let before = list_transactions(&conn, &NET, 50, None).expect("list before reorg");
             let orphan_row = before
                 .rows
                 .iter()
@@ -2246,7 +2345,7 @@ mod tests {
 
             // Reorg back below the orphan's block: it is un-mined → pending, NOT dropped.
             h.reorg_to_height(safe_height);
-            let mid = list_transactions(&conn, 50, None).expect(
+            let mid = list_transactions(&conn, &NET, 50, None).expect(
                 "the page still loads — a NULL expired_unmined row must not StoreCorrupt it",
             );
             let pending = mid
@@ -2273,7 +2372,7 @@ mod tests {
 
             // Replay the retained cache: the orphan re-confirms, money intact — never lost.
             h.rescan_to_tip(full_tip);
-            let after = list_transactions(&conn, 50, None).expect("list after rescan");
+            let after = list_transactions(&conn, &NET, 50, None).expect("list after rescan");
             let restored =
                 after.rows.iter().find(|r| r.txid == disp(orphan)).expect(
                     "the un-mined tx is RE-CONFIRMED by the rescan — never permanently lost",
@@ -2305,7 +2404,7 @@ mod tests {
             let full_tip = h.current_tip();
             let conn = h.read_conn();
 
-            let before = list_transactions(&conn, 50, None).expect("list before reorg");
+            let before = list_transactions(&conn, &NET, 50, None).expect("list before reorg");
             let row = before
                 .rows
                 .iter()
@@ -2323,7 +2422,8 @@ mod tests {
 
             // Reorg below the multi-note block: un-mined → pending, the WHOLE sum intact.
             h.reorg_to_height(safe_height);
-            let mid = list_transactions(&conn, 50, None).expect("the page still loads after reorg");
+            let mid =
+                list_transactions(&conn, &NET, 50, None).expect("the page still loads after reorg");
             let pending = mid
                 .rows
                 .iter()
@@ -2339,7 +2439,7 @@ mod tests {
 
             // Replay the retained cache: re-confirms at the full sum, never lost or shrunk.
             h.rescan_to_tip(full_tip);
-            let after = list_transactions(&conn, 50, None).expect("list after rescan");
+            let after = list_transactions(&conn, &NET, 50, None).expect("list after rescan");
             let restored = after
                 .rows
                 .iter()
@@ -2405,7 +2505,7 @@ mod tests {
             h.mine_empty(3);
             h.scan();
             let conn = h.read_conn();
-            let before = transaction_by_txid(&conn, &disp(a))
+            let before = transaction_by_txid(&conn, &NET, &disp(a))
                 .expect("lookup")
                 .expect("present");
             assert!(matches!(before.status, TxStatus::Confirmed { .. }));
@@ -2414,7 +2514,7 @@ mod tests {
             // The hostile/empty not-found reply.
             h.mark_not_recognized(a);
 
-            let after = transaction_by_txid(&conn, &disp(a))
+            let after = transaction_by_txid(&conn, &NET, &disp(a))
                 .expect("lookup")
                 .expect("present");
             assert!(
@@ -2427,7 +2527,7 @@ mod tests {
                 "the received amount is intact"
             );
             // And it still appears in the history page (never silently dropped).
-            let page = list_transactions(&conn, 50, None).expect("list");
+            let page = list_transactions(&conn, &NET, 50, None).expect("list");
             assert!(
                 page.rows.iter().any(|r| r.txid == disp(a)),
                 "the receive stays visible"
@@ -2501,12 +2601,12 @@ mod tests {
 
             let conn = h.read_conn();
             let read = |conn: &Connection| -> TxSummary {
-                transaction_by_txid(conn, &disp(send))
+                transaction_by_txid(conn, &NET, &disp(send))
                     .expect("lookup")
                     .expect("INC-019: the send row is present")
             };
             let on_first_page = |conn: &Connection| -> bool {
-                list_transactions(conn, 50, None)
+                list_transactions(conn, &NET, 50, None)
                     .expect("list")
                     .rows
                     .iter()
@@ -2700,7 +2800,7 @@ mod tests {
             let expiry = h.expiry_height_of(send);
             let conn = h.read_conn();
             let read = |conn: &Connection, txid: ZTxId| -> TxSummary {
-                transaction_by_txid(conn, &disp(txid))
+                transaction_by_txid(conn, &NET, &disp(txid))
                     .expect("lookup")
                     .expect("the row is present")
             };
@@ -2777,7 +2877,7 @@ mod tests {
             let a = h.mine_received(70_000);
             h.scan(); // tip == h_a
             let conn = h.read_conn();
-            let s = transaction_by_txid(&conn, &disp(a))
+            let s = transaction_by_txid(&conn, &NET, &disp(a))
                 .expect("lookup")
                 .expect("present");
             assert_eq!(
@@ -2788,7 +2888,7 @@ mod tests {
 
             h.mine_empty(9);
             h.scan(); // tip == h_a + 9
-            let s = transaction_by_txid(&conn, &disp(a))
+            let s = transaction_by_txid(&conn, &NET, &disp(a))
                 .expect("lookup")
                 .expect("present");
             assert_eq!(
@@ -2822,7 +2922,7 @@ mod tests {
 
             // The reader still pages successfully and sees exactly the two committed rows.
             let conn = h.read_conn();
-            let page = list_transactions(&conn, 50, None)
+            let page = list_transactions(&conn, &NET, 50, None)
                 .expect("the history read does not BUSY-fail under an in-flight write");
             assert_eq!(
                 page.rows.len(),
@@ -2838,7 +2938,7 @@ mod tests {
         /// The mined height of the single positive row the harness produced (the tests
         /// below need real heights; the harness doesn't expose them, so read the row).
         fn only_incoming_height(conn: &Connection) -> u32 {
-            let page = list_transactions(conn, 50, None).expect("page");
+            let page = list_transactions(conn, &NET, 50, None).expect("page");
             let mined: Vec<u32> = page
                 .rows
                 .iter()

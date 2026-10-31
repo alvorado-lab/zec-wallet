@@ -3286,4 +3286,39 @@ class WalletLocalizationsEs extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Este intento venció antes de que la red lo confirmara. Su billetera volverá a enviar el pago por sí sola, así que no lo envíe usted de nuevo.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Cancelado por actualización';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Una actualización de la red canceló este pago antes de que se confirmara. Aún no es definitivo, así que no lo envíe de nuevo.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Una actualización de la red canceló este pago. Su billetera retiene el importe hasta que venza el pago.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Una actualización de la red canceló este pago antes de que se confirmara. Puede volver a gastar el importe.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Una actualización de la red canceló este intento antes de que se confirmara. Su billetera volverá a enviar el pago por sí sola, así que no lo envíe usted de nuevo.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'La red Zcash se actualiza en aproximadamente $minutes minutos. Los envíos están en pausa hasta entonces para que su pago no quede atascado.',
+      one:
+          'La red Zcash se actualiza en aproximadamente 1 minuto. Los envíos están en pausa hasta entonces para que su pago no quede atascado.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'El blindaje está en pausa';
 }

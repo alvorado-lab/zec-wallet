@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:zec_wallet_ui/core/theme/icons.dart';
 import 'package:zec_wallet_ui/core/theme/theme.dart';
 import 'package:zec_wallet_ui/features/wallet/shield/shield_sheet.dart';
 import 'package:zec_wallet_ui/features/wallet/wallet_providers.dart';
@@ -158,6 +159,35 @@ void main() {
     await tester.tap(find.text(l10n.walletShieldRetry));
     await tester.pumpAndSettle();
     expect(session.proposeShieldCount, 2);
+    expect(session.sendCount, 0);
+  });
+
+  /// ADR-0580: the pre-upgrade pause is a wait, not a failure. The sheet shows
+  /// the waiting glyph and a title that says shielding is paused over the
+  /// decided sentence, never the error glyph or "couldn't shield". Mutants,
+  /// each red: the paused arm's title back to the failure title; its glyph back
+  /// to the error glyph.
+  testWidgets('the_shield_sheet_shows_the_pause_as_a_wait_never_a_failure', (
+    tester,
+  ) async {
+    final session = FakeWalletSession()
+      ..proposeShieldThrows = WalletApiError(
+        code: 'RW-SEND-009',
+        message: 's',
+        kind: const WalletErrorKind.upgradeImminent(
+          activationHeight: 3543405,
+          blocksLeft: 20,
+        ),
+      );
+    await tester.pumpWidget(_harness(session));
+    await tester.pumpAndSettle();
+
+    final l10n = _l10n(tester);
+    expect(find.text(l10n.walletShieldPausedTitle), findsOneWidget);
+    expect(find.text(l10n.walletShieldFailedTitle), findsNothing);
+    expect(find.text(l10n.walletSendFaultUpgradePaused(25)), findsOneWidget);
+    expect(find.byIcon(WalletGlyph.waiting.material), findsOneWidget);
+    expect(find.byIcon(WalletGlyph.error.material), findsNothing);
     expect(session.sendCount, 0);
   });
 

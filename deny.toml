@@ -105,15 +105,16 @@ deny = [
   # Orchard counterfeiting circuit bug (halo2_gadgets ecc::chip::mul soundness;
   # disclosed 2026-06, fixed with the NU6.2 stack 2026-06-03; NO RUSTSEC ID yet,
   # so cargo-audit is BLIND to it — this floor is the only mechanical gate). The
-  # wallet lock carries orchard 0.14.0 (≥ floor, the fixed version); the floor
-  # catches a future `cargo update` regression below it. As of W3-inc-2b-ii-A the
   # wallet-DB stack (zcash_client_sqlite → zcash_client_backend → the full orchard
-  # proving circuit) pulls halo2_gadgets 0.5.0 (≥ floor) — so this ban is now
-  # LOAD-BEARING (it was inert at the inc-2a derivation-only lock, where the proving
-  # gadgets were absent). halo2_poseidon rides alongside it (poseidon hash), not in
-  # place of it.
-  { name = "halo2_gadgets", version = "<0.5.0" },
-  { name = "orchard", version = "<0.14.0" },
+  # proving circuit) pulls halo2_gadgets, so this ban is LOAD-BEARING. halo2_poseidon
+  # rides alongside it (poseidon hash), not in place of it.
+  # The floors move with the pin set. Since the NU7 wave (ADR-0579 Decision 1)
+  # they sit at the versions it pins: orchard 0.16.0, and the halo2_gadgets 0.6.0
+  # it brings. So a resolver step back to the Ironwood-era proving crates
+  # (orchard 0.15, halo2_gadgets 0.5) reds `cargo deny`, where the old floors
+  # (0.14.0 and 0.5.0, the NU6.2 fix) would have let it through.
+  { name = "halo2_gadgets", version = "<0.6.0" },
+  { name = "orchard", version = "<0.16.0" },
   # TLS provider discipline (mirrors root): the swap adapter's rustls tree is
   # ring-only by the 2026-06-10 gate — aws-lc would silently re-admit the C
   # BoringSSL fork the cross-compile gate rejected. A regression below the
@@ -128,6 +129,7 @@ deny = [
   { name = "webpki-roots", version = "<1.0.10" },
   { name = "webpki-root-certs", version = "<1.0.10" },
   { name = "tokio", version = "<1.53.3" }, # RUSTSEC-2026-0386 (AsyncFd's safe constructors accept any AsRawFd; fixed 1.53.3)
+  { name = "ctutils", version = "<0.4.4" }, # RUSTSEC-2026-0385 (Choice mask generation not constant-time; fixed 0.4.4)
 ]
 # arti and its LGPL carve-out (`equix`/`hashx`) are NOT this lock's concern:
 # `sdk/dialer-tor` is its own workspace (its manifest says why) with its own

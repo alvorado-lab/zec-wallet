@@ -28,11 +28,14 @@
 //!   passphrase that is NOT already NFKD takes that path. A pre-sized
 //!   buffer would close it but means normalizing outside the crate's own
 //!   door — a hardening item, not taken at S2.
-//! - `UnifiedSpendingKey` implements **no Zeroize/ZeroizeOnDrop** and is
-//!   `Clone + Debug` upstream (§4.2(a)); the instance below is strictly
-//!   function-local — never logged, never stored, never `Clone`-reached from
-//!   any DTO, dropped at the end of derivation. The un-zeroized residue in
-//!   freed memory is the documented residual + an upstream-issue candidate.
+//! - `UnifiedSpendingKey` is `Clone` upstream and has a redacting `Debug`
+//!   (§4.2(a)); the instance below is strictly function-local: never logged,
+//!   never stored, never `Clone`-reached from any DTO, dropped at the end of
+//!   derivation. Since `zcash_keys` 0.17 its Orchard and Sapling spending keys
+//!   erase on drop under `zeroize` (also enabled through `pczt`; the pin
+//!   `erases_on_drop` below is the guard). Its TRANSPARENT key is not erased (upstream
+//!   says so on the type): that un-zeroized residue in freed memory is the
+//!   documented residual and an upstream-issue candidate.
 
 // Module layout — two derivation groups at the same layer (pure, sync, no I/O):
 //   (1) resolve_seed / parse_mnemonic — BIP39 mnemonic ↔ seed.
@@ -58,6 +61,18 @@ use crate::constants::{SEED_MAX_BYTES, SEED_MIN_BYTES};
 use crate::error::WalletError;
 use crate::money::Network;
 use crate::seal::SeedPayload;
+
+// The Orchard and Sapling spending keys a `UnifiedSpendingKey` holds erase themselves
+// on drop only under their own crates' `zeroize` feature (orchard 0.16, sapling-crypto
+// 0.9), which `zcash_keys`'s `zeroize` turns on (`sdk/Cargo.toml`). A build that loses
+// it stops compiling HERE, in the shipped library, instead of leaving spending keys in
+// freed memory without a word. The transparent key is outside it (upstream does not erase
+// it). Its registered face: the test `the_shielded_spending_keys_a_usk_holds_erase_on_drop`.
+const _: fn() = || {
+    fn erases_on_drop<T: zeroize::ZeroizeOnDrop>() {}
+    erases_on_drop::<orchard::keys::SpendingKey>();
+    erases_on_drop::<sapling_crypto::zip32::ExtendedSpendingKey>();
+};
 use crate::seed::SeedSource;
 
 /// v1 scope cut (§1.6): one account (ZIP-32 account 0) per wallet instance.
@@ -212,11 +227,25 @@ fn default_address_for<P: Parameters>(params: &P, seed: &[u8]) -> Result<String,
 //
 // Consumed by `Wallet::export_ufvk` (#397); pinned by
 // `kat_fixed_seed_derives_pinned_ufvk_encoding` (§3.7 D6, vectors-first).
-pub(crate) fn encode_ufvk(network: Network, ufvk: &UnifiedFullViewingKey) -> String {
-    match network {
+pub(crate) fn encode_ufvk(
+    network: Network,
+    ufvk: &UnifiedFullViewingKey,
+) -> Result<String, WalletError> {
+    ufvk_encoding_or_typed_error(match network {
         Network::Main => ufvk.encode(&MAIN_NETWORK),
         Network::Test => ufvk.encode(&TEST_NETWORK),
-    }
+    })
+}
+
+/// `UnifiedFullViewingKey::encode` returns a `Result` since `zcash_keys` 0.17: a key
+/// with no encoding at Revision 0 or Revision 2 is `UnifiedEncodingError`. A key this
+/// wallet derives always has one, so the error is not reachable from a well-formed key;
+/// it is still a typed [`WalletError::KeyDerivation`], never a panic (§4.2), and the
+/// upstream error is dropped rather than formatted (§5.4: it names the key's items).
+fn ufvk_encoding_or_typed_error(
+    encoded: Result<String, zcash_keys::encoding::UnifiedEncodingError>,
+) -> Result<String, WalletError> {
+    encoded.map_err(|_| WalletError::KeyDerivation)
 }
 
 /// Decode a host-supplied UFVK string for `network` — the §3.7 D2 IMPORT
@@ -553,7 +582,7 @@ fn transparent_receiver_from_ufvk(
 ) -> Result<TransparentAddress, WalletError> {
     // The transparent AccountPubKey (BIP44 `m/44'/coin'/0'`), present on every UFVK derived
     // since ADR-0528 enabled `transparent-inputs`. Audited derivation, taken WHOLE (Rule Zero).
-    let account_pubkey = ufvk.transparent().ok_or(WalletError::KeyDerivation)?;
+    let account_pubkey = ufvk.p2pkh().ok_or(WalletError::KeyDerivation)?;
     let external_ivk = account_pubkey
         .derive_external_ivk()
         .map_err(|_| WalletError::KeyDerivation)?;
@@ -860,7 +889,8 @@ mod tests {
     /// is Orchard + Sapling, NO transparent (p2pkh/p2sh), on the expected net.
     fn assert_g7_receivers(encoded: &str, expect_net: zcash_protocol::consensus::NetworkType) {
         use zcash_address::unified::{Address as Ua, Container, Encoding, Receiver};
-        let (net, addr) = Ua::decode(encoded).expect("pinned string decodes as a unified address");
+        let (net, _, addr) =
+            Ua::decode(encoded).expect("pinned string decodes as a unified address");
         assert_eq!(net, expect_net, "network mismatch on the pinned UA");
         let (mut orchard, mut sapling, mut transparent) = (false, false, false);
         for r in addr.items() {
@@ -932,7 +962,7 @@ mod tests {
         // pinned, never regenerated without a crypto audit).
         let usk = derive_spending_key(Network::Main, KAT_SEED_32).expect("mainnet USK");
         let ufvk = usk.to_unified_full_viewing_key();
-        let enc = encode_ufvk(Network::Main, &ufvk);
+        let enc = encode_ufvk(Network::Main, &ufvk).expect("a derived UFVK encodes");
         assert_eq!(
             enc,
             "uview1tt4c7sm6fzp4ukehhdmxqav6eqhnce9ntskwf88cvk0z9vrxtzy7p5lta5dksmzcdesg8\
@@ -948,7 +978,7 @@ mod tests {
 
         let tusk = derive_spending_key(Network::Test, KAT_SEED_32).expect("testnet USK");
         let tufvk = tusk.to_unified_full_viewing_key();
-        let tenc = encode_ufvk(Network::Test, &tufvk);
+        let tenc = encode_ufvk(Network::Test, &tufvk).expect("a derived UFVK encodes");
         assert_eq!(
             tenc,
             "uviewtest12amv2eelp4hsajp3ptzfmlwvcjwnma7fhpe99y7drtd0hhluvj9tkczmqzfyf4lww\
@@ -998,6 +1028,52 @@ mod tests {
         );
     }
 
+    /// `encode_ufvk`'s error mapping, one of the two named choices of the NU7 wave's
+    /// step 1 (`docs/plan/nu7-wave.md` §3). The error is NOT reachable from a
+    /// well-formed key: every key this wallet derives encodes at Revision 0, which the
+    /// pinned KAT above shows byte for byte. So the mapping is driven with the error
+    /// upstream returns for a key with no encoding at either revision, and a real key
+    /// is checked to pass through it unchanged.
+    #[test]
+    fn encode_ufvk_returns_its_typed_error_never_a_panic() {
+        use zcash_address::unified::{ParseError, Revision};
+        use zcash_keys::encoding::UnifiedEncodingError;
+
+        let unencodable = UnifiedEncodingError::NotRepresentable {
+            revision: Revision::R2,
+            cause: ParseError::OnlyTransparent,
+        };
+        // Caught, so a panic in the mapping fails HERE, on the claim, and not as a
+        // stray panic elsewhere.
+        let mapped = std::panic::catch_unwind(|| ufvk_encoding_or_typed_error(Err(unencodable)));
+        assert!(
+            matches!(mapped, Ok(Err(WalletError::KeyDerivation))),
+            "an unencodable UFVK is the typed KeyDerivation refusal, never a panic: {mapped:?}"
+        );
+
+        let ufvk = derive_spending_key(Network::Main, KAT_SEED_32)
+            .expect("mainnet USK")
+            .to_unified_full_viewing_key();
+        assert_eq!(
+            encode_ufvk(Network::Main, &ufvk).expect("a derived UFVK encodes"),
+            ufvk.encode(&MAIN_NETWORK)
+                .expect("upstream encodes the same key"),
+            "the mapping passes a successful encoding through unchanged"
+        );
+    }
+
+    /// The registered face of the non-test `erases_on_drop` pin at the top of this
+    /// file: the Orchard and Sapling spending keys a `UnifiedSpendingKey` holds erase
+    /// themselves on drop. Compile-time: a key type that stops erasing fails the build
+    /// here. The transparent key is not covered, because upstream does not erase it.
+    #[test]
+    fn the_shielded_spending_keys_a_usk_holds_erase_on_drop() {
+        static_assertions::assert_impl_all!(orchard::keys::SpendingKey: zeroize::ZeroizeOnDrop);
+        static_assertions::assert_impl_all!(
+            sapling_crypto::zip32::ExtendedSpendingKey: zeroize::ZeroizeOnDrop
+        );
+    }
+
     #[test]
     fn decode_ufvk_maps_each_failure_class_to_its_typed_error() {
         // #397 (code review n1): pin `decode_ufvk`'s three arms directly on the
@@ -1010,13 +1086,15 @@ mod tests {
             &derive_spending_key(Network::Main, KAT_SEED_32)
                 .expect("usk")
                 .to_unified_full_viewing_key(),
-        );
+        )
+        .expect("a derived UFVK encodes");
         let test = encode_ufvk(
             Network::Test,
             &derive_spending_key(Network::Test, KAT_SEED_32)
                 .expect("usk")
                 .to_unified_full_viewing_key(),
-        );
+        )
+        .expect("a derived UFVK encodes");
 
         // Same-network round-trips.
         assert!(decode_ufvk(Network::Main, &main).is_ok());
@@ -1183,7 +1261,7 @@ mod tests {
                 panic!("official vector {i} rejected by our import door: {e:?}")
             });
             assert_eq!(
-                encode_ufvk(Network::Main, &decoded),
+                encode_ufvk(Network::Main, &decoded).expect("an official vector encodes"),
                 *vector,
                 "official vector {i} did not round-trip byte-identical through our encoder"
             );
@@ -1387,7 +1465,7 @@ mod tests {
         // direct observable of region disjointness (linkability = a shared
         // receiver, trivially comparable by anyone holding both encodings).
         let receivers = |encoded: &str| -> Vec<Vec<u8>> {
-            let (_, addr) = Ua::decode(encoded).expect("UA decodes");
+            let (_, _, addr) = Ua::decode(encoded).expect("UA decodes");
             addr.items()
                 .into_iter()
                 .filter_map(|r| match r {
@@ -1432,7 +1510,7 @@ mod tests {
         let swap_encoded = encode_unified_address(Network::Main, &swap_ua);
         let (_, minted) = first_diversified_from(&ufvk, Network::Main, DIVERSIFIED_INDEX_BASE);
         let shielded = |encoded: &str| -> Vec<Vec<u8>> {
-            let (_, addr) = Ua::decode(encoded).expect("UA decodes");
+            let (_, _, addr) = Ua::decode(encoded).expect("UA decodes");
             addr.items()
                 .into_iter()
                 .filter_map(|r| match r {
@@ -1807,7 +1885,7 @@ mod tests {
                 .expect("usk from the KAT seed");
             let ufvk = usk.to_unified_full_viewing_key();
             let ivk = ufvk
-                .transparent()
+                .p2pkh()
                 .expect("transparent component (post-ADR-0528)")
                 .derive_external_ivk()
                 .expect("external ivk");

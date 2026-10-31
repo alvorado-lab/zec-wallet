@@ -3304,4 +3304,39 @@ class WalletLocalizationsFr extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Cette tentative a expiré avant d\'être confirmée par le réseau. Votre portefeuille renverra le paiement de lui-même : ne le renvoyez donc pas vous-même.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Annulé par une mise à niveau';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Une mise à niveau du réseau a annulé ce paiement avant sa confirmation. Ce n\'est pas encore définitif, ne le renvoyez donc pas.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Une mise à niveau du réseau a annulé ce paiement. Votre portefeuille conserve le montant jusqu\'à l\'expiration du paiement.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Une mise à niveau du réseau a annulé ce paiement avant sa confirmation. Le montant est de nouveau disponible.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Une mise à niveau du réseau a annulé cette tentative avant sa confirmation. Votre portefeuille renverra le paiement de lui-même, ne le renvoyez donc pas vous-même.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Le réseau Zcash sera mis à niveau dans environ $minutes minutes. Les envois sont suspendus jusque-là pour que votre paiement ne reste pas bloqué.',
+      one:
+          'Le réseau Zcash sera mis à niveau dans environ 1 minute. Les envois sont suspendus jusque-là pour que votre paiement ne reste pas bloqué.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'La protection est en pause';
 }

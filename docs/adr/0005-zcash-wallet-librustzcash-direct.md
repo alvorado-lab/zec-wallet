@@ -9,7 +9,10 @@
   swap on-ramp (NEAR Intents) behind a `SwapPort`. **Crate versions amended by
   reference in [ADR-0540](0540-ironwood-nu63-crate-wave-and-sealed-orchard-pool.md):** the
   exact pins named in the Decision paragraph below are the pre-Ironwood set and
-  are historical; ADR-0540 carries the current one.
+  are historical; ADR-0540 carries the current one. **Crate versions amended again
+  by reference in [ADR-0579](0579-wallet-nu7-crate-wave-and-the-mainnet-height.md),
+  2026-10-21:** ADR-0540's set is historical too; ADR-0579 Decision 1 is the record
+  of the NU7 pin set.
 - **Date:** 2026-06-05 (confirmed + refined 2026-06-06)
 - **Links:** docs/PRODUCT_VISION.md § ZEC module ·
   [ZEC wallet-blocks re-examination](../research/2026-06-06-zec-wallet-blocks.md)

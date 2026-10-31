@@ -1,6 +1,6 @@
 name: zec_wallet
 description: "Private Zcash (ZEC) payments for any Flutter app: a shielded wallet SDK whose keys stay in a Rust core, never in Dart. Optional drop-in UI and Tor packages."
-version: 0.0.4
+version: 0.0.5
 homepage: https://github.com/alvorado-lab/zec-wallet
 repository: https://github.com/alvorado-lab/zec-wallet/tree/main/zec_wallet
 

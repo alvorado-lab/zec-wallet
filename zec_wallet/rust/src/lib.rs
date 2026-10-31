@@ -66,3 +66,9 @@ mod delivery_state_bridge_tests;
 // `#[cfg(any())]` with `#[cfg(test)]`. JOINED (adjudicator).
 #[cfg(test)]
 mod sever_bridge_tests;
+// The NU7 wave's step 4 — the test author's bridge rows for the cancelled-by-
+// upgrade reading (`TxStatus::CancelledByUpgrade` with its two heights and its
+// `CancelPhase`) and ABI 12, against the names the orchestrator decided for the
+// implementer on 2026-10-30 (listed in the file's doc). JOINED (adjudicator).
+#[cfg(test)]
+mod nu7_activation_bridge_tests;

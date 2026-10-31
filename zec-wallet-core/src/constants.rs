@@ -385,6 +385,25 @@ pub const SYNC_STUCK_WATCHDOG_SECS: u64 = 600;
 /// inherited upstream posture, never re-derived here.
 pub const REORG_MAX_BLOCKS: u32 = 100;
 
+/// The chain time an irreversible step waits for, in seconds: ZIP 218's
+/// wall-clock target for the deepest rollback nodes should support (ADR-0579
+/// Decision 6, ruled (b)). Through the spacing function that is 200 blocks at
+/// 75 s, 600 at 25 s, and a sum across the NU7 activation
+/// (`stranded::irreversibly_buried`). [`REORG_MAX_BLOCKS`] stays 100 for the
+/// grace clamp, the birthday lag, the scan cap, the bind's window and the bundle
+/// reference; this constant is the finality depth, and the two are kept apart on
+/// purpose.
+pub(crate) const IRREVERSIBLE_BURIAL_SECS: u64 = 15_000;
+
+// "Never below 100 blocks": at the slowest spacing the chain-time module reads
+// (upstream's pre-Blossom 150 s), the burial is 100 blocks, and from Blossom it is
+// 200 or more, so it never counts fewer blocks than the reorg horizon the rest of
+// the wallet uses.
+const _: () = assert!(
+    IRREVERSIBLE_BURIAL_SECS / zcash_protocol::consensus::PRE_BLOSSOM_POW_TARGET_SPACING.as_secs()
+        >= REORG_MAX_BLOCKS as u64
+);
+
 /// Rewind distance on detected reorg — inherited upstream posture.
 pub const REWIND_DISTANCE_BLOCKS: u32 = 10;
 
@@ -571,8 +590,10 @@ pub const EPHEMERAL_DETECT_ISOLATION_KEY_PREFIX: &str = "wallet-ephemeral-detect
 /// New-wallet birthday lag below the live tip (§3.2f) — a fresh wallet has no
 /// history below ~now, and lagging the tip by the reorg depth keeps the birthday
 /// off a block a reorg could later drop (the Zashi tip−100 posture; equals
-/// [`REORG_MAX_BLOCKS`] by construction). The actual birthday frontier is then
-/// the newest BUNDLED checkpoint ≤ this height — never a live frontier.
+/// [`REORG_MAX_BLOCKS`] by construction). The birthday is then built from the
+/// newest BUNDLED tree-state row below this height, which fixes the birthday
+/// height and the tree sizes; the trees themselves are seeded by the first sync
+/// pass's live `GetTreeState` (`provision`'s module doc states that limit).
 pub const NEW_WALLET_BIRTHDAY_LAG_BLOCKS: u32 = REORG_MAX_BLOCKS;
 
 /// How far the judged chain height may advance past our last signing-capable
@@ -746,17 +767,27 @@ pub const PROPOSAL_TTL_SECS: u64 = 600;
 
 /// Max blocks the chain may advance PAST a proposal's `min_target_height` before
 /// `send` (create+sign, inc-2d-2) refuses to sign it as stale (§3.2h re-anchor
-/// obligation). The audited `Builder` sets a tx's expiry to `min_target_height +
-/// DEFAULT_TX_EXPIRY_DELTA` (40 blocks, `zcash_primitives::transaction::builder`)
+/// obligation). The audited `Builder` sets a tx's expiry to `min_target_height +`
+/// the default delta of the target's branch (`zcash_primitives::transaction::builder::
+/// default_tx_expiry_delta`: 40 blocks before NU7, 120 from it)
 /// and never consults the live tip — so a proposal whose chain advanced (the
 /// device-suspend case: the monotonic [`PROPOSAL_TTL_SECS`] clock PAUSED while the
 /// chain moved) would build a BORN-EXPIRED tx that upstream does NOT reject (it
 /// errors only on a *pruned* anchor, not a merely-*stale* one). `send` therefore
 /// re-anchors against `chain_height()` BEFORE signing and rejects `ProposalStale`
-/// past this drift. Set to HALF the 40-block expiry window so a signed tx always
-/// retains ≥ 20 blocks (~25 min at 75 s) of mining headroom — the authoritative
-/// staleness gate the suspend-paused wall-clock TTL cannot provide. Boundary-tested
-/// by `create_signed_reanchor_boundary_is_exact`.
+/// past this drift: the authoritative staleness gate the suspend-paused wall-clock TTL
+/// cannot provide. Set to half the pre-NU7 40-block expiry window (a sixth of NU7's
+/// 120), so a signed transaction keeps at least 20 blocks of mining headroom counted
+/// from the wallet's RECORDED tip: about 25 minutes at 75 s, about 8 at NU7's 25 s.
+/// Within one branch the drift bound alone gives that. Across a network upgrade's
+/// activation it holds because of two more checks: the signing branch clause and the
+/// pre-upgrade pause (`send::upgrade_pause`, ADR-0580, which reuses this constant as its
+/// window), which together refuse a send whose next 20 blocks are not all under the
+/// branch it is signed for. Where the recorded tip lags the chain the headroom is short
+/// by the lag: any sign before the first sync since the chain moved (a resume, an old
+/// database opened, a device whose sync keeps failing), or a server reporting a wrong tip
+/// (`send::assert_proposal_anchor_fresh` states both). Boundary-tested by
+/// `create_signed_reanchor_boundary_is_exact`.
 pub const PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS: u32 = 20;
 
 /// Max live (un-consumed) retained proposals per wallet (§3.2h registry bound).
@@ -1091,33 +1122,46 @@ pub const SCOPED_UTXO_POLL_MAX_PUTS: usize = 1024;
 /// the worst case is a cosmetically-off ratio, never a fund-safety regression. §5.4: a count, loggable.
 pub const EPHEMERAL_GAP_LIMIT: u32 = 10;
 
-/// §3.2i-2 2e-2b-vi (#315 slice 2) — the PROVABLE-DEADNESS margin for the Mechanism-A reclaim: a
-/// reserved ephemeral index is a safe reclaim target ONLY once `tip − exposed_at_height` reaches
-/// this many blocks. The engine-exact arithmetic (crypto+security review, both derivations
-/// independently landing here; verified at the pinned source):
+/// §3.2i-2 2e-2b-vi (#315 slice 2) — the PROVABLE-DEADNESS margin for the Mechanism-A reclaim
+/// BEFORE the NU7 activation and from Blossom: a reserved ephemeral index whose tx0 targets a
+/// height in that range, and whose expiry is buried in it, is a safe reclaim target ONLY once
+/// `tip − exposed_at_height` reaches this many blocks. The gate itself is height-aware
+/// (`reclaim::is_provably_dead`); this is the value it comes to there. (Below Blossom the crate's
+/// 20-block delta and 150 s spacing make it `(20 + 1) + 100` = 121; on mainnet and testnet no tx0
+/// is live that low and a span from there to a synced tip is millions of blocks: it decides
+/// nothing.) The engine-exact arithmetic (verified at the pinned source):
 /// - a reservation stamps `exposed_at_height = the reserve-time CHAIN TIP` (`H`), NOT the tx0's
-///   target height (`zcash_client_sqlite` `transparent.rs` `SET exposed_at_height = chain_tip`);
+///   target height (`zcash_client_sqlite` `transparent.rs` `SET exposed_at_height =
+///   :chain_tip_height`);
 /// - the tx0's target is `chain_tip + 1 = H+1` (`zcash_client_sqlite` `wallet.rs`), and the audited
-///   `Builder` sets its expiry to `target + DEFAULT_TX_EXPIRY_DELTA` (40 blocks) — so the LAST block
+///   `Builder` sets its expiry to `target +` the default delta of the TARGET's branch
+///   (`default_tx_expiry_delta`: 40 blocks before NU7, 120 from it), so before NU7 the LAST block
 ///   the tx0 can mine is `H + 41`, one block ABOVE `exposed + 40`.
 ///
-/// "Past-expiry AND buried beyond the deepest reorg the wallet auto-recovers ([`REORG_MAX_BLOCKS`])"
-/// therefore requires `tip ≥ (H + 41) + REORG_MAX_BLOCKS`, i.e. `tip − exposed ≥ 41 +
-/// REORG_MAX_BLOCKS`. So the margin is `(DEFAULT_TX_EXPIRY_DELTA + 1) + REORG_MAX_BLOCKS` = 141
-/// blocks (~3 h at 75 s) — a one-time cost per stuck window. (The earlier `40 + REORG_MAX_BLOCKS`
-/// = 140 was off by one: at the boundary a maximal `REORG_MAX_BLOCKS` reorg re-enabled the tx0 for
-/// exactly its expiry block, delivering only `REORG_MAX_BLOCKS − 1` of burial.) Below this margin an
-/// index might still hold a LIVE, mineable tx0 (a legitimate exchange deposit in flight), and
-/// self-minting on it could race + cancel that deposit — so the reclaim NEVER targets an index
-/// younger than this (the deadness gate; the double-deposit-free property holds ONLY under it).
+/// "Past-expiry AND irreversibly buried" (ADR-0579 Decision 6: 15,000 s of chain time,
+/// `stranded::irreversibly_buried`, which is 200 blocks at 75 s) therefore requires
+/// `tip ≥ (H + 41) + 200`, i.e. `tip − exposed ≥ (BLOSSOM_DEFAULT_TX_EXPIRY_DELTA + 1) + 200` =
+/// 241 blocks (about 5 h at 75 s): a one-time cost per stuck window. From NU7 the same derivation
+/// gives `(120 + 1) + 600` = 721 blocks (about 5 h at 25 s), and an index whose expiry or burial
+/// straddles the activation lands between the two, each block counted at its own spacing; the gate
+/// derives each from the target's branch and the predicate, never from this constant. (History:
+/// `40 + 100` = 140 was off by one, delivering one block less than a full burial of the expiry
+/// block; `(40 + 1) + 100` = 141 buried it below the 100-block reorg horizon, which the NU7 wave
+/// replaced with the 15,000 s predicate.) Below this margin an index might still hold a LIVE,
+/// mineable tx0 (a legitimate exchange deposit in flight), and self-minting on it could race +
+/// cancel that deposit — so the reclaim NEVER targets an index younger than its margin (the
+/// deadness gate; the double-deposit-free property holds ONLY under it).
 ///
-/// The `40` is NOT hard-coded: this DERIVES from the audited `Builder`'s own
-/// [`DEFAULT_TX_EXPIRY_DELTA`](zcash_primitives::transaction::builder::DEFAULT_TX_EXPIRY_DELTA), so an
-/// upstream change to the expiry delta auto-recomputes the margin to the still-correct value (the
-/// `(delta + 1) + reorg` derivation is general for any delta) — and trips the `== 141` boundary pin in
-/// `named_constants_at_boundary` + the scenario pin in `reclaim::tests`, forcing conscious re-review.
+/// Neither term is hard-coded: the `40` is the audited `Builder`'s own pre-NU7 delta,
+/// [`BLOSSOM_DEFAULT_TX_EXPIRY_DELTA`](zcash_primitives::transaction::builder::BLOSSOM_DEFAULT_TX_EXPIRY_DELTA),
+/// and the `200` is `IRREVERSIBLE_BURIAL_SECS` over upstream's post-Blossom spacing. A change to
+/// either trips the boundary pin in `named_constants_at_boundary` + the scenario pin in
+/// `reclaim::tests`, forcing conscious re-review.
 pub const EPHEMERAL_RECLAIM_DEADNESS_BLOCKS: u32 =
-    (zcash_primitives::transaction::builder::DEFAULT_TX_EXPIRY_DELTA + 1) + REORG_MAX_BLOCKS;
+    (zcash_primitives::transaction::builder::BLOSSOM_DEFAULT_TX_EXPIRY_DELTA + 1)
+        + (IRREVERSIBLE_BURIAL_SECS
+            / zcash_protocol::consensus::POST_BLOSSOM_POW_TARGET_SPACING.as_secs())
+            as u32;
 
 /// §3.2i-2 2e-2b-vi (#315 slice 2) — the self-mint amount the Mechanism-A reclaim pays from the
 /// wallet's OWN shielded pool to the highest provably-dead ephemeral address. It must clear the
@@ -1503,11 +1547,14 @@ const _: () = assert!(KICK_BROADCAST_MAX_ATTEMPTS >= 1 && KICK_BROADCAST_MAX_ATT
 /// number has to be *tight against a different quantity* — the transaction's remaining validity.
 ///
 /// The numbers, which are what settles it. The audited `Builder` sets expiry to
-/// `min_target_height + DEFAULT_TX_EXPIRY_DELTA` (40 blocks ≈ 50 min at 75 s), and `send`
-/// re-anchors within [`PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS`], so a freshly signed tx carries a
-/// GUARANTEED ≥ 20 blocks — ≥ 20 min even at the conservative 60 s/block floor this file uses
-/// elsewhere, ~25 min at real spacing. A 600 s budget is 20–40 % of that, so the round it
-/// suppressed was, in the overwhelming majority of cases, a round on a STILL-VALID transaction.
+/// `min_target_height +` the branch's default delta (pre-NU7 40 blocks ≈ 50 min at 75 s; NU7
+/// 120 blocks, the same ≈ 50 min at 25 s), and `send`
+/// re-anchors within [`PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS`], so a freshly signed tx carries at
+/// least 20 blocks from the recorded tip (the pre-upgrade pause carries that floor across an
+/// activation): about 25 min at 75 s, about 8 min at NU7's 25 s. That floor is the worst case;
+/// the window a send is signed into is the ~50 min above. A 600 s budget is a fifth of that
+/// window, so the round it suppressed was, in the overwhelming majority of cases, a round on a
+/// STILL-VALID transaction.
 ///
 /// And it could only ever suppress on ONE path. With a `Some` deadline the `deposit_gate` after
 /// the backoff re-checks the durable tag against a FRESH clock — that IS the doze case, so the

@@ -340,7 +340,16 @@ class AutoShieldController extends Notifier<AutoShieldStatus> {
           classified is ShieldUnavailable &&
           (classified.reason == ShieldFaultReason.notSyncedYet ||
               classified.reason == ShieldFaultReason.walletBusy);
-      if (transient) {
+      // ADR-0580: the pre-upgrade pause is a DEFERRAL in either phase, never
+      // a failure. The SDK refuses before any seed is pulled, so nothing moved;
+      // the next snapshot edge after the activation shields as usual (a failed
+      // attempt never latches the quiet figure). Cueing "didn't complete" over
+      // 25 minutes the network imposes would send the user to shield by hand
+      // into the same pause.
+      final paused =
+          classified is ShieldUnavailable &&
+          classified.reason == ShieldFaultReason.upgradePaused;
+      if (transient || paused) {
         _setStatus(AutoShieldStatus.idle, gen);
       } else {
         _setCue(AutoShieldStatus.failed, gen);

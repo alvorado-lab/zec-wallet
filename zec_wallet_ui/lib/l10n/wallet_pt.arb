@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Não foi possível confirmar esta proteção. Consulte Atividade antes de tentar novamente.",
   "walletMoveUnknownTitle": "Verifique antes de mover novamente",
   "walletMoveUnknownBody": "Não foi possível confirmar este movimento. Consulte Atividade antes de tentar novamente.",
-  "walletTxExplainRetryingExpired": "Esta tentativa expirou antes de a rede a confirmar. A sua carteira vai enviar o pagamento novamente por si própria, por isso não o volte a enviar por sua conta."
+  "walletTxExplainRetryingExpired": "Esta tentativa expirou antes de a rede a confirmar. A sua carteira vai enviar o pagamento novamente por si própria, por isso não o volte a enviar por sua conta.",
+  "walletActivityCancelledByUpgrade": "Cancelado por atualização",
+  "walletTxExplainCancelledNotFinal": "Uma atualização da rede cancelou este pagamento antes da confirmação. Ainda não é definitivo, por isso não o envie novamente.",
+  "walletTxExplainCancelledHeld": "Uma atualização da rede cancelou este pagamento. A sua carteira retém o valor até o pagamento expirar.",
+  "walletTxExplainCancelledReleased": "Uma atualização da rede cancelou este pagamento antes da confirmação. O valor está de novo disponível.",
+  "walletTxExplainRetryingCancelled": "Uma atualização da rede cancelou esta tentativa antes da confirmação. A sua carteira vai enviar o pagamento novamente por si só, por isso não o envie outra vez.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{A rede Zcash será atualizada dentro de cerca de 1 minuto. Até lá, os envios estão em pausa para que o seu pagamento não fique preso.} other{A rede Zcash será atualizada dentro de cerca de {minutes} minutos. Até lá, os envios estão em pausa para que o seu pagamento não fique preso.}}",
+  "walletShieldPausedTitle": "A proteção está em pausa"
 }

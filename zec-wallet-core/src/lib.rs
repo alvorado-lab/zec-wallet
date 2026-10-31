@@ -25,10 +25,58 @@
 
 #![forbid(unsafe_code)]
 
+// ADR-0579 Decision 2: no shipped build carries `zcash_unstable`. Each value turns on
+// librustzcash code that no network upgrade has activated, across every crate this one
+// calls, so the refusal sits at the crate root beside `forbid(unsafe_code)`, the other
+// rule about what this crate may be built as. The values are every one the pinned
+// crates read; `ZCASH_UNSTABLE_VALUES` in `tests/pins_policy.rs` cites each site. It
+// stops a flag that reaches this crate's own compile, from wherever it came (an exported
+// `RUSTFLAGS`, a machine's cargo config). A flag aimed at another crate alone (a rustc
+// wrapper, a per-package profile) never reaches this compile, and the Tor plugin builds
+// without this crate; `tests/pins_policy.rs` names those limits.
+#[cfg(any(zcash_unstable = "nutachyon", zcash_unstable = "zip233"))]
+compile_error!(
+    "a `zcash_unstable` cfg turns on consensus code no network upgrade has activated, \
+     and this crate builds, proves and signs transactions with it (ADR-0579 Decision 2): \
+     build without it"
+);
+
+// The same rule for `secp256k1_fuzz`, a name with no value. It swaps libsecp256k1 for the
+// fuzzing stubs in `secp256k1-sys`, whose `secp256k1_ec_pubkey_create` copies the secret
+// key into the public key (`secp256k1-sys-0.14.1/src/lib.rs:1736-1746`), so a transparent
+// spend would publish its key.
+#[cfg(secp256k1_fuzz)]
+compile_error!(
+    "a `secp256k1_fuzz` cfg replaces secp256k1's signing code with fuzzing stubs that copy \
+     the secret key into the public key, and this crate signs transparent spends with it \
+     (ADR-0579 Decision 2): build without it"
+);
+
+// And for `hashes_fuzz`, another name with no value. It makes the SHA-1, SHA-256, SHA-512 and
+// RIPEMD-160 engines of `bitcoin_hashes` fold their input into one byte (their shared `input`,
+// `bitcoin_hashes-0.14.101/src/util.rs:88-94`; HMAC and the hashes built on them inherit it).
+// `bip39` computes a mnemonic's checksum on them (`src/lib.rs:222`, create), checks it (`:471`,
+// restore) and makes its seed with them, so every key a mnemonic wallet derives from its seed
+// (`derivation.rs`, `Generate`, `Mnemonic`; a raw seed never meets them) takes at most 256 values.
+#[cfg(hashes_fuzz)]
+compile_error!(
+    "a `hashes_fuzz` cfg folds bitcoin_hashes' SHA-256 and SHA-512 into one byte, and this \
+     crate makes a mnemonic wallet's seed with them (ADR-0579 Decision 2): build without it"
+);
+
 pub mod constants;
 
 mod account;
 mod block_cache;
+// ZIP 218's shielded limits per block (NU7 wave step 7m): every propose path refuses a
+// transaction that, from the NU7 activation, no block may carry.
+mod block_limits;
+// ADR-0579 Decision 6: the target spacing, the default expiry delta and the chain
+// time between two heights, upstream's own functions read in the wallet's units at
+// the activations the params carry. The burial predicate
+// (`stranded::irreversibly_buried`) reads the chain time and the reclaim margin the
+// delta; the spacing carries its own allow until step 5's grace half reads it.
+mod chain_time;
 mod checkpoints;
 mod config;
 // §3.2 of ironwood-nu63-support.md — the ONE staleness predicate. Its own module
@@ -65,6 +113,10 @@ mod enhance;
 // recognise parts live in `wallet`; the recognition put in `transparent`.
 mod ephemeral_detect;
 mod error;
+// ADR-0579 Decision 4: the expiry kernel — the ONE place that says whether a signed
+// transaction can still be mined, from its stored expiry and the activation that
+// ends the branch it was signed under. Five readers call it and compare nothing.
+mod expiry;
 // #357: the durable "reached tip at least once" flag — the `creation_stamp` /
 // `sync_stamp` aux sibling that backs the reference UI's catch-up cue across a
 // process death (spec FR-1b). Row cleared on rescan (the `sync_stamp`
@@ -109,6 +161,9 @@ mod root_bind;
 // catch-up cue name the rebuild after a process death instead of falling back
 // to the generic first-run copy.
 mod rescan_rebuilding;
+// ADR-0579 Decision 3: the ONE generator upstream proves and signs with. Every
+// `WalletDb` and every create call takes it from here.
+mod rng;
 mod runtime;
 mod seal;
 mod seed;
@@ -206,6 +261,10 @@ pub mod log_policy {
 // tests that a hand-built fixture can't reach. No production weight.
 #[cfg(test)]
 mod test_support;
+// The NU7 wave's step 4s, the spacing function: the test author's rows against
+// `chain_time`, written blind to it and joined at its built names.
+#[cfg(test)]
+mod chain_time_tests;
 // Recv-2b transparent UTXO detection (§3.3a, ADR-0528): the §4.6 hostile-input
 // boundary that turns a `GetAddressUtxos` reply into audited
 // `WalletTransparentOutput`s and puts them via the engine, surfacing
@@ -286,10 +345,10 @@ pub use reclaim::ReclaimOutcome;
 pub use refund_index::{SwapAddressCheckCoverage, SwapAddressCheckReport};
 pub use send::{LargeSendReason, OutputPool, ProposalRecipient, ProposalStep, SendProposal};
 pub use state::{
-    ArmCounts, BalanceSnapshot, BatchId, BoundedSync, DeliveryState, DialCounts, GraceExpiry,
-    IncomingFundsEvent, IncomingFundsEventKind, PoolService, PoolServiceReport, QueuedSendId,
-    SigningBlock, StallReason, SyncStamp, SyncStatus, TorRuntimeKind, TorState, TxStatus,
-    TxSubmitResult, TxSummary, UnknownBranchGrace, WalletState,
+    ArmCounts, BalanceSnapshot, BatchId, BoundedSync, CancelPhase, DeliveryState, DialCounts,
+    GraceExpiry, IncomingFundsEvent, IncomingFundsEventKind, PoolService, PoolServiceReport,
+    QueuedSendId, SigningBlock, StallReason, SyncStamp, SyncStatus, TorRuntimeKind, TorState,
+    TxStatus, TxSubmitResult, TxSummary, UnknownBranchGrace, WalletState,
 };
 pub use stranded::{StrandedAmount, confirmation_depth_is_final};
 #[cfg(feature = "swap")]
@@ -314,8 +373,11 @@ pub use zeroize::Zeroizing;
 // fully callable and semver-public on a crate with no `publish = false`, so a
 // downstream consumer could build on a facade we intend to change freely.
 // `cargo-fuzz` compiles targets with `--cfg fuzzing`, so the harness still sees
-// them and an ordinary build does not. The gate covers all five — the FR-27
+// them and an ordinary build does not. The gate covers every hook — the FR-27
 // addition inherited the shape from four siblings that predate it.
+#[cfg(fuzzing)]
+#[doc(hidden)]
+pub use enhance::__fuzz_header_branch;
 #[cfg(fuzzing)]
 #[doc(hidden)]
 pub use enhance::__fuzz_parse_and_validate;

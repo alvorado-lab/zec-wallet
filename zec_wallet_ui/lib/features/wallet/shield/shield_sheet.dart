@@ -14,6 +14,7 @@ import '../../../shared/wallet_sheet.dart';
 import '../labeled_zat_row.dart';
 import '../send/send_state.dart';
 import '../sync_status_presentation.dart' show walletSyncPausedQualified;
+import '../upgrade_pause.dart' show upgradePausedText, upgradePauseWindowBlocks;
 import '../wallet_providers.dart';
 import '../wallet_sync_controller.dart' show walletSyncPassesRunProvider;
 import 'shield_controller.dart';
@@ -145,7 +146,11 @@ class _ShieldSheetState extends ConsumerState<ShieldSheet> {
           onClose: () => Navigator.of(context).maybePop(),
         ),
       ),
-      ShieldUnavailable(:final reason) => _unavailable(context, reason),
+      ShieldUnavailable(:final reason, :final blocksLeft) => _unavailable(
+        context,
+        reason,
+        blocksLeft,
+      ),
     };
   }
 
@@ -206,7 +211,11 @@ class _ShieldSheetState extends ConsumerState<ShieldSheet> {
     };
   }
 
-  Widget _unavailable(BuildContext context, ShieldFaultReason reason) {
+  Widget _unavailable(
+    BuildContext context,
+    ShieldFaultReason reason,
+    int? blocksLeft,
+  ) {
     final l10n = WalletLocalizations.of(context);
     final body = switch (reason) {
       ShieldFaultReason.notSyncedYet => l10n.walletShieldStaleBody,
@@ -222,10 +231,21 @@ class _ShieldSheetState extends ConsumerState<ShieldSheet> {
       // moment" — never the title-only arm above (the Batch C arch pass).
       ShieldFaultReason.couldNotPrepareTransient =>
         l10n.walletShieldTransientBody,
+      // ADR-0580: the decided sentence with the wait. A missing count (only a
+      // hand-built state lacks one) reads as the longest wait, the window.
+      ShieldFaultReason.upgradePaused => upgradePausedText(
+        l10n,
+        blocksLeft ?? upgradePauseWindowBlocks,
+      ),
     };
+    // The pause is a wait, not a failure: the waiting glyph and a title that says
+    // so, never "couldn't shield" over a body that says sending is paused.
+    final paused = reason == ShieldFaultReason.upgradePaused;
     return WalletSheetResult(
-      icon: WalletGlyph.error,
-      title: l10n.walletShieldFailedTitle,
+      icon: paused ? WalletGlyph.waiting : WalletGlyph.error,
+      title: paused
+          ? l10n.walletShieldPausedTitle
+          : l10n.walletShieldFailedTitle,
       body: body,
       onClose: () => Navigator.of(context).maybePop(),
       closeLabel: l10n.walletShieldClose,

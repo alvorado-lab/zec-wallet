@@ -1,6 +1,11 @@
 # 0540 — Move the librustzcash pin set to the Ironwood/NU6.3 wave, and treat Orchard as a sealed pool
 
-- **Status:** Accepted
+- **Status:** Accepted. **Decision 1's pin table and Decision 2 (whole) are
+  superseded by [ADR-0579](0579-wallet-nu7-crate-wave-and-the-mainnet-height.md),
+  2026-10-21** (the NU7 crate wave: `zcash_script`, `sapling-crypto`, `zip32` and
+  `secp256k1` all move; ADR-0579 Decision 1 is the record of the pin set, and
+  `sdk/Cargo.toml` as `pins_policy` holds it is the live one). Every other decision
+  here stands.
 - **Date:** 2026-09-07
 - **Links:** amends by reference
   [ADR-0005](0005-zcash-wallet-librustzcash-direct.md) (its Decision paragraph

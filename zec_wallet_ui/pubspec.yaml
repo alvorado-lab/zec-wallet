@@ -23,7 +23,7 @@
 #   wallet-unavailable renders honestly.
 name: zec_wallet_ui
 description: "A drop-in shielded Zcash wallet for Flutter apps, built on zec_wallet: onboarding, backup, send, receive, history and swaps, themed by your app, in 16 languages."
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/alvorado-lab/zec-wallet
 repository: https://github.com/alvorado-lab/zec-wallet/tree/main/zec_wallet_ui
 
@@ -45,7 +45,7 @@ dependencies:
   # named by VERSION: each zec_wallet_ui release names the zec_wallet release
   # it ships with (`^0.0.x` accepts only that 0.0.x); the in-repo path lives
   # in dependency_overrides.
-  zec_wallet: ^0.0.4
+  zec_wallet: ^0.0.5
   flutter_riverpod: ^3.3.1
   go_router: ^17.2.0
   # flutter_localizations pins intl exactly; a caret on that line keeps the

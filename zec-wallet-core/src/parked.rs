@@ -421,7 +421,8 @@ mod tests {
         ZcashAddress::from_transparent_p2pkh(NetworkType::Regtest, hash)
     }
     fn sapling_recipient(seed: &[u8]) -> ZcashAddress {
-        let extsk = sapling_crypto::zip32::ExtendedSpendingKey::master(seed);
+        let extsk = sapling_crypto::zip32::ExtendedSpendingKey::master(seed)
+            .expect("a Sapling master key from the test seed");
         let (_, addr) = extsk.default_address();
         ZcashAddress::from_sapling(NetworkType::Regtest, addr.to_bytes())
     }

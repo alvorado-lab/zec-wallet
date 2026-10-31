@@ -552,11 +552,14 @@ mod tests {
     }
 
     fn encoded_unified(net: &NetworkType) -> String {
-        use zcash_address::unified::{Address as Ua, Encoding, Receiver};
-        Ua::try_from_items(vec![
-            Receiver::Orchard([0xEF; 43]),
-            Receiver::Sapling([0xAB; 43]),
-        ])
+        use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
+        Ua::try_from_items(
+            Revision::R0,
+            vec![
+                Uitem::Data(Receiver::Orchard([0xEF; 43])),
+                Uitem::Data(Receiver::Sapling([0xAB; 43])),
+            ],
+        )
         .expect("valid receiver set")
         .encode(net)
     }

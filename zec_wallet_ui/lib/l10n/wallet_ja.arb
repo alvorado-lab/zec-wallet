@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "このシールドを確認できませんでした。もう一度試す前に「履歴」を確認してください。",
   "walletMoveUnknownTitle": "もう一度移動する前に確認してください",
   "walletMoveUnknownBody": "この移動を確認できませんでした。もう一度試す前に「履歴」を確認してください。",
-  "walletTxExplainRetryingExpired": "この試行はネットワークが承認する前に期限切れになりました。ウォレットが自動で支払いを再送信するため、ご自身で再送信しないでください。"
+  "walletTxExplainRetryingExpired": "この試行はネットワークが承認する前に期限切れになりました。ウォレットが自動で支払いを再送信するため、ご自身で再送信しないでください。",
+  "walletActivityCancelledByUpgrade": "アップグレードで取消",
+  "walletTxExplainCancelledNotFinal": "ネットワークのアップグレードにより、この支払いは承認前に取り消されました。まだ確定していないため、再送しないでください。",
+  "walletTxExplainCancelledHeld": "ネットワークのアップグレードにより、この支払いは取り消されました。支払いの有効期限まで、ウォレットが金額を保留しています。",
+  "walletTxExplainCancelledReleased": "ネットワークのアップグレードにより、この支払いは承認前に取り消されました。金額は再び使用できます。",
+  "walletTxExplainRetryingCancelled": "ネットワークのアップグレードにより、この試行は承認前に取り消されました。ウォレットが支払いを自動的に再送するため、ご自身で再送しないでください。",
+  "walletSendFaultUpgradePaused": "{minutes, plural, other{Zcash ネットワークは約{minutes}分後にアップグレードされます。支払いが滞らないよう、それまで送金は一時停止されています。}}",
+  "walletShieldPausedTitle": "シールドは一時停止中です"
 }

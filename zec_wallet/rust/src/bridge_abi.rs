@@ -38,7 +38,7 @@
 /// — whenever `frb_generated.rs`'s wire code changes. The crate's BUILD SCRIPT
 /// refuses a build that did not (`build.rs::bridge_abi_gate`), and prints the
 /// row to append.
-pub const BRIDGE_ABI_VERSION: u32 = 11;
+pub const BRIDGE_ABI_VERSION: u32 = 12;
 
 /// Every wire contract the bridge has had: `(version, fingerprint of
 /// frb_generated.rs)`, read by `build.rs::bridge_abi_gate` — keep one row per
@@ -126,6 +126,33 @@ const BRIDGE_ABI_HISTORY: &[(u32, u64)] = &[
     // variant (`RequestEchoMismatch`, the quote door's echo check), inserted
     // before the `Unknown` arm, so `Unknown`'s tag moved.
     (11, 0xd785_26d3_9ea0_c8ca),
+    // 12 — the NU7 wave's step 4 (2026-10-29): the activation check. One
+    // `TxStatus` variant (`CancelledByUpgrade { stopped_at, released_at, phase }`
+    // — a payment a network upgrade cancelled: the activation height, the
+    // release height, the phase), inserted before `Unknown` so `Unknown`'s tag
+    // moved; one enum (`CancelPhase { NotFinal, FinalNotReleased, Released,
+    // Unknown }`); and `tx_confirmation_is_final` takes the wallet's `Network`
+    // and the row's mined height beside its depth (the finality badge follows
+    // the 15,000 s burial). 12, not the plan's 13: step 2c is deferred and
+    // takes 13 when built (the orchestrator's decision, `nu7-wave.md` §6).
+    // This row's hash was RE-RECORDED at step 4's adjudication repair
+    // (2026-10-30), when the variant's one `last_height` became the two
+    // heights, BEFORE version 12 ever left the wave's branches (no build
+    // carried the first hash, `0xefd9_2fae_ce63_bfad`). Row 7's precedent:
+    // re-recorded, not bumped to 13.
+    // RE-RECORDED a second time at step 4's fold (2026-10-30), for the same
+    // reason: one `WalletErrorKind` variant (`UpgradeImminent {
+    // activation_height, blocks_left }`, RW-SEND-009, the pre-upgrade send
+    // pause, ADR-0580), inserted before `Io` so the later tags moved. Version 12
+    // had still not left the wave's branches; the hash it replaces is
+    // `0x7535_36b6_0654_8d93`.
+    // RE-RECORDED a third time at step 4's second fold (2026-10-31): one
+    // `SwapErrorKind` variant (`UpgradeImminent { activation_height,
+    // blocks_left }`, RW-SWAP-017, the same pause refusing an OutOfZec swap
+    // execute), inserted before `Unknown` so that arm's tag moved. Version 12
+    // had still not left the wave's branches; the hash it replaces is
+    // `0xe68b_1900_b87e_8ace`.
+    (12, 0xf81d_7d5f_ac3d_b58f),
 ];
 
 // The one check the language can make itself: the version is the history's

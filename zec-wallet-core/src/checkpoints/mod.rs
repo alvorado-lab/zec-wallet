@@ -16,11 +16,13 @@
 //! The tree-state slice of the same checkmate bundle (sapling/orchard frontiers)
 //! is AS BUILT in W3-inc-2c-iv-c ([`bundled_treestate`], §3.2f): the
 //! crypto audit showed the backend does NOT self-verify a birthday frontier, so
-//! the bundled frontier in the signed binary is the TRUSTED anchor provisioning
-//! uses INSTEAD of a live `get_tree_state` (no live-frontier trust). It is
-//! ADDITIVE from the SAME pinned source rows (`MAINNET_TREESTATES` /
-//! `TESTNET_TREESTATES`) — the `(height, time)` slice + `estimate_birthday` are
-//! untouched.
+//! provisioning builds the birthday from the bundled row INSTEAD of a live
+//! `get_tree_state`. The row fixes the birthday height and the Sapling and
+//! Orchard tree sizes the import records, not the trees: the first sync pass's
+//! live `GetTreeState` seeds those (`provision`'s module doc states that limit
+//! and the item owed for it). It is ADDITIVE from the SAME pinned source rows
+//! (`MAINNET_TREESTATES` / `TESTNET_TREESTATES`) — the `(height, time)` slice +
+//! `estimate_birthday` are untouched.
 
 mod data;
 
@@ -156,12 +158,15 @@ pub(crate) fn activation_height(network: Network) -> u32 {
     checkpoints(network).first().map_or(0, |&(h, _)| h)
 }
 
-/// Build the TRUSTED birthday treestate (§3.2f): the signed-binary commitment-tree
-/// frontier at the NEWEST bundled checkpoint with `height < requested`, so the
-/// resulting birthday (`height + 1`) is `≤ requested` and NEVER skips the user's
-/// funds at `requested`. The frontier comes from the SIGNED BINARY, never a live
-/// `get_tree_state` — the crypto audit (§3.2f) proved a live frontier is
-/// cryptographically unverifiable, so we provision from the bundle only.
+/// Build the birthday treestate (§3.2f) from the bundled row at the NEWEST
+/// checkpoint with `height < requested`, so the resulting birthday (`height + 1`)
+/// is `≤ requested` and NEVER skips the user's funds at `requested`.
+/// Provisioning reads it from the bundle, never from a live `get_tree_state`
+/// (the crypto audit, §3.2f: a live frontier is cryptographically unverifiable).
+/// The row fixes the birthday HEIGHT and the Sapling and Orchard tree SIZES the
+/// import records; it does not seed the trees, which the first sync pass's live
+/// `GetTreeState` does (`provision`'s module doc states that limit and the item
+/// owed for it).
 ///
 /// When `requested` is at/below the activation row, the activation row is used
 /// (the floor — no shielded notes exist below; the documented activation-floor
@@ -176,13 +181,17 @@ pub(crate) fn bundled_treestate(network: Network, requested: BlockHeight) -> Opt
     // `ironwood-nu63-support.md` §1.5 / §9.2 — THE ANCHOR CEILING. Never anchor
     // above the newest activation this build knows: past it, an upgrade we have
     // never heard of may have activated, and the chain state there can contain
-    // a value pool we cannot represent. Anchoring on such a row bakes an
-    // implicitly-empty tree for that pool into the wallet — persisted,
-    // immutable after first import, and NOT OBVIOUSLY repairable in place once a later
-    // build learns the pool. (Concretely: the bundle ships 13 mainnet rows
-    // above the Ironwood activation, and a fresh create floors onto the newest
-    // row, so without this every wallet created on a pre-Ironwood build would
-    // be born wrong.)
+    // a value pool we cannot represent. A birthday built on such a row carries an
+    // implicitly-empty tree for that pool, a value the chain contradicts. That
+    // value does not seed the wallet's trees (the import records the birthday
+    // height and the Sapling and Orchard tree sizes, and the first sync pass's
+    // live `GetTreeState` seeds the trees: `provision`'s module doc states that
+    // limit), so what the ceiling keeps honest is the birthday's own value and
+    // the height the wallet is born at. (Concretely: the bundle ships 13 mainnet
+    // rows above the Ironwood activation, and a fresh create floors onto the
+    // newest row, so without this every wallet created on a pre-Ironwood build
+    // would be born above the activation with an `AccountBirthday` that has no
+    // Ironwood frontier.)
     //
     // Cost is a longer first scan, which is the direction the birthday logic
     // already prefers — a low anchor over-scans, a high one silently skips.
@@ -190,18 +199,18 @@ pub(crate) fn bundled_treestate(network: Network, requested: BlockHeight) -> Opt
     // does NOT rise by itself at a crate bump, which an earlier version of this
     // comment claimed and three documents then copied.
     // `newest_known_activation` reads `consensus::KNOWN_UPGRADES`, a
-    // HAND-MAINTAINED list. `NetworkUpgrade::Nu6_3` IS on that list, added
-    // deliberately in the same commit as the crate wave rather than by it, so the
-    // mainnet ceiling is Nu6_3's 3,428,143 — NOT the Nu6_2 height this comment
-    // used to name, which `consensus.rs` (`KNOWN_UPGRADES`, and
-    // `the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model`) has
-    // contradicted since. Raising it further means editing that list again, which
+    // HAND-MAINTAINED list. `NetworkUpgrade::Nu7` is its newest entry, added
+    // deliberately one step after the crate wave that carries NU7's heights
+    // rather than by that wave, so the ceiling is NU7's activation on both
+    // networks. This comment named Nu6_2's height and then Nu6_3's as the
+    // ceiling; `consensus.rs` (`KNOWN_UPGRADES`, and its ceiling test) says why
+    // each moved. Raising it further means editing that list again, which
     // `known_upgrades_is_really_complete` forces.
     //
     // ADJUDICATOR (T0-1 fold, IT-9): the superseded height is named by UPGRADE and
     // not spelled out, deliberately. `the_anchor_ceiling_is_narrated_with_the_
     // height_it_actually_has` — the test author's unlisted guard, landed in the
-    // same fold — refuses any pre-Nu6_3 activation height appearing in this file's
+    // same fold — refuses any superseded activation height appearing in this file's
     // production prose. It cannot tell a stale CLAIM from a sentence correcting
     // one, so the correction printed here in the implementer's commit red-lined it.
     // Neither half was wrong against the contract; the two collided only once
@@ -210,12 +219,14 @@ pub(crate) fn bundled_treestate(network: Network, requested: BlockHeight) -> Opt
     // file for a number, and a file whose job is to narrate the live ceiling should
     // not print a dead one beside it.
     //
-    // The measured consequence of it having moved, because the obvious guess is
-    // wrong: the 13 bundled mainnet rows above the Ironwood activation are STILL
-    // unreachable — `bundled_treestate` takes the newest row strictly below
-    // `ceiling + 1` and the first of those rows is 3,429,810, above it. What moved
-    // is the newest anchorable row, 3,362,500 -> 3,427,310, and every one of those
-    // is BELOW the activation, where an empty Ironwood frontier is correct.
+    // The measured consequence, because the obvious guess was wrong once already:
+    // under Nu6_3's ceiling the 13 bundled mainnet rows above the Ironwood
+    // activation stayed unreachable (the first, 3,429,810, sat above `ceiling + 1`).
+    // Both NU7 activations sit above the bundle's newest row, so under NU7's no row
+    // is excluded on either network, and that is safe because NU7 adds no pool. A
+    // row picked here fixes the birthday HEIGHT and the Sapling and Orchard tree
+    // SIZES the import records; it does not seed the trees, which the first
+    // batch's live `GetTreeState` at the birthday − 1 does (the Ironwood field below).
     let ceiling = crate::consensus::newest_known_activation(&network.consensus())
         .map_or(u32::MAX, |h| u32::from(h).saturating_add(1));
     let req = requested.value().min(ceiling);
@@ -245,9 +256,13 @@ pub(crate) fn bundled_treestate(network: Network, requested: BlockHeight) -> Opt
         // populated above it. Passing the bundled value rather than `String::new()`
         // is the whole point of the re-extraction: `ironwood_tree()` maps an empty
         // field to an empty tree with NO error, so a hard-coded empty here would
-        // anchor a post-activation wallet against a pool the chain already has,
-        // compile, run, and be wrong. The anchor ceiling makes those rows
-        // unreachable today; it is a ceiling, and this is the data under it.
+        // give every wallet born above the activation an `AccountBirthday` whose
+        // Ironwood frontier the chain does not have, and nothing would fail. That
+        // value is not what the wallet scans with: `import_account_hd` records the
+        // birthday height and the Sapling and Orchard tree sizes and inserts no
+        // frontier for an unscanned account (its `rewind_to_chain_state` inserts
+        // none), and the first batch's live `GetTreeState` at the birthday − 1
+        // seeds the trees (`sync::fetch_chain_state`).
         ironwood_tree: ironwood.to_owned(),
     })
 }
@@ -446,8 +461,9 @@ mod tests {
             hash(&poisoned),
             "the hash gate distinguishes the poison"
         );
-        // The LIVE tree-state path is RESOLVED (§3.2f): we provision the birthday
-        // frontier from the BUNDLED tree-state slice (below), never a live fetch.
+        // Provisioning builds the birthday from the BUNDLED tree-state slice
+        // (below), never a live fetch (§3.2f); the first sync pass's live
+        // `GetTreeState` still seeds the trees (`provision`'s module doc).
     }
 
     // ── The tree-state slice (W3-inc-2c-iv-c, §3.2f) ─────────────────────────
@@ -686,11 +702,14 @@ mod tests {
         // the activation height, and the only thing holding the narrowing up.
         //
         // A wallet provisioned before the Ironwood pool was modelled carries an
-        // implicitly-EMPTY third frontier in its birthday `ChainState`. The
-        // conservative threshold is the activation height itself: re-import
-        // every account born at or above 3,428,143. Narrowing it to the first
-        // bundled row above the activation (3,429,810, 1,667 blocks later)
-        // rests on ONE claim — that no bundled row falls between them, so no
+        // implicitly-EMPTY third frontier in its birthday `ChainState`. (That is
+        // the birthday's value only: it does not seed the wallet's trees, as
+        // Decision 6 assumed; `provision`'s module doc states the limit and the
+        // superseding ADR owed with it. This gate stands until that ADR retires
+        // the threshold.) The conservative threshold is the activation height
+        // itself: re-import every account born at or above 3,428,143. Narrowing
+        // it to the first bundled row above the activation (3,429,810, 1,667
+        // blocks later) rests on ONE claim — that no bundled row falls between them, so no
         // wallet can be ANCHORED there. `bundled_treestate` floors to a bundled
         // row and `birthday_from_treestate` yields `row + 1`, so a birthday
         // anywhere in that window still anchors on the newest row BELOW the
@@ -724,8 +743,10 @@ mod tests {
             // table — so a JOINT upward drift of both would pass while silently
             // excluding wallets that are already anchored above the old
             // threshold and need remediation. Over-including costs a rescan;
-            // under-including costs wrong witnesses for real funds, so the
-            // threshold may only ever move DOWN toward the activation.
+            // under-including would, on Decision 6's premise, cost wrong
+            // witnesses for real funds (the premise is false, as above, but the
+            // guard holds until the superseding ADR retires the threshold), so
+            // the threshold may only ever move DOWN toward the activation.
             //
             // The ceiling is expressed as a DISTANCE from the activation, not as
             // the threshold's own value. A ceiling spelled `3_429_810` would be
@@ -840,9 +861,13 @@ mod tests {
         // it is a hazard precisely because NOTHING ELSE FAILS:
         // `TreeState::ironwood_tree()` maps an EMPTY field to `CommitmentTree::
         // empty()` and returns `Ok`, so a bundle that dropped the column — or an
-        // emitter that regressed to `String::new()` — decodes cleanly, anchors
-        // every post-activation wallet against an empty third pool, reports 100%
-        // synced, and loses the funds silently. `treestate_bundle_every_row_
+        // emitter that regressed to `String::new()` — decodes cleanly and gives
+        // every post-activation wallet an `AccountBirthday` whose Ironwood
+        // frontier the chain does not have, with nothing red. That value does not
+        // seed the wallet's trees (the first sync pass's live `GetTreeState`
+        // does: `provision`'s module doc), so what this guards is the bundle's own
+        // Ironwood column, the value a bind of the first live anchor to the
+        // bundled row (owed, the same doc) would read. `treestate_bundle_every_row_
         // decodes` cannot see it (its only real assertion is `birthday ==
         // height + 1`, derived from the height WE supplied); the pinned
         // provenance hash cannot see it (a refresh updates the pin in the same
@@ -1113,8 +1138,9 @@ mod tests {
         // AMENDED 2026-09-06 (`ironwood-nu63-support.md` §1.5): "newest below
         // requested" is now "newest below min(requested, ANCHOR CEILING)". A row
         // above the newest activation this build knows is never selected, because
-        // the chain state there can contain a pool we cannot model and the decoded
-        // state is immutable after first import. The money property is UNCHANGED —
+        // the chain state there can contain a pool we cannot model (the birthday
+        // would carry a frontier this build cannot read whole; it does not seed
+        // the trees: `provision`'s module doc). The money property is UNCHANGED —
         // a lower anchor over-scans, which is the safe direction; only the
         // "newest" clause is now bounded.
         for net in [Network::Main, Network::Test] {
@@ -1202,6 +1228,22 @@ mod tests {
         !raw.is_empty()
     }
 
+    /// The newest activation the PINNED CRATE knows on `net`, read from the
+    /// crate's own ordered list (`UPGRADES_IN_ORDER`, public from
+    /// `zcash_protocol 0.11.0`), never from `consensus::KNOWN_UPGRADES`: the
+    /// independent side of ARM 2 below, which would otherwise compare the
+    /// ceiling with itself.
+    fn crate_newest_activation(net: Network) -> u32 {
+        use zcash_protocol::consensus::{Parameters, UPGRADES_IN_ORDER};
+        let params = net.consensus();
+        UPGRADES_IN_ORDER
+            .iter()
+            .rev()
+            .find_map(|nu| params.activation_height(*nu))
+            .map(u32::from)
+            .expect("the pinned crate knows at least one activation on every network")
+    }
+
     /// Every requested height worth driving `bundled_treestate` with, for one
     /// network: every bundled row and its immediate neighbours, the Ironwood
     /// activation and its neighbours, and `u32::MAX` (the fresh-create case that
@@ -1238,28 +1280,41 @@ mod tests {
         //   be PRESENT. This is the assertion that starts biting the moment the
         //   anchor ceiling rises.
         //
-        //   ARM 2 — the reachability record. Today the ceiling
-        //   (`newest_known_activation + 1` = Nu6_3's 3,428,143 + 1) is at or
-        //   below the activation, so NO above-activation row is reachable and arm
-        //   1 is vacuously true. That is a fact about the ceiling, not about the
-        //   data, so it is asserted as a MEASURED count rather than left implicit
-        //   — the same discipline `..._carries_an_ironwood_frontier_after_
-        //   activation` uses for its 13/25. When somebody raises the ceiling past
-        //   3,429,810 this count changes and THIS TEST FIRES, in CI, which is the
-        //   hazard the B block exists for. It is a decision point, not a
-        //   false failure: the message says what to do.
+        //   ARM 2 — the reachability record. **Rewritten in the NU7 wave (step 3),
+        //   never retuned.** Until then the ceiling (`newest_known_activation + 1`
+        //   = Nu6_3's activation + 1) sat at or below the Ironwood activation, so
+        //   NO above-activation row was reachable, arm 1 was vacuously true, and
+        //   this arm asserted a count of zero as the tripwire for the raise. Adding
+        //   `Nu7` to `KNOWN_UPGRADES` IS that raise, on both networks at once: the
+        //   ceiling becomes the NU7 activation + 1 (mainnet 3,543,406, testnet
+        //   4,465,027), above the whole bundle, so every bundled row above the
+        //   Ironwood activation (13 mainnet, 25 testnet, measured by
+        //   `..._carries_an_ironwood_frontier_after_activation`) comes into reach
+        //   and arm 1 does real work.
         //
-        //   ARM 3 — pre-clearance of the rows the ceiling currently excludes, so
-        //   that a bundle refresh which blanks a future-reachable row is caught
-        //   NOW rather than on the day the ceiling moves. Without this, arms 1+2
-        //   are a pair of true statements that never touch the data.
+        //   What survives every raise is the SET, not a count: the rows a caller
+        //   can reach above the activation are exactly the bundled rows in
+        //   `(activation, newest activation the CRATE knows]`, read from the
+        //   crate's own list and not from `KNOWN_UPGRADES`. A stale list (no
+        //   `Nu7`) reaches none of them; red. A ceiling that admitted a row past
+        //   the newest activation would reach one the set excludes; red, once the
+        //   bundle carries such a row (it carries none today, so the explanation
+        //   assertion below is what pins the ceiling's value until then).
+        //
+        //   ARM 3 — pre-clearance of EVERY bundled row above the activation,
+        //   reachable or not, so that a bundle refresh which blanks one is caught
+        //   from the table itself, and a refresh that adds rows past the NU7
+        //   activation (unreachable until the next upgrade is listed) is cleared
+        //   before the ceiling moves again. Without this, arms 1+2 never touch a
+        //   row the ceiling excludes.
         for net in [Network::Main, Network::Test] {
             let activation = ironwood_activation(net);
             let ceiling = crate::consensus::newest_known_activation(&net.consensus())
                 .map_or(u32::MAX, |h| u32::from(h).saturating_add(1));
+            let modelled = crate_newest_activation(net);
 
             // ARM 1
-            let mut reachable_above_activation = 0usize;
+            let mut reached_above_activation = std::collections::BTreeSet::new();
             for requested in anchor_probe_heights(net) {
                 let Some(ts) = bundled_treestate(net, BlockHeight::new(requested)) else {
                     // `None` is the fail-closed post-condition (a mis-sorted
@@ -1270,50 +1325,63 @@ mod tests {
                 if picked <= activation {
                     continue;
                 }
-                reachable_above_activation += 1;
+                reached_above_activation.insert(picked);
                 assert!(
                     ironwood_frontier_is_present(&ts.ironwood_tree),
                     "{net:?}: requesting {requested} anchors on row {picked}, which is ABOVE \
                      the Ironwood activation {activation}, with an ABSENT ironwood frontier. \
                      `TreeState::ironwood_tree()` decodes an absent field to an EMPTY tree \
-                     with no error, so a wallet born here would carry a third frontier the \
-                     chain does not have — wrong witnesses for real funds, silently."
+                     with no error, so a wallet born here would carry, in its AccountBirthday, \
+                     a third frontier the chain does not have, and nothing would fail (the \
+                     trees are seeded live, not from this value: provision's module doc)."
                 );
             }
 
-            // ARM 2 — the measured reachability, and the ceiling-raise tripwire.
+            // ARM 2 — the reachable set, against the crate.
+            let modelled_above_activation: std::collections::BTreeSet<u32> = treestate_table(net)
+                .iter()
+                .map(|&(h, ..)| h)
+                .filter(|&h| h > activation && h <= modelled)
+                .collect();
             assert_eq!(
-                reachable_above_activation, 0,
-                "{net:?}: {reachable_above_activation} anchorable row(s) now sit ABOVE the \
-                 Ironwood activation {activation} (ceiling {ceiling}). Nothing is necessarily \
-                 wrong — arm 1 above is now doing real work instead of being vacuous — but \
-                 this is the ceiling raise B1 was written to fire on. Re-verify the bundle's \
-                 above-activation rows, then update this expected count deliberately."
+                reached_above_activation, modelled_above_activation,
+                "{net:?}: the rows a caller can anchor on above the Ironwood activation \
+                 {activation} are not exactly the bundled rows up to the newest activation \
+                 the pinned crate models ({modelled}); ceiling {ceiling}. Fewer means \
+                 KNOWN_UPGRADES is stale and wallets anchor lower than this build can model; \
+                 more means a row past an activation this build has not modelled became an \
+                 anchor."
             );
             assert!(
-                ceiling <= activation.saturating_add(1),
-                "{net:?}: the anchor ceiling {ceiling} is above the Ironwood activation \
-                 {activation} + 1, so the zero above-activation count asserted just now is \
-                 not explained by the ceiling. Something else is excluding those rows and \
+                !modelled_above_activation.is_empty(),
+                "{net:?}: no bundled row sits between the Ironwood activation {activation} and \
+                 the newest modelled activation {modelled}, so arm 1 asserted nothing"
+            );
+            assert_eq!(
+                ceiling,
+                modelled.saturating_add(1),
+                "{net:?}: the anchor ceiling {ceiling} is not the newest activation the pinned \
+                 crate models ({modelled}) + 1, so the reachable set asserted just now is not \
+                 explained by the ceiling. Something else is admitting or excluding rows and \
                  this test no longer knows what."
             );
 
-            // ARM 3 — the excluded rows, pre-cleared.
-            let mut excluded_above = 0usize;
+            // ARM 3 — every above-activation row, pre-cleared.
+            let mut above = 0usize;
             for &(h, _, _, _, ironwood) in treestate_table(net) {
                 if h <= activation {
                     continue;
                 }
-                excluded_above += 1;
+                above += 1;
                 assert!(
                     ironwood_frontier_is_present(ironwood),
                     "{net:?} row {h}: above the Ironwood activation {activation} with an \
-                     ABSENT frontier. The anchor ceiling makes it unreachable TODAY; raising \
-                     the ceiling would make this row anchorable and wrong."
+                     ABSENT frontier. Reachable now or after the next ceiling raise, it \
+                     would anchor wallets wrong."
                 );
             }
             assert!(
-                excluded_above > 0,
+                above > 0,
                 "{net:?}: the bundle carries no row above the Ironwood activation \
                  {activation}, so arm 3 asserted nothing"
             );
@@ -1463,11 +1531,20 @@ mod tests {
         // Every network upgrade this build knows about, rendered as prose. Any of
         // them that is NOT the ceiling and appears in the production prose is a
         // ceiling claim that has gone stale — the exact drift the contract owes.
+        //
+        // NU7 wave (step 7's item, due in step 3 because step 1 pinned the final
+        // crates): `Nu6_3` joins the list, because with `Nu7` listed the ceiling
+        // is no longer Ironwood's activation and a sentence still naming it as
+        // the ceiling is the same drift one wave on. `Nu7` joins too, so a
+        // narration of the new ceiling goes red the day a list without `Nu7`
+        // stops computing it.
         let ceiling_text = grouped(ceiling);
         for nu in [
             zcash_protocol::consensus::NetworkUpgrade::Nu6,
             zcash_protocol::consensus::NetworkUpgrade::Nu6_1,
             zcash_protocol::consensus::NetworkUpgrade::Nu6_2,
+            zcash_protocol::consensus::NetworkUpgrade::Nu6_3,
+            zcash_protocol::consensus::NetworkUpgrade::Nu7,
         ] {
             use zcash_protocol::consensus::Parameters;
             let Some(h) = params.activation_height(nu) else {

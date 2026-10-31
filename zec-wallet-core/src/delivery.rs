@@ -52,10 +52,18 @@
 //! owns reads *retry-pending*, because the intent path WILL send the payment again
 //! once the expiry is buried beyond reorg reach (`send::rebroadcast_group`'s
 //! requeue, S7 C1). Saying nothing there would read "expired, the amount is still
-//! yours" through the ~`REORG_MAX_BLOCKS` wait, and a user who re-sent by hand
-//! would pay twice. A `Stranded` row's transaction, a group with a MINED leg (a
+//! yours" through the burial wait, and a user who re-sent by hand would pay twice.
+//! So does an expired transaction that spends a note a live `Submitting` row claims
+//! (the unrecorded create window): that intent re-proposes once the stored expiry
+//! frees its notes, which after a network upgrade can be long after the transaction
+//! died. A `Stranded` row's transaction, a group with a MINED leg (a
 //! two-step whose tx0 mined strands, never re-sends) and a swap deposit's (by
 //! burial its quote has lapsed and the drain deletes it) stay `None` once expired.
+//!
+//! **Expired** means past the EFFECTIVE expiry, the expiry kernel's answer
+//! ([`crate::expiry`], ADR-0579 Decision 4): the stored expiry, or the block before
+//! the activation that ended the branch the transaction was signed under, whichever
+//! is earlier. Both readers here ask the kernel and compare nothing themselves.
 //!
 //! **Storage and connection.** Like [`crate::history`] this is pure SQL over the
 //! aux SQLCipher connection (`Inner.aux_db`) to the ONE `wallet.db` file: the
@@ -72,14 +80,15 @@
 use std::collections::{HashMap, HashSet};
 
 use rusqlite::{Connection, OptionalExtension};
-use zcash_protocol::consensus::BranchId;
+use zcash_protocol::consensus::{BranchId, Parameters};
 
 use crate::db::map_aux_err;
 use crate::error::WalletError;
+use crate::expiry::effective_expiry;
 use crate::intent_store::{
     self, IntentState, NoteClaim, PROTO_IRONWOOD, PROTO_ORCHARD, PROTO_SAPLING,
 };
-use crate::send::{DepositGate, deposit_gate, deposit_gate_continue, past_expiry};
+use crate::send::{DepositGate, deposit_gate, deposit_gate_continue};
 use crate::state::DeliveryState;
 
 /// The accepted-mark table — referenced by `db::AUX_TABLES_PRESERVED` (ADR-0534).
@@ -177,12 +186,17 @@ pub(crate) struct DeliveryView {
     /// Recorded txids of a group the wallet WILL send again once it is dead and buried
     /// (S7 C1): the row is LIVE (`Sent`, in flight — not `Stranded`), NO leg of its group
     /// is mined (a two-step whose tx0 mined strands, never re-sends), and it is no swap
-    /// deposit (its re-send comes at burial, ~2.9 h on, long after the 15-minute quote has
-    /// lapsed, so the drain deletes it instead). Two narrow residuals, stated: a `Submitting`
-    /// row's claim-owned txid (the create-committed-but-unrecorded window) reads `None` once
-    /// expired, for about one pass before its requeue; and a deposit's "no re-send" leans on
-    /// the wall clock — a backward jump of more than ~3 h could revive its quote at burial.
+    /// deposit (its re-send comes at burial, hours on, long after the 15-minute quote has
+    /// lapsed, so the drain deletes it instead). One residual, stated: a deposit's "no
+    /// re-send" leans on the wall clock — a backward jump of more than the burial wait could
+    /// revive its quote at burial.
     live: HashSet<[u8; 32]>,
+    /// Claim-owned txids the wallet WILL replace: each spends a note a live `Submitting`
+    /// row (no swap deposit) claims, in the create-committed-but-unrecorded window. Once
+    /// the stored expiry frees the notes, that row re-proposes (`send::reconcile`'s
+    /// `ReProposeFresh`), so a dead transaction here reads `RetryPending`, never `None` —
+    /// after a network upgrade it can be dead long before the stored expiry frees them.
+    live_claimed: HashSet<[u8; 32]>,
 }
 
 impl DeliveryView {
@@ -194,6 +208,7 @@ impl DeliveryView {
         let mut predecessor = HashMap::new();
         let mut claimed = HashSet::new();
         let mut live = HashSet::new();
+        let mut live_claimed = HashSet::new();
         for intent in intent_store::list_in_flight(conn)? {
             for pair in intent.txids.windows(2) {
                 predecessor.insert(pair[1], pair[0]);
@@ -209,9 +224,14 @@ impl DeliveryView {
                     live.insert(*txid);
                 }
             }
+            let reproposes =
+                intent.state == IntentState::Submitting && intent.deposit_deadline.is_none();
             for claim in &intent.claims {
                 for txid in spenders_of(conn, claim)? {
                     claimed.insert(txid);
+                    if reproposes {
+                        live_claimed.insert(txid);
+                    }
                 }
             }
             // A `Sent` row's claims are spent by its own recorded group; anything
@@ -231,6 +251,7 @@ impl DeliveryView {
             predecessor,
             claimed,
             live,
+            live_claimed,
         })
     }
 
@@ -242,12 +263,15 @@ impl DeliveryView {
 
     /// The per-transaction delivery state of `txid` (INTERNAL order) — the four
     /// readings the module doc names — or `None` for a transaction that is not in
-    /// delivery at all: not wallet-created, expired (unless a live `Sent` row will send
+    /// delivery at all: not wallet-created, expired (unless a live intent will send
     /// the payment again — then `RetryPending`), or not in the store. `tip` is
-    /// [`crate::history::scanned_tip`]; `now_unix` gates a held deposit.
-    pub(crate) fn state_of(
+    /// [`crate::history::scanned_tip`]; `now_unix` gates a held deposit; `params` is
+    /// what the expiry kernel reads the activation that ends the transaction's branch
+    /// from.
+    pub(crate) fn state_of<P: Parameters>(
         &self,
         conn: &Connection,
+        params: &P,
         tip: Option<u32>,
         now_unix: u64,
         txid: &[u8; 32],
@@ -261,17 +285,22 @@ impl DeliveryView {
         if row.mined_height.is_some() {
             return Ok(Some(DeliveryState::Confirmed));
         }
+        // No raw bytes ⇒ no header ⇒ the stored expiry stands (an unreadable header never
+        // shortens an expiry).
+        let header = row.header.as_deref().unwrap_or(&[]);
         if let Some(tip) = tip
-            && past_expiry(row.expiry_height, tip)
+            && effective_expiry(params, header, row.expiry_height).is_past(tip)
         {
             // This attempt is dead. Checked BEFORE the `None`: a group the wallet WILL send
-            // again (`live` — see the field) requeues once the expiry buries (S7 C1), so the
-            // honest reading is `RetryPending`, never "expired, the amount is yours". A
-            // stranded, partly mined or deposit group promises no re-send: `None`.
-            return Ok(self
-                .live
-                .contains(txid)
-                .then_some(DeliveryState::RetryPending));
+            // again (`live` — see the field) requeues once the expiry buries (S7 C1), and a
+            // claim-owned transaction of a live `Submitting` row (`live_claimed`) re-proposes
+            // once its notes are freed, so the honest reading is `RetryPending`, never
+            // "expired, the amount is yours". A stranded, partly mined or deposit group
+            // promises no re-send: `None`.
+            return Ok(
+                (self.live.contains(txid) || self.live_claimed.contains(txid))
+                    .then_some(DeliveryState::RetryPending),
+            );
         }
         if is_accepted(conn, txid)? {
             return Ok(Some(DeliveryState::Accepted));
@@ -311,12 +340,16 @@ impl DeliveryView {
 
 /// The generic phase's enumeration: every wallet-created, unmined, unexpired
 /// `transactions` row with its raw bytes that no intent row can own, in insertion
-/// order. `tip` is [`crate::history::scanned_tip`]; with NO tip (nothing scanned)
+/// order. Unexpired is the expiry kernel's answer over the row's own header and stored
+/// expiry under `params`, so a transaction a network upgrade killed is never
+/// re-broadcast from the block before the activation on. `tip` is
+/// [`crate::history::scanned_tip`]; with NO tip (nothing scanned)
 /// expiry cannot be judged and every candidate counts as owed — the conservative
 /// direction for the rescan fence (a wallet that never scanned cannot have created
 /// a transaction, so the drain never meets this arm).
-pub(crate) fn enumerate(
+pub(crate) fn enumerate<P: Parameters>(
     conn: &Connection,
+    params: &P,
     tip: Option<u32>,
 ) -> Result<Vec<Obligation>, WalletError> {
     let view = DeliveryView::load(conn)?;
@@ -345,7 +378,7 @@ pub(crate) fn enumerate(
             .try_into()
             .map_err(|_| WalletError::StoreCorrupt)?;
         if let Some(tip) = tip
-            && past_expiry(expiry.unwrap_or(0), tip)
+            && effective_expiry(params, &raw, expiry.unwrap_or(0)).is_past(tip)
         {
             continue;
         }
@@ -361,14 +394,19 @@ pub(crate) fn enumerate(
 struct TxRow {
     wallet_created: bool,
     mined_height: Option<u32>,
-    /// `0` for a NULL expiry (no expiry), like `send::read_tx_expiry`'s callers.
+    /// `0` for a NULL expiry (no expiry), the stored expiry the kernel reads.
     expiry_height: u32,
     has_raw: bool,
+    /// The first 12 bytes of `raw` (version, version group, consensus branch): what the
+    /// expiry kernel's header reader needs, without reading the whole transaction.
+    /// `None` when the row holds no bytes.
+    header: Option<Vec<u8>>,
 }
 
 fn read_tx_row(conn: &Connection, txid: &[u8; 32]) -> Result<Option<TxRow>, WalletError> {
     conn.query_row(
-        "SELECT created IS NOT NULL, mined_height, expiry_height, raw IS NOT NULL \
+        "SELECT created IS NOT NULL, mined_height, expiry_height, raw IS NOT NULL, \
+                substr(raw, 1, 12) \
          FROM transactions WHERE txid = ?1",
         rusqlite::params![txid.as_slice()],
         |r| {
@@ -377,6 +415,7 @@ fn read_tx_row(conn: &Connection, txid: &[u8; 32]) -> Result<Option<TxRow>, Wall
                 mined_height: r.get(1)?,
                 expiry_height: r.get::<_, Option<u32>>(2)?.unwrap_or(0),
                 has_raw: r.get::<_, i64>(3)? != 0,
+                header: r.get(4)?,
             })
         },
     )
@@ -446,7 +485,13 @@ mod tests {
     use crate::intent_store::{enqueue, mark_sent_multi, mark_submitting};
     use crate::test_support::HistoryHarness;
     use zcash_address::{ToAddress, ZcashAddress};
+    use zcash_client_backend::data_api::testing::TestBuilder;
     use zcash_protocol::consensus::NetworkType;
+    use zcash_protocol::local_consensus::LocalNetwork;
+
+    /// The harness's network (`HistoryHarness` builds on upstream's default): no
+    /// activation after NU5, so the expiry kernel leaves every stored expiry standing.
+    const NET: LocalNetwork = TestBuilder::<(), ()>::DEFAULT_NETWORK;
 
     /// The engine's persisted bytes for `txid`, straight off the `transactions` row.
     fn stored_raw(conn: &Connection, txid: &[u8; 32]) -> Vec<u8> {
@@ -484,7 +529,7 @@ mod tests {
     #[test]
     fn a_persisted_unbroadcast_send_is_owed_with_its_exact_bytes_and_reads_retry_pending() {
         let (aux, send, _h) = harness_with_one_send();
-        let owed = enumerate(&aux, tip(&aux)).expect("enumerate");
+        let owed = enumerate(&aux, &NET, tip(&aux)).expect("enumerate");
         assert_eq!(owed.len(), 1, "exactly the one created send is owed");
         assert_eq!(owed[0].txid, send);
         assert_eq!(
@@ -499,7 +544,7 @@ mod tests {
         );
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, tip(&aux), 1_800_000_000, &send)
                 .expect("state"),
             Some(DeliveryState::RetryPending)
         );
@@ -516,10 +561,14 @@ mod tests {
         let aux = h.read_conn();
         intent_store::ensure_table(&aux).expect("intent table");
         ensure_table(&aux).expect("mark table");
-        assert!(enumerate(&aux, tip(&aux)).expect("enumerate").is_empty());
+        assert!(
+            enumerate(&aux, &NET, tip(&aux))
+                .expect("enumerate")
+                .is_empty()
+        );
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 0, received.as_ref())
+            view.state_of(&aux, &NET, tip(&aux), 0, received.as_ref())
                 .expect("state"),
             None
         );
@@ -546,12 +595,13 @@ mod tests {
         );
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 0, &send).expect("state"),
+            view.state_of(&aux, &NET, tip(&aux), 0, &send)
+                .expect("state"),
             Some(DeliveryState::Accepted)
         );
         // The LOSS MODE, stated in code: the mark decides no broadcast — an
         // accepted-but-unmined transaction is still owed on every pass.
-        let owed = enumerate(&aux, tip(&aux)).expect("enumerate");
+        let owed = enumerate(&aux, &NET, tip(&aux)).expect("enumerate");
         assert_eq!(
             owed.len(),
             1,
@@ -571,10 +621,15 @@ mod tests {
             rusqlite::params![send.as_slice()],
         )
         .expect("mine");
-        assert!(enumerate(&aux, tip(&aux)).expect("enumerate").is_empty());
+        assert!(
+            enumerate(&aux, &NET, tip(&aux))
+                .expect("enumerate")
+                .is_empty()
+        );
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 0, &send).expect("state"),
+            view.state_of(&aux, &NET, tip(&aux), 0, &send)
+                .expect("state"),
             Some(DeliveryState::Confirmed)
         );
     }
@@ -592,16 +647,21 @@ mod tests {
         assert!(expiry > 0, "a created send carries an expiry");
         // Exactly at the expiry the tx can no longer enter the next block
         // (`past_expiry`: `expiry <= tip`) — the same edge `v_transactions` uses.
-        assert!(enumerate(&aux, Some(expiry - 1)).expect("live").len() == 1);
-        assert!(enumerate(&aux, Some(expiry)).expect("expired").is_empty());
+        assert!(enumerate(&aux, &NET, Some(expiry - 1)).expect("live").len() == 1);
+        assert!(
+            enumerate(&aux, &NET, Some(expiry))
+                .expect("expired")
+                .is_empty()
+        );
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 0, &send).expect("state"),
+            view.state_of(&aux, &NET, Some(expiry), 0, &send)
+                .expect("state"),
             None
         );
         // No tip at all: expiry cannot be judged, so the send counts as owed (the
         // fence's conservative direction).
-        assert_eq!(enumerate(&aux, None).expect("no tip").len(), 1);
+        assert_eq!(enumerate(&aux, &NET, None).expect("no tip").len(), 1);
     }
 
     #[test]
@@ -627,18 +687,20 @@ mod tests {
         };
         let id = enqueue(&mut aux, "zcash:x", 1, None, None).expect("enqueue");
         // A Queued row (no claim yet) owns nothing.
-        assert_eq!(enumerate(&aux, tip(&aux)).expect("queued").len(), 1);
+        assert_eq!(enumerate(&aux, &NET, tip(&aux)).expect("queued").len(), 1);
 
         // The create-committed-but-unrecorded window: the claim is recorded, no
         // txid is — attribution through the spent note excludes the send anyway.
         assert!(mark_submitting(&mut aux, id, &[claim]).expect("submitting"));
         assert!(
-            enumerate(&aux, tip(&aux)).expect("submitting").is_empty(),
+            enumerate(&aux, &NET, tip(&aux))
+                .expect("submitting")
+                .is_empty(),
             "a tx that spends a claimed note is the intent path's, even with no txid recorded"
         );
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, tip(&aux), 1_800_000_000, &send)
                 .expect("state"),
             Some(DeliveryState::Persisted),
             "the intent path waits for expiry here; the bytes are kept, not retried"
@@ -646,10 +708,10 @@ mod tests {
 
         // Recorded on the row: still excluded, and the intent path retries it.
         assert!(mark_sent_multi(&mut aux, id, &[send]).expect("sent"));
-        assert!(enumerate(&aux, tip(&aux)).expect("sent").is_empty());
+        assert!(enumerate(&aux, &NET, tip(&aux)).expect("sent").is_empty());
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, tip(&aux), 1_800_000_000, &send)
                 .expect("state"),
             Some(DeliveryState::RetryPending)
         );
@@ -669,22 +731,24 @@ mod tests {
         };
         assert!(mark_submitting(&mut aux, id, &[claim]).expect("submitting"));
         assert!(mark_sent_multi(&mut aux, id, &[send]).expect("sent"));
-        assert!(enumerate(&aux, tip(&aux)).expect("owned").is_empty());
+        assert!(enumerate(&aux, &NET, tip(&aux)).expect("owned").is_empty());
         let view = DeliveryView::load(&aux).expect("view");
         let live = crate::constants::CLOCK_PLAUSIBILITY_FLOOR_SECS + 1;
         assert_eq!(
-            view.state_of(&aux, tip(&aux), live, &send).expect("live"),
+            view.state_of(&aux, &NET, tip(&aux), live, &send)
+                .expect("live"),
             Some(DeliveryState::RetryPending),
             "a live-deadline deposit is the intent path's to retry"
         );
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 1_900_000_000, &send)
+            view.state_of(&aux, &NET, tip(&aux), 1_900_000_000, &send)
                 .expect("lapsed"),
             Some(DeliveryState::Persisted),
             "the Expired arm holds: kept, not retried"
         );
         assert_eq!(
-            view.state_of(&aux, tip(&aux), 0, &send).expect("unsynced"),
+            view.state_of(&aux, &NET, tip(&aux), 0, &send)
+                .expect("unsynced"),
             Some(DeliveryState::Persisted),
             "the Wait arm holds too"
         );
@@ -716,7 +780,8 @@ mod tests {
         record_pair(&mut aux, pred, send);
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), now, &send).expect("state"),
+            view.state_of(&aux, &NET, tip(&aux), now, &send)
+                .expect("state"),
             Some(DeliveryState::Persisted),
             "nothing on the network: the start gate holds"
         );
@@ -725,7 +790,8 @@ mod tests {
         mark_accepted(&aux, &pred, None, 1).expect("mark");
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), now, &send).expect("state"),
+            view.state_of(&aux, &NET, tip(&aux), now, &send)
+                .expect("state"),
             Some(DeliveryState::RetryPending),
             "an accepted predecessor: the continue gate proceeds"
         );
@@ -743,7 +809,8 @@ mod tests {
         record_pair(&mut aux, *mined_leg.as_ref(), send);
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, tip(&aux), now, &send).expect("state"),
+            view.state_of(&aux, &NET, tip(&aux), now, &send)
+                .expect("state"),
             Some(DeliveryState::RetryPending),
             "a mined predecessor: the continue gate proceeds"
         );
@@ -813,7 +880,7 @@ mod tests {
         let id = record_sent(&mut aux, send, None);
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, Some(expiry), 1_800_000_000, &send)
                 .expect("state"),
             Some(DeliveryState::RetryPending),
             "a live Sent row will send the payment again — never None at bare expiry"
@@ -823,7 +890,7 @@ mod tests {
         assert!(intent_store::reset_to_queued(&mut aux, id).expect("requeue"));
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, Some(expiry), 1_800_000_000, &send)
                 .expect("state"),
             None,
             "requeued: the old txid is no longer the row's"
@@ -834,7 +901,7 @@ mod tests {
         assert!(intent_store::mark_stranded(&mut aux, id).expect("strand"));
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, Some(expiry), 1_800_000_000, &send)
                 .expect("state"),
             None,
             "a Stranded row's expired transaction promises no re-send"
@@ -853,19 +920,19 @@ mod tests {
         let view = DeliveryView::load(&aux).expect("view");
         let live = crate::constants::CLOCK_PLAUSIBILITY_FLOOR_SECS + 1;
         assert_eq!(
-            view.state_of(&aux, Some(expiry), live, &send)
+            view.state_of(&aux, &NET, Some(expiry), live, &send)
                 .expect("live"),
             None,
             "even a live-deadline deposit lapses before its burial re-send — no promise"
         );
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 1_900_000_000, &send)
+            view.state_of(&aux, &NET, Some(expiry), 1_900_000_000, &send)
                 .expect("lapsed"),
             None,
             "a lapsed deposit is deleted by the drain, never re-sent"
         );
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 0, &send)
+            view.state_of(&aux, &NET, Some(expiry), 0, &send)
                 .expect("unsynced"),
             None,
             "an untimeable clock promises nothing"
@@ -897,7 +964,7 @@ mod tests {
         assert!(mark_sent_multi(&mut aux, id, &[*mined_leg.as_ref(), send]).expect("sent"));
         let view = DeliveryView::load(&aux).expect("view");
         assert_eq!(
-            view.state_of(&aux, Some(expiry), 1_800_000_000, &send)
+            view.state_of(&aux, &NET, Some(expiry), 1_800_000_000, &send)
                 .expect("state"),
             None,
             "leg 0 mined + leg 1 at bare expiry: the group strands, it never re-sends"

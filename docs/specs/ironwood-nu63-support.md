@@ -889,7 +889,7 @@ found" also asserts a non-zero comparison count.
 | `under_reported_tip_cannot_buy_a_current_verdict` | A | **BUILT.** The §1.3 height rule, made mechanical: an endpoint claiming a lower tip AND the branch that is honest at that tip is still refused, because the verdict is judged at the highest height either side attests. Watched failing against a judge-at-the-claim mutant. |
 | `a_lying_endpoint_can_hide_our_own_staleness_from_this_predicate` | A | **BUILT.** The documented LIMIT, pinned so nobody mistakes the branch check for a defence it is not: a stale build whose endpoint lies in the direction of that staleness cannot detect it from these inputs. This is why §4's local evidence row exists. |
 | `known_upgrades_is_really_complete` | A | **BUILT, and it FIRED (S256).** The anchor ceiling rests on a hand-maintained list of upgrades this build knows; this fails the moment the pinned crate learns one the list does not name — the list cannot go quietly stale, which is the shape of the outage itself. The NU6.3 wave made it fail; adding `NetworkUpgrade::Nu6_3` to `KNOWN_UPGRADES` (Phase B step 6) is what discharged it. The mechanism worked exactly as designed, on the first upgrade after it was written. |
-| `the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model` | **B** | **BUILT (S256)**, replacing Phase A's `the_anchor_ceiling_sits_below_an_upgrade_we_cannot_model`, whose two assertions (`ceiling == 3_364_600` and `ceiling < IRONWOOD_MAINNET`) step 6 inverts. Rewritten, not retuned — a literal swap would read as a Phase-B regression while asserting nothing, because the literal was never the property. Asserts: (1) structurally, the branch far past every activation equals the branch at the ceiling, so the ceiling IS the newest modellable height — no literal involved; (2) it rose to at-or-above the Ironwood activation, the direction check (a ceiling may rise as the build learns more, never fall); (3) every bundled row the ceiling admits at/above the activation carries an Ironwood frontier. **Clause (3) has no row satisfying its antecedent today and the test says so rather than pretending otherwise** — raising the ceiling to 3,428,143 does NOT reach the 13 bundled rows above it (the first is 3,429,810), because the ceiling stays below the newest activation on purpose: past it an upgrade we do not know may be live. What is asserted non-vacuously is the boundary — the newest selectable anchor is below the activation. Measured effect of the raise: newest anchorable row 3,362,500 → 3,427,310, ~64,810 fewer blocks of first scan, every newly-reachable row below the activation where an empty Ironwood frontier is correct. |
+| `the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model` | **B** | **BUILT (S256)**, replacing Phase A's `the_anchor_ceiling_sits_below_an_upgrade_we_cannot_model`, whose two assertions (`ceiling == 3_364_600` and `ceiling < IRONWOOD_MAINNET`) step 6 inverts. Rewritten, not retuned — a literal swap would read as a Phase-B regression while asserting nothing, because the literal was never the property. Asserts: (1) structurally, the branch far past every activation equals the branch at the ceiling, so the ceiling IS the newest modellable height — no literal involved; (2) it rose to at-or-above the Ironwood activation, the direction check (a ceiling may rise as the build learns more, never fall); (3) every bundled row the ceiling admits at/above the activation carries an Ironwood frontier. **Clause (3) has no row satisfying its antecedent today and the test says so rather than pretending otherwise** — raising the ceiling to 3,428,143 does NOT reach the 13 bundled rows above it (the first is 3,429,810), because the ceiling stays below the newest activation on purpose: past it an upgrade we do not know may be live. What is asserted non-vacuously is the boundary — the newest selectable anchor is below the activation. Measured effect of the raise: newest anchorable row 3,362,500 → 3,427,310, ~64,810 fewer blocks of first scan, every newly-reachable row below the activation where an empty Ironwood frontier is correct. **Rewritten again in the NU7 wave (step 3, 2026-10-29):** it runs on both networks; with `Nu7` listed the ceiling is NU7's activation (mainnet 3,543,405, testnet 4,465,026), above the whole bundle, so clause (3) has rows (13 mainnet, 25 testnet above the Ironwood activation, each carrying its frontier) and the boundary assertion is inverted deliberately: the newest selectable row now sits at or above the activation. |
 | `unknown_branch_fixture_is_really_unknown` | **B** | **BUILT (S256).** The non-vacuity guard for the outage fixtures, and the successor to `the_pinned_params_really_do_not_know_ironwood` in that role. Five consensus rows assert that a branch this build cannot model refuses signing; they mean nothing if the branch they use is one the crate knows. Written against Ironwood by name, they all inverted the moment the crate learned it — so they are now written against `UNKNOWN_FUTURE_BRANCH`, and this row fails on the next wave the way its predecessor failed on this one. |
 
 ### Gate 7 — No magic numbers
@@ -1069,10 +1069,16 @@ corrected nine to eleven from the crates.io index —
 
 > **The pin set's one source of truth is
 > [ADR-0540](../adr/0540-ironwood-nu63-crate-wave-and-sealed-orchard-pool.md)
-> Decision 1**, which carries the same eleven rows with their manifest line
+> Decision 1** *(superseded on 2026-10-21 by ADR-0579 Decision 1; see the next
+> paragraph)*, which carries the same eleven rows with their manifest line
 > numbers. The table below is kept here because the surrounding narrative reads
 > against it; **if the two ever disagree, the ADR wins** and this table is the
 > stale one.
+>
+> **Since 2026-10-21 the live pin set is `sdk/Cargo.toml` as `pins_policy` holds it,
+> and [ADR-0579](../adr/0579-wallet-nu7-crate-wave-and-the-mainnet-height.md)
+> Decision 1 is the record of the NU7 set.** ADR-0540's table and the one below are
+> the Ironwood wave's history.
 
 | Pin | From | To | Where |
 |---|---|---|---|
@@ -1104,6 +1110,12 @@ semver-latest `0.5.2` was published 2026-02-23, three months BEFORE the pinned
 `0.5.2` does not satisfy the `^0.4.3` that four crates in this wave still
 require. Leave it at `=0.4.5`. `sapling-crypto` 0.7.0 is already latest and
 does not move either.
+
+*Superseded on 2026-10-21 by
+[ADR-0579](../adr/0579-wallet-nu7-crate-wave-and-the-mainnet-height.md) Decision 2:*
+the NU7 wave moves `zcash_script` to `=0.6.0`, which is dated after `0.4.5` and keeps
+its `sig_op_count` test, and moves `sapling-crypto` to `0.9.0`. The paragraph above is
+the Ironwood wave's record.
 
 **One atomic commit.** A partial bump either fails to resolve or resolves to two
 copies of a crate with no error, whose symptom reads as `expected
@@ -1167,6 +1179,18 @@ fresh create to the newest row by creation time — today, one of those 13. So:
   population from
   growing — with it in force, a pre-Ironwood build can no longer create such a
   wallet at all.
+
+  > **Corrected 2026-10-30 (the NU7 wave, re-read at the final crates).** The
+  > premise of this bullet is false: the import does not seed the trees from the
+  > birthday's `ChainState`. Upstream's `add_account` / `rewind_to_chain_state`
+  > records the birthday height and the Sapling and Orchard tree sizes and inserts
+  > no frontier (`zcash_client_sqlite-0.23.0/src/wallet.rs:600-628`, `:4891-5059`;
+  > 0.22.0 the same), and the first sync pass's live `GetTreeState` at the
+  > birthday − 1 seeds every tree. So the empty third tree is the birthday's value
+  > only, nothing persisted is wrong because of it, and what a lying server can
+  > still do to a fresh wallet is the limit `wallet-sdk.md` §8's live-provisioning
+  > row states, with the item owed for it (an ADR superseding ADR-0540 Decisions 6
+  > and 7 comes with that fix). The text above is kept as the record.
 - **This remedy is BIRTHDAY-scoped, and the hazard is not** (survey C6(b) —
   **PROBED S255**). `sync.rs`'s `to_chain_state()` also calls `ironwood_tree()`
   **per scan batch**, and an empty field decodes to an empty tree without
@@ -1194,7 +1218,13 @@ fresh create to the newest row by creation time — today, one of those 13. So:
   13 bundled rows above the activation stay unreachable, because the ceiling sits
   below the newest activation on purpose — past it an upgrade this build does not
   know may be live. Over-scanning is the direction the birthday logic prefers
-  anyway: a low anchor scans extra, a high one silently skips funds.
+  anyway: a low anchor scans extra, a high one silently skips funds. **Moved again
+  in the NU7 wave (step 3, 2026-10-29):** with `Nu7` listed the ceiling is NU7's
+  activation (mainnet 3,543,405, testnet 4,465,026), above the whole bundle, so
+  the rows above the Ironwood activation (13 mainnet, 25 testnet) are reachable
+  and a fresh create is born on the bundle's second-newest row, plus one: about
+  30,000 fewer blocks of first scan on mainnet and 170,000 on testnet. The
+  strict-below rule, not the ceiling, now keeps a fresh create off the tail.
 - The `(height, time)` and tree-state slices stay row-aligned; both provenance
   hashes and `CHECKPOINTS.md` move in the same commit, and §3.2f/§3.6 of
   `wallet-sdk.md` are patched for the 4→5-tuple.

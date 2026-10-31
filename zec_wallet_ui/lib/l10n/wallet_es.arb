@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "No pudimos confirmar este blindaje. Consulte Actividad antes de intentarlo de nuevo.",
   "walletMoveUnknownTitle": "Compruebe antes de volver a mover",
   "walletMoveUnknownBody": "No pudimos confirmar este movimiento. Consulte Actividad antes de intentarlo de nuevo.",
-  "walletTxExplainRetryingExpired": "Este intento venció antes de que la red lo confirmara. Su billetera volverá a enviar el pago por sí sola, así que no lo envíe usted de nuevo."
+  "walletTxExplainRetryingExpired": "Este intento venció antes de que la red lo confirmara. Su billetera volverá a enviar el pago por sí sola, así que no lo envíe usted de nuevo.",
+  "walletActivityCancelledByUpgrade": "Cancelado por actualización",
+  "walletTxExplainCancelledNotFinal": "Una actualización de la red canceló este pago antes de que se confirmara. Aún no es definitivo, así que no lo envíe de nuevo.",
+  "walletTxExplainCancelledHeld": "Una actualización de la red canceló este pago. Su billetera retiene el importe hasta que venza el pago.",
+  "walletTxExplainCancelledReleased": "Una actualización de la red canceló este pago antes de que se confirmara. Puede volver a gastar el importe.",
+  "walletTxExplainRetryingCancelled": "Una actualización de la red canceló este intento antes de que se confirmara. Su billetera volverá a enviar el pago por sí sola, así que no lo envíe usted de nuevo.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{La red Zcash se actualiza en aproximadamente 1 minuto. Los envíos están en pausa hasta entonces para que su pago no quede atascado.} other{La red Zcash se actualiza en aproximadamente {minutes} minutos. Los envíos están en pausa hasta entonces para que su pago no quede atascado.}}",
+  "walletShieldPausedTitle": "El blindaje está en pausa"
 }

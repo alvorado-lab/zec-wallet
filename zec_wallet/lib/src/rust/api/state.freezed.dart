@@ -3383,7 +3383,7 @@ extension TxStatusPatterns on TxStatus {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( TxStatus_Queued value)?  queued,TResult Function( TxStatus_Pending value)?  pending,TResult Function( TxStatus_Confirmed value)?  confirmed,TResult Function( TxStatus_Expired value)?  expired,TResult Function( TxStatus_Failed value)?  failed,TResult Function( TxStatus_Unknown value)?  unknown,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( TxStatus_Queued value)?  queued,TResult Function( TxStatus_Pending value)?  pending,TResult Function( TxStatus_Confirmed value)?  confirmed,TResult Function( TxStatus_Expired value)?  expired,TResult Function( TxStatus_Failed value)?  failed,TResult Function( TxStatus_CancelledByUpgrade value)?  cancelledByUpgrade,TResult Function( TxStatus_Unknown value)?  unknown,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case TxStatus_Queued() when queued != null:
@@ -3391,7 +3391,8 @@ return queued(_that);case TxStatus_Pending() when pending != null:
 return pending(_that);case TxStatus_Confirmed() when confirmed != null:
 return confirmed(_that);case TxStatus_Expired() when expired != null:
 return expired(_that);case TxStatus_Failed() when failed != null:
-return failed(_that);case TxStatus_Unknown() when unknown != null:
+return failed(_that);case TxStatus_CancelledByUpgrade() when cancelledByUpgrade != null:
+return cancelledByUpgrade(_that);case TxStatus_Unknown() when unknown != null:
 return unknown(_that);case _:
   return orElse();
 
@@ -3410,7 +3411,7 @@ return unknown(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( TxStatus_Queued value)  queued,required TResult Function( TxStatus_Pending value)  pending,required TResult Function( TxStatus_Confirmed value)  confirmed,required TResult Function( TxStatus_Expired value)  expired,required TResult Function( TxStatus_Failed value)  failed,required TResult Function( TxStatus_Unknown value)  unknown,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( TxStatus_Queued value)  queued,required TResult Function( TxStatus_Pending value)  pending,required TResult Function( TxStatus_Confirmed value)  confirmed,required TResult Function( TxStatus_Expired value)  expired,required TResult Function( TxStatus_Failed value)  failed,required TResult Function( TxStatus_CancelledByUpgrade value)  cancelledByUpgrade,required TResult Function( TxStatus_Unknown value)  unknown,}){
 final _that = this;
 switch (_that) {
 case TxStatus_Queued():
@@ -3418,7 +3419,8 @@ return queued(_that);case TxStatus_Pending():
 return pending(_that);case TxStatus_Confirmed():
 return confirmed(_that);case TxStatus_Expired():
 return expired(_that);case TxStatus_Failed():
-return failed(_that);case TxStatus_Unknown():
+return failed(_that);case TxStatus_CancelledByUpgrade():
+return cancelledByUpgrade(_that);case TxStatus_Unknown():
 return unknown(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -3433,7 +3435,7 @@ return unknown(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( TxStatus_Queued value)?  queued,TResult? Function( TxStatus_Pending value)?  pending,TResult? Function( TxStatus_Confirmed value)?  confirmed,TResult? Function( TxStatus_Expired value)?  expired,TResult? Function( TxStatus_Failed value)?  failed,TResult? Function( TxStatus_Unknown value)?  unknown,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( TxStatus_Queued value)?  queued,TResult? Function( TxStatus_Pending value)?  pending,TResult? Function( TxStatus_Confirmed value)?  confirmed,TResult? Function( TxStatus_Expired value)?  expired,TResult? Function( TxStatus_Failed value)?  failed,TResult? Function( TxStatus_CancelledByUpgrade value)?  cancelledByUpgrade,TResult? Function( TxStatus_Unknown value)?  unknown,}){
 final _that = this;
 switch (_that) {
 case TxStatus_Queued() when queued != null:
@@ -3441,7 +3443,8 @@ return queued(_that);case TxStatus_Pending() when pending != null:
 return pending(_that);case TxStatus_Confirmed() when confirmed != null:
 return confirmed(_that);case TxStatus_Expired() when expired != null:
 return expired(_that);case TxStatus_Failed() when failed != null:
-return failed(_that);case TxStatus_Unknown() when unknown != null:
+return failed(_that);case TxStatus_CancelledByUpgrade() when cancelledByUpgrade != null:
+return cancelledByUpgrade(_that);case TxStatus_Unknown() when unknown != null:
 return unknown(_that);case _:
   return null;
 
@@ -3459,14 +3462,15 @@ return unknown(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  queued,TResult Function()?  pending,TResult Function( int depth)?  confirmed,TResult Function()?  expired,TResult Function()?  failed,TResult Function()?  unknown,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  queued,TResult Function()?  pending,TResult Function( int depth)?  confirmed,TResult Function()?  expired,TResult Function()?  failed,TResult Function( int stoppedAt,  int? releasedAt,  CancelPhase phase)?  cancelledByUpgrade,TResult Function()?  unknown,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case TxStatus_Queued() when queued != null:
 return queued();case TxStatus_Pending() when pending != null:
 return pending();case TxStatus_Confirmed() when confirmed != null:
 return confirmed(_that.depth);case TxStatus_Expired() when expired != null:
 return expired();case TxStatus_Failed() when failed != null:
-return failed();case TxStatus_Unknown() when unknown != null:
+return failed();case TxStatus_CancelledByUpgrade() when cancelledByUpgrade != null:
+return cancelledByUpgrade(_that.stoppedAt,_that.releasedAt,_that.phase);case TxStatus_Unknown() when unknown != null:
 return unknown();case _:
   return orElse();
 
@@ -3485,14 +3489,15 @@ return unknown();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  queued,required TResult Function()  pending,required TResult Function( int depth)  confirmed,required TResult Function()  expired,required TResult Function()  failed,required TResult Function()  unknown,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  queued,required TResult Function()  pending,required TResult Function( int depth)  confirmed,required TResult Function()  expired,required TResult Function()  failed,required TResult Function( int stoppedAt,  int? releasedAt,  CancelPhase phase)  cancelledByUpgrade,required TResult Function()  unknown,}) {final _that = this;
 switch (_that) {
 case TxStatus_Queued():
 return queued();case TxStatus_Pending():
 return pending();case TxStatus_Confirmed():
 return confirmed(_that.depth);case TxStatus_Expired():
 return expired();case TxStatus_Failed():
-return failed();case TxStatus_Unknown():
+return failed();case TxStatus_CancelledByUpgrade():
+return cancelledByUpgrade(_that.stoppedAt,_that.releasedAt,_that.phase);case TxStatus_Unknown():
 return unknown();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -3507,14 +3512,15 @@ return unknown();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  queued,TResult? Function()?  pending,TResult? Function( int depth)?  confirmed,TResult? Function()?  expired,TResult? Function()?  failed,TResult? Function()?  unknown,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  queued,TResult? Function()?  pending,TResult? Function( int depth)?  confirmed,TResult? Function()?  expired,TResult? Function()?  failed,TResult? Function( int stoppedAt,  int? releasedAt,  CancelPhase phase)?  cancelledByUpgrade,TResult? Function()?  unknown,}) {final _that = this;
 switch (_that) {
 case TxStatus_Queued() when queued != null:
 return queued();case TxStatus_Pending() when pending != null:
 return pending();case TxStatus_Confirmed() when confirmed != null:
 return confirmed(_that.depth);case TxStatus_Expired() when expired != null:
 return expired();case TxStatus_Failed() when failed != null:
-return failed();case TxStatus_Unknown() when unknown != null:
+return failed();case TxStatus_CancelledByUpgrade() when cancelledByUpgrade != null:
+return cancelledByUpgrade(_that.stoppedAt,_that.releasedAt,_that.phase);case TxStatus_Unknown() when unknown != null:
 return unknown();case _:
   return null;
 
@@ -3716,6 +3722,76 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class TxStatus_CancelledByUpgrade extends TxStatus {
+  const TxStatus_CancelledByUpgrade({required this.stoppedAt, this.releasedAt, required this.phase}): super._();
+  
+
+ final  int stoppedAt;
+ final  int? releasedAt;
+ final  CancelPhase phase;
+
+/// Create a copy of TxStatus
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TxStatus_CancelledByUpgradeCopyWith<TxStatus_CancelledByUpgrade> get copyWith => _$TxStatus_CancelledByUpgradeCopyWithImpl<TxStatus_CancelledByUpgrade>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TxStatus_CancelledByUpgrade&&(identical(other.stoppedAt, stoppedAt) || other.stoppedAt == stoppedAt)&&(identical(other.releasedAt, releasedAt) || other.releasedAt == releasedAt)&&(identical(other.phase, phase) || other.phase == phase));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,stoppedAt,releasedAt,phase);
+
+@override
+String toString() {
+  return 'TxStatus.cancelledByUpgrade(stoppedAt: $stoppedAt, releasedAt: $releasedAt, phase: $phase)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TxStatus_CancelledByUpgradeCopyWith<$Res> implements $TxStatusCopyWith<$Res> {
+  factory $TxStatus_CancelledByUpgradeCopyWith(TxStatus_CancelledByUpgrade value, $Res Function(TxStatus_CancelledByUpgrade) _then) = _$TxStatus_CancelledByUpgradeCopyWithImpl;
+@useResult
+$Res call({
+ int stoppedAt, int? releasedAt, CancelPhase phase
+});
+
+
+
+
+}
+/// @nodoc
+class _$TxStatus_CancelledByUpgradeCopyWithImpl<$Res>
+    implements $TxStatus_CancelledByUpgradeCopyWith<$Res> {
+  _$TxStatus_CancelledByUpgradeCopyWithImpl(this._self, this._then);
+
+  final TxStatus_CancelledByUpgrade _self;
+  final $Res Function(TxStatus_CancelledByUpgrade) _then;
+
+/// Create a copy of TxStatus
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? stoppedAt = null,Object? releasedAt = freezed,Object? phase = null,}) {
+  return _then(TxStatus_CancelledByUpgrade(
+stoppedAt: null == stoppedAt ? _self.stoppedAt : stoppedAt // ignore: cast_nullable_to_non_nullable
+as int,releasedAt: freezed == releasedAt ? _self.releasedAt : releasedAt // ignore: cast_nullable_to_non_nullable
+as int?,phase: null == phase ? _self.phase : phase // ignore: cast_nullable_to_non_nullable
+as CancelPhase,
+  ));
+}
+
+
+}
 
 /// @nodoc
 

@@ -700,6 +700,43 @@ pub enum TxStatus {
     /// row, also how the multi-device double-spend race resolves (§10).
     Expired,
     Failed,
+    /// Signed under a consensus branch that a network upgrade ended before the
+    /// transaction was mined (ADR-0579 Decision 4). A signature commits to its
+    /// branch, so no block from the activation on can carry it: `stopped_at` is
+    /// the activation height, the height the network stopped accepting it at.
+    /// `released_at` is the height its funds are released at, the stored expiry
+    /// until which the engine keeps its notes reserved: the same value as the
+    /// row's [`TxSummary::expiry_height`], `None` for a transaction stored with
+    /// no expiry. `phase` says what may be said now; the host renders it and
+    /// computes nothing. Wins over [`Expired`](Self::Expired) once the stored
+    /// expiry passes too.
+    CancelledByUpgrade {
+        stopped_at: BlockHeight,
+        released_at: Option<BlockHeight>,
+        phase: CancelPhase,
+    },
+}
+
+/// How far a payment a network upgrade cancelled has settled
+/// ([`TxStatus::CancelledByUpgrade`]), computed by the core. The amount is back
+/// only at the later of the release and the burial: for an ordinary send the
+/// engine frees the notes at the stored expiry, which comes BEFORE the block
+/// before the activation is irreversibly buried, so a release alone never means
+/// "funds back".
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[non_exhaustive]
+pub enum CancelPhase {
+    /// The block before the activation is not yet irreversibly buried, so a deep
+    /// reorg could still let the transaction be mined. Say neither that the amount
+    /// is back nor that it can be sent again: activations are when deep reorgs
+    /// happen.
+    NotFinal,
+    /// Buried, but the engine still holds the notes until the release height
+    /// ([`TxSummary::expiry_height`]; never, for a transaction stored with no
+    /// expiry).
+    FinalNotReleased,
+    /// Buried and released: the amount is spendable again.
+    Released,
 }
 
 /// Where a WALLET-CREATED transaction stands on its way to the chain — the

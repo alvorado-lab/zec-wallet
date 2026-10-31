@@ -225,6 +225,17 @@ class SwapCategoricalFault extends SwapFormFault {
   final SwapFaultReason reason;
 }
 
+/// A Zcash network upgrade activates within 20 blocks, so an OutOfZec execute,
+/// which would sign the ZEC deposit, is refused until it has (`RW-SWAP-017`,
+/// ADR-0580). Refused before the quote's claim: nothing was consumed or sent.
+/// Carries the SDK's `blocksLeft`, from which the copy names the wait, the same
+/// sentence a send shows.
+class SwapUpgradePausedFault extends SwapFormFault {
+  const SwapUpgradePausedFault({required this.blocksLeft});
+
+  final int blocksLeft;
+}
+
 /// The OutOfZec deposit's ZEC side exceeds the HOST's send ceiling
 /// (`walletSendCeilingZatProvider` — e.g. an alpha roll-out cap; maintainer
 /// 2026-07-10: the ceiling BOUNDS the swap deposit, so every alpha money-out
@@ -465,6 +476,10 @@ SwapFormFault classifySwapFailure(Object error) {
       SwapErrorKind_QuoteTermsDiffer() => const SwapCategoricalFault(
         SwapFaultReason.quoteTermsDiffer,
       ),
+      // ADR-0580: the pre-upgrade pause refused the execute before its claim.
+      // Its OWN fault with the wait; the generic "couldn't quote" would be false.
+      SwapErrorKind_UpgradeImminent(:final blocksLeft) =>
+        SwapUpgradePausedFault(blocksLeft: blocksLeft),
       // A kind this binding doesn't know — the stable code still rides
       // `error.code`; render the honest generic, never a wrong specific.
       _ => const SwapCategoricalFault(SwapFaultReason.couldNotQuote),

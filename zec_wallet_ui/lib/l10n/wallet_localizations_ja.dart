@@ -3126,4 +3126,37 @@ class WalletLocalizationsJa extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'この試行はネットワークが承認する前に期限切れになりました。ウォレットが自動で支払いを再送信するため、ご自身で再送信しないでください。';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'アップグレードで取消';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'ネットワークのアップグレードにより、この支払いは承認前に取り消されました。まだ確定していないため、再送しないでください。';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'ネットワークのアップグレードにより、この支払いは取り消されました。支払いの有効期限まで、ウォレットが金額を保留しています。';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'ネットワークのアップグレードにより、この支払いは承認前に取り消されました。金額は再び使用できます。';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'ネットワークのアップグレードにより、この試行は承認前に取り消されました。ウォレットが支払いを自動的に再送するため、ご自身で再送しないでください。';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Zcash ネットワークは約$minutes分後にアップグレードされます。支払いが滞らないよう、それまで送金は一時停止されています。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'シールドは一時停止中です';
 }

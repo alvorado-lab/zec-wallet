@@ -84,7 +84,6 @@
 use incrementalmerkletree::frontier::Frontier;
 use incrementalmerkletree::{Hashable, Level, Marking};
 use orchard::tree::MerkleHashOrchard;
-use rand_core::OsRng;
 use rusqlite::types::Value;
 use rusqlite::{Connection, named_params, params};
 use shardtree::error::ShardTreeError;
@@ -132,10 +131,10 @@ const CHAIN_TIP_LAG_BLOCKS: usize = 20;
 /// all. Every upgrade from Sapling on lands at ONE height here, so the whole fixture
 /// chain is post-Ironwood and nothing in it straddles an upgrade boundary.
 fn ironwood_network() -> LocalNetwork {
-    // Built by UPDATING upstream's own default rather than respelling it: the default
-    // has an unstable `nu7` field behind a `cfg` this build does not set, and naming
-    // every field here would both trip `unexpected_cfgs` and silently stop tracking a
-    // future upgrade upstream adds.
+    // Built by UPDATING upstream's own default rather than respelling it: naming
+    // every field would trip `unexpected_cfgs` on the `nu_tachyon` field behind a
+    // `cfg` this build does not set, and stop tracking a future upgrade upstream
+    // adds. The default's `nu7` is `None`, so this chain stays below NU7.
     let h = TestBuilder::<(), ()>::DEFAULT_NETWORK.nu5;
     LocalNetwork {
         nu6: h,
@@ -181,7 +180,7 @@ fn build_fixture() -> Fixture {
     // generator — the one `InitialChainState` has no Ironwood field to carry. A
     // hand-picked pair would be a tree that does not hash, and the witness assertion
     // below would then be measuring the fixture rather than the wiring.
-    let mut rng = OsRng;
+    let mut rng = crate::rng::wallet_rng();
     let (prior_root_hashes, ironwood_initial_tree): (Vec<MerkleHashOrchard>, _) =
         Frontier::random_with_prior_subtree_roots(
             &mut rng,
@@ -872,10 +871,28 @@ fn crate_sql(src: &Path) -> CrateSql {
     const PREFIX: &str = "ironwood";
     const OUTPUT_INDEX_COL: &str = "action_index";
     const NOTE_RECONSTRUCTION_COLS: &str = "rho, rseed, note_version";
-    // `DEFAULT_TX_EXPIRY_DELTA` — `zcash_primitives transaction/builder.rs:53`.
+    // The unknown-expiry fallback. Since 0.23.0 the crate builds it per height
+    // (`default_tx_expiry_delta_sql`, `wallet/common.rs:105`): a CASE over the
+    // activations whose default delta differs. Every height this cell writes sits
+    // between Blossom and NU7, where that CASE is the Blossom delta, and the
+    // assertion holds the cell to it rather than trusting a literal.
+    let nu7 = Network::MainNetwork
+        .activation_height(NetworkUpgrade::Nu7)
+        .expect("the pinned crate carries the mainnet NU7 height");
+    assert!(
+        S3_SHARD_END_HEIGHTS
+            .iter()
+            .chain([&S3_NOTE_HEIGHT])
+            .all(|h| BlockHeight::from_u32(*h) < nu7),
+        "the cell's heights reach NU7, where the crate's fallback delta is no longer \
+         the Blossom one: substitute the CASE the crate builds, not this constant"
+    );
     let tx_unexpired = literal_containing(&common, ".expiry_height = 0  -- the tx will not expire")
         .replace("{tx}", "stx")
-        .replace("{DEFAULT_TX_EXPIRY_DELTA}", "40");
+        .replace(
+            "{default_expiry_delta}",
+            &zcash_primitives::transaction::builder::BLOSSOM_DEFAULT_TX_EXPIRY_DELTA.to_string(),
+        );
     let spent_clause =
         literal_containing(&common, "stx.id_tx = rns.transaction_id\n        WHERE {}")
             .replace("{table_prefix}", PREFIX)
@@ -941,7 +958,7 @@ fn crate_sql(src: &Path) -> CrateSql {
 struct ModelledWallet {
     /// The connection the SDK's write goes through — [`crate::sync::put_subtree_roots`]
     /// takes an owned-connection `WalletDb`, so the file gets two.
-    db: WalletDb<Connection, Network, SystemClock, OsRng>,
+    db: WalletDb<Connection, Network, SystemClock, crate::rng::WalletRng>,
     /// The cell's own connection: foreign keys ON, `rarray` loaded.
     conn: Connection,
     sql: CrateSql,
@@ -951,8 +968,13 @@ struct ModelledWallet {
 fn build_modelled_wallet(geometry: Geometry) -> ModelledWallet {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = dir.path().join("s3.db");
-    let mut db = WalletDb::for_path(&path, Network::MainNetwork, SystemClock, OsRng)
-        .expect("open a plaintext wallet file");
+    let mut db = WalletDb::for_path(
+        &path,
+        Network::MainNetwork,
+        SystemClock,
+        crate::rng::wallet_rng(),
+    )
+    .expect("open a plaintext wallet file");
     init_wallet_db(&mut db, None)
         .expect("the crate's own migrations build the real mainnet schema, account-less");
 
@@ -1343,5 +1365,167 @@ fn in_s2_a_historic_gap_below_the_note_refuses_it_through_the_tip_gate_until_the
     assert_eq!(
         after.selected, 1,
         "and the note is selectable: the same write repairs the OTHER conjunct"
+    );
+}
+
+// ── NU7 wave step 3: a send targeted past the NU7 activation ─────────────────────
+//
+// It lives here for the fixture network: `ironwood_network` is the one funded-harness
+// network with the post-Ironwood upgrades active, and NU7 is one more field on it
+// (`LocalNetwork { nu7: Some(h), ..ironwood_network() }`, the contract's shape). It
+// drives the funded `data_api::testing` harness through the SAME `propose_core` and
+// `create_signed_core` the live send runs, and is not part of INC-020's guard.
+
+/// **A send targeted past the NU7 activation is built as a v6 transaction under
+/// NU7's branch, `0x77190AD9`** (NU7 wave step 3; S0, S4: ZIP 2003 allows v5 or v6
+/// from NU7, and the SDK never builds v4).
+///
+/// The note is mined BEFORE the activation and the send is targeted AFTER it, the
+/// shape a user crossing the upgrade has. What is read is the raw bytes the send
+/// path broadcasts (`Wallet::raw_tx_bytes`: the persisted transaction,
+/// re-serialized), not a field of a struct.
+///
+/// Mutants: `propose_transfer`'s `None` version (`send.rs`, `propose_core`) becomes
+/// `Some(TxVersion::V5)`, which is still valid on chain under NU7, so only this row
+/// sees it (the header assertion red). Anti-vacuity: drop `nu7` from the fixture;
+/// the branch reads `Nu6_3` (the branch assertion red). The second is also asserted
+/// in place below, as the fixture's precondition, without a second proof.
+#[test]
+fn a_send_targeted_past_nu7_is_built_as_v6_under_its_branch() {
+    use zcash_address::{ToAddress, ZcashAddress};
+    use zcash_client_backend::data_api::{Account, WalletRead};
+    use zcash_protocol::consensus::{BranchId, NetworkType};
+    use zcash_protocol::constants::{V6_TX_VERSION, V6_VERSION_GROUP_ID};
+
+    /// ZIP 259's NU7 consensus branch id.
+    const NU7_BRANCH: u32 = 0x7719_0AD9;
+
+    let without_nu7 = ironwood_network();
+    let ironwood = without_nu7
+        .activation_height(NetworkUpgrade::Nu6_3)
+        .expect("the fixture network activates Ironwood");
+    // A few blocks past the Ironwood activation: the note lands on the fixture
+    // chain's first block, below NU7, and the send's target, after the spendable
+    // depth, is past it.
+    let nu7 = ironwood + 5;
+    let network = LocalNetwork {
+        nu7: Some(nu7),
+        ..ironwood_network()
+    };
+
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("wallet.db");
+    let mut state = TestBuilder::new()
+        .with_network(network)
+        .with_data_store_factory(FileBackedDsf { path })
+        .with_block_cache(MemCache::default())
+        .with_account_from_sapling_activation(BlockHash([0; 32]))
+        .build();
+
+    // One Sapling note, buried to the spendable depth and scanned.
+    let dfvk = state
+        .test_account_sapling()
+        .cloned()
+        .expect("the test account has a sapling key");
+    let (note_height, _, _) = state.generate_next_block(
+        &dfvk,
+        AddressType::DefaultExternal,
+        ProtoZat::const_from_u64(NOTE_VALUE),
+    );
+    assert!(
+        note_height < nu7,
+        "the fixture mines its note BEFORE the NU7 activation ({note_height:?} >= {nu7:?})"
+    );
+    let mut tip = note_height;
+    for _ in 0..(SPENDABLE_DEPTH - 1) {
+        let (h, _) = state.generate_empty_block();
+        tip = h;
+    }
+    state.scan_cached_blocks(note_height, SPENDABLE_DEPTH);
+    state
+        .wallet_mut()
+        .update_chain_tip(tip)
+        .expect("update chain tip");
+
+    // Propose through the production core. A de-shield to a transparent recipient:
+    // one Sapling spend, the recipient, and change, with no recipient key to derive.
+    let account = state.test_account().expect("account").id();
+    let to = ZcashAddress::from_transparent_p2pkh(NetworkType::Regtest, [0xa7; 20]);
+    let request = zip321::TransactionRequest::new(vec![zip321::Payment::without_memo(
+        to,
+        ProtoZat::const_from_u64(10_000),
+    )])
+    .expect("a valid request");
+    let proposal = crate::send::propose_core(state.wallet_mut(), &network, account, request)
+        .expect("a funded wallet proposes past the NU7 activation");
+    let target = BlockHeight::from(proposal.min_target_height());
+    assert!(
+        target > nu7,
+        "the send must be targeted PAST the NU7 activation ({target:?} <= {nu7:?})"
+    );
+    // The fixture's precondition, and the anti-vacuity mutant asserted in place: on
+    // this network the target is under NU7's branch, and on the same network without
+    // `nu7` it would be under Ironwood's.
+    assert_eq!(
+        u32::from(BranchId::for_height(&network, target)),
+        NU7_BRANCH,
+        "the target height's branch on the fixture network is NU7's"
+    );
+    assert_eq!(
+        BranchId::for_height(&without_nu7, target),
+        BranchId::Nu6_3,
+        "without `nu7` the same target is under Ironwood's branch, so the fixture's \
+         `nu7` is what this row measures"
+    );
+
+    // Sign through the production core.
+    let usk = state.test_account().expect("account").usk().clone();
+    let prover = crate::prover::tx_prover();
+    let txids = crate::send::create_signed_core(
+        state.wallet_mut(),
+        &network,
+        usk,
+        &proposal,
+        prover,
+        prover,
+        crate::consensus::SigningPermit::assume_current_for_test(),
+    )
+    .expect("a send past the NU7 activation signs");
+    assert_eq!(txids.len(), 1, "a single-step send is one transaction");
+
+    // The bytes the send path broadcasts.
+    let tx = state
+        .wallet()
+        .get_transaction(txids[0])
+        .expect("reading our own transaction is not a fault")
+        .expect("the signed transaction is persisted before its id is returned");
+    let mut raw = Vec::new();
+    tx.write(&mut raw)
+        .expect("serialize the signed transaction");
+    let word = |at: usize| {
+        u32::from_le_bytes(
+            raw.get(at..at + 4)
+                .expect("a whole header")
+                .try_into()
+                .expect("four bytes"),
+        )
+    };
+    assert_eq!(
+        word(0),
+        0x8000_0000 | V6_TX_VERSION,
+        "a send past the NU7 activation is a v6 transaction (fOverwintered | 6), \
+         got {:#010x}",
+        word(0)
+    );
+    assert_eq!(
+        word(4),
+        V6_VERSION_GROUP_ID,
+        "under the v6 version group id"
+    );
+    assert_eq!(
+        word(8),
+        NU7_BRANCH,
+        "and it commits to NU7's consensus branch, got {:#010x}",
+        word(8)
     );
 }

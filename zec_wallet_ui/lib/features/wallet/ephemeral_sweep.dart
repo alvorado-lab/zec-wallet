@@ -5,6 +5,7 @@ import 'package:zec_wallet/zec_wallet.dart';
 import 'package:zec_wallet_ui/l10n/wallet_localizations.dart';
 import '../../shared/wallet_dialog.dart';
 import 'send_authorization.dart';
+import 'upgrade_pause.dart' show upgradePausedTextFor;
 import 'wallet_providers.dart';
 import 'zat_format.dart';
 
@@ -129,10 +130,16 @@ Future<void> confirmAndSweepEphemeral(
     // — nothing ran, and the identity switch already replaced the
     // screen context; "recovery failed" would be untrue.
     return;
-  } catch (_) {
+  } catch (error) {
     // A typed WalletApiError (seed required / closed handle) — the funds are
-    // untouched and re-runnable.
-    message = l10n.walletRecoverFailed;
+    // untouched and re-runnable. The pre-upgrade pause (ADR-0580) arrives here
+    // only from the sweep's ENTRY check, before any address is probed or any
+    // seed pulled, so its sentence is true: nothing moved, and the recovery runs
+    // again once the upgrade is through. A window that opens mid-sweep is not
+    // thrown: the SDK returns the partial summary (the caught address `failed`,
+    // the rest `truncated`), which [sweepOutcomeMessage] renders as "some funds
+    // still need another try", with the amount already recovered if any.
+    message = upgradePausedTextFor(l10n, error) ?? l10n.walletRecoverFailed;
   }
   // Disposed during the sweep (session closed / screen replaced): the durable
   // state is correct (the controller already re-pulled the providers), so

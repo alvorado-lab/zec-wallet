@@ -3297,4 +3297,43 @@ class WalletLocalizationsRu extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Срок действия этой попытки истёк до подтверждения сетью. Кошелёк сам отправит платёж повторно, поэтому не отправляйте его снова самостоятельно.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Отменён обновлением';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Обновление сети отменило этот платёж до подтверждения. Это ещё не окончательно, поэтому не отправляйте его снова.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Обновление сети отменило этот платёж. Кошелёк удерживает сумму до истечения срока платежа.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Обновление сети отменило этот платёж до подтверждения. Сумма снова доступна.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Обновление сети отменило эту попытку до подтверждения. Кошелёк сам отправит платёж повторно, поэтому не отправляйте его ещё раз сами.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Сеть Zcash обновится примерно через $minutes минуты. До этого отправка приостановлена, чтобы ваш платёж не застрял.',
+      many:
+          'Сеть Zcash обновится примерно через $minutes минут. До этого отправка приостановлена, чтобы ваш платёж не застрял.',
+      few:
+          'Сеть Zcash обновится примерно через $minutes минуты. До этого отправка приостановлена, чтобы ваш платёж не застрял.',
+      one:
+          'Сеть Zcash обновится примерно через $minutes минуту. До этого отправка приостановлена, чтобы ваш платёж не застрял.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Защита приостановлена';
 }

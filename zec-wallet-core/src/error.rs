@@ -532,6 +532,39 @@ pub enum WalletError {
     /// window surfaces this typed ceiling rather than stranding on a silent failure.
     #[error("too many transparent transfers still confirming")]
     TexSendLimitReached,
+    /// A network upgrade activates within
+    /// [`PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS`](crate::constants::PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS)
+    /// blocks of the next one, so sending is paused until it has (ADR-0580,
+    /// decided 2026-10-30). A transaction commits to the consensus branch
+    /// it is signed under (ZIP 259), so one signed now under the branch that is ending
+    /// could be mined only in the few blocks left before the activation; if it missed
+    /// them it would be dead, and the engine would hold its notes until its stored
+    /// expiry, 30 to 60 days for a canonical ZIP-318 crossing. Sending works again from
+    /// the tip `activation_height - 1`, whose next block is under the new branch, unless
+    /// another activation falls in the next 20 blocks (the pause then runs on, naming it).
+    ///
+    /// Where it is raised, in order. `propose` and `propose_shield` check before any note
+    /// or UTXO is selected; no seed is involved. The sign of a reviewed proposal and a
+    /// parked row's "Send now" check before the seed is pulled, and the create checks again
+    /// under its lock, so a proposal made before the window and confirmed inside it gets
+    /// THIS, never [`ProposalStale`](Self::ProposalStale), on which a host re-proposes, here
+    /// into the same refusal for up to 20 blocks. The sweep and the reclaim check at their
+    /// entry, before any seed is pulled; their propose runs after the pull. A window that
+    /// opens mid-sweep is not raised: the sweep returns what it swept before it (the
+    /// address the window caught counts `failed`). Nothing was signed. The background
+    /// paths defer instead of raising it: the queued drain leaves its rows queued (a swap
+    /// deposit among them) for a later pass. A swap execute inside the window is refused
+    /// with the swap error of the same name, before the quote is claimed.
+    ///
+    /// `activation_height` is the height the new branch starts at; `blocks_left` is the
+    /// number of blocks still to be mined before sending works again,
+    /// `activation_height - (tip + 1)`, from 1 to 20. Public protocol heights, no wallet
+    /// data; the host renders the wait from `blocks_left` (75 s a block before NU7).
+    #[error("sending is paused until a network upgrade activates")]
+    UpgradeImminent {
+        activation_height: u32,
+        blocks_left: u32,
+    },
 
     // ── BROADCAST / OUTBOX (RW-BCAST-*) ──────────────────────────────────────
     /// A durably-queued send (§6.2 / inc-2d-3-b) could no longer be covered when the
@@ -673,6 +706,7 @@ impl WalletError {
             Self::SignFailed => "RW-SEND-006",
             Self::TexSendLimitReached => "RW-SEND-007",
             Self::ProposeTransient => "RW-SEND-008",
+            Self::UpgradeImminent { .. } => "RW-SEND-009",
             Self::QueuedSendStale => "RW-BCAST-001",
             Self::QueuedSendsFull => "RW-BCAST-002",
             Self::SwapDepositInFlight => "RW-BCAST-003",
@@ -890,6 +924,20 @@ pub enum SwapError {
     /// (the differing values are §5.4 never-log).
     #[error("quote terms differ from the issued record")]
     QuoteTermsDiffer,
+    /// The pre-upgrade send pause (ADR-0580; the wallet's
+    /// [`WalletError::UpgradeImminent`]): a network upgrade activates within 20 blocks,
+    /// and an OutOfZec execute would sign the ZEC deposit inside that window. Refused
+    /// BEFORE the durable claim and before the provider is asked to register anything:
+    /// nothing was consumed, nothing left the pool, and the quote stays executable until
+    /// its own deadline. Same fields as the wallet's error: `activation_height` is the
+    /// height the new rules start at, `blocks_left` the blocks still to be mined before
+    /// sending works again (1 to 20). An IntoZec execute signs nothing and is never
+    /// refused for it. Public protocol heights, no wallet data.
+    #[error("sending is paused until a network upgrade activates")]
+    UpgradeImminent {
+        activation_height: u32,
+        blocks_left: u32,
+    },
 }
 
 #[cfg(feature = "swap")]
@@ -913,6 +961,7 @@ impl SwapError {
             Self::SwapStateBusy => "RW-SWAP-014",
             Self::WatchOnly => "RW-SWAP-015",
             Self::QuoteTermsDiffer => "RW-SWAP-016",
+            Self::UpgradeImminent { .. } => "RW-SWAP-017",
         }
     }
 }

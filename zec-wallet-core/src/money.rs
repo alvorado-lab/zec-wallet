@@ -68,19 +68,26 @@ pub enum Network {
     Test,
 }
 
+/// The consensus parameters every wallet handle and every upstream call is built
+/// over (ADR-0579). The concrete type is named here, in [`Network::consensus`],
+/// and in `derivation.rs`'s encoders and key derivation, which read only the
+/// network type and never an activation height; nowhere else in production code
+/// (`the_concrete_consensus_type_is_named_only_by_the_walletparams_alias`).
+pub(crate) type WalletParams = zcash_protocol::consensus::Network;
+
 impl Network {
     /// Map to the runtime-switchable upstream consensus parameters
-    /// (`zcash_protocol::consensus::Network`) — the single value type that
+    /// ([`WalletParams`]): the single value type that
     /// carries our network into every librustzcash call that wants
     /// `consensus::Parameters` (the wallet DB `WalletDb::from_connection`
     /// migration in `db.rs`; the sync engine at inc-2c). This is the one
     /// source of truth for the network mapping; `derivation.rs` uses the
     /// `MAIN/TEST_NETWORK` singletons for its monomorphized encode path, which
     /// is a distinct (compile-time) API — both agree by construction here.
-    pub(crate) fn consensus(self) -> zcash_protocol::consensus::Network {
+    pub(crate) fn consensus(self) -> WalletParams {
         match self {
-            Network::Main => zcash_protocol::consensus::Network::MainNetwork,
-            Network::Test => zcash_protocol::consensus::Network::TestNetwork,
+            Network::Main => WalletParams::MainNetwork,
+            Network::Test => WalletParams::TestNetwork,
         }
     }
 

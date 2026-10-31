@@ -3685,10 +3685,14 @@ fn wire__crate__api__state__tx_confirmation_is_final_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_network = <crate::api::config::Network>::sse_decode(&mut deserializer);
+            let api_mined_height = <u32>::sse_decode(&mut deserializer);
             let api_confirmation_depth = <u32>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Result::<_, ()>::Ok(crate::api::state::tx_confirmation_is_final(
+                    api_network,
+                    api_mined_height,
                     api_confirmation_depth,
                 ))?;
                 Ok(output_ok)
@@ -3980,6 +3984,20 @@ impl SseDecode for crate::api::state::BoundedSync {
             tip: var_tip,
             finished: var_finished,
             resubmitted: var_resubmitted,
+        };
+    }
+}
+
+impl SseDecode for crate::api::state::CancelPhase {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::state::CancelPhase::NotFinal,
+            1 => crate::api::state::CancelPhase::FinalNotReleased,
+            2 => crate::api::state::CancelPhase::Released,
+            3 => crate::api::state::CancelPhase::Unknown,
+            _ => unreachable!("Invalid variant for CancelPhase: {}", inner),
         };
     }
 }
@@ -5510,6 +5528,14 @@ impl SseDecode for crate::api::error::SwapErrorKind {
                 return crate::api::error::SwapErrorKind::QuoteTermsDiffer;
             }
             16 => {
+                let mut var_activationHeight = <u32>::sse_decode(deserializer);
+                let mut var_blocksLeft = <u32>::sse_decode(deserializer);
+                return crate::api::error::SwapErrorKind::UpgradeImminent {
+                    activation_height: var_activationHeight,
+                    blocks_left: var_blocksLeft,
+                };
+            }
+            17 => {
                 return crate::api::error::SwapErrorKind::Unknown;
             }
             _ => {
@@ -6115,6 +6141,16 @@ impl SseDecode for crate::api::state::TxStatus {
                 return crate::api::state::TxStatus::Failed;
             }
             5 => {
+                let mut var_stoppedAt = <u32>::sse_decode(deserializer);
+                let mut var_releasedAt = <Option<u32>>::sse_decode(deserializer);
+                let mut var_phase = <crate::api::state::CancelPhase>::sse_decode(deserializer);
+                return crate::api::state::TxStatus::CancelledByUpgrade {
+                    stopped_at: var_stoppedAt,
+                    released_at: var_releasedAt,
+                    phase: var_phase,
+                };
+            }
+            6 => {
                 return crate::api::state::TxStatus::Unknown;
             }
             _ => {
@@ -6586,9 +6622,17 @@ impl SseDecode for crate::api::error::WalletErrorKind {
                 return crate::api::error::WalletErrorKind::TexSendLimitReached;
             }
             62 => {
-                return crate::api::error::WalletErrorKind::Io;
+                let mut var_activationHeight = <u32>::sse_decode(deserializer);
+                let mut var_blocksLeft = <u32>::sse_decode(deserializer);
+                return crate::api::error::WalletErrorKind::UpgradeImminent {
+                    activation_height: var_activationHeight,
+                    blocks_left: var_blocksLeft,
+                };
             }
             63 => {
+                return crate::api::error::WalletErrorKind::Io;
+            }
+            64 => {
                 return crate::api::error::WalletErrorKind::Unknown;
             }
             _ => {
@@ -7117,6 +7161,29 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::state::BoundedSync>
     for crate::api::state::BoundedSync
 {
     fn into_into_dart(self) -> crate::api::state::BoundedSync {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::state::CancelPhase {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::NotFinal => 0.into_dart(),
+            Self::FinalNotReleased => 1.into_dart(),
+            Self::Released => 2.into_dart(),
+            Self::Unknown => 3.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::state::CancelPhase
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::state::CancelPhase>
+    for crate::api::state::CancelPhase
+{
+    fn into_into_dart(self) -> crate::api::state::CancelPhase {
         self
     }
 }
@@ -8500,7 +8567,16 @@ impl flutter_rust_bridge::IntoDart for crate::api::error::SwapErrorKind {
             crate::api::error::SwapErrorKind::SwapAlreadyInFlight => [13.into_dart()].into_dart(),
             crate::api::error::SwapErrorKind::WatchOnly => [14.into_dart()].into_dart(),
             crate::api::error::SwapErrorKind::QuoteTermsDiffer => [15.into_dart()].into_dart(),
-            crate::api::error::SwapErrorKind::Unknown => [16.into_dart()].into_dart(),
+            crate::api::error::SwapErrorKind::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            } => [
+                16.into_dart(),
+                activation_height.into_into_dart().into_dart(),
+                blocks_left.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::error::SwapErrorKind::Unknown => [17.into_dart()].into_dart(),
             _ => {
                 unimplemented!("");
             }
@@ -9187,7 +9263,18 @@ impl flutter_rust_bridge::IntoDart for crate::api::state::TxStatus {
             }
             crate::api::state::TxStatus::Expired => [3.into_dart()].into_dart(),
             crate::api::state::TxStatus::Failed => [4.into_dart()].into_dart(),
-            crate::api::state::TxStatus::Unknown => [5.into_dart()].into_dart(),
+            crate::api::state::TxStatus::CancelledByUpgrade {
+                stopped_at,
+                released_at,
+                phase,
+            } => [
+                5.into_dart(),
+                stopped_at.into_into_dart().into_dart(),
+                released_at.into_into_dart().into_dart(),
+                phase.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::state::TxStatus::Unknown => [6.into_dart()].into_dart(),
             _ => {
                 unimplemented!("");
             }
@@ -9548,8 +9635,17 @@ impl flutter_rust_bridge::IntoDart for crate::api::error::WalletErrorKind {
             crate::api::error::WalletErrorKind::QueuedSendStale => [59.into_dart()].into_dart(),
             crate::api::error::WalletErrorKind::QueuedSendsFull => [60.into_dart()].into_dart(),
             crate::api::error::WalletErrorKind::TexSendLimitReached => [61.into_dart()].into_dart(),
-            crate::api::error::WalletErrorKind::Io => [62.into_dart()].into_dart(),
-            crate::api::error::WalletErrorKind::Unknown => [63.into_dart()].into_dart(),
+            crate::api::error::WalletErrorKind::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            } => [
+                62.into_dart(),
+                activation_height.into_into_dart().into_dart(),
+                blocks_left.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::error::WalletErrorKind::Io => [63.into_dart()].into_dart(),
+            crate::api::error::WalletErrorKind::Unknown => [64.into_dart()].into_dart(),
             _ => {
                 unimplemented!("");
             }
@@ -9740,6 +9836,24 @@ impl SseEncode for crate::api::state::BoundedSync {
         <Option<u32>>::sse_encode(self.tip, serializer);
         <bool>::sse_encode(self.finished, serializer);
         <bool>::sse_encode(self.resubmitted, serializer);
+    }
+}
+
+impl SseEncode for crate::api::state::CancelPhase {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::state::CancelPhase::NotFinal => 0,
+                crate::api::state::CancelPhase::FinalNotReleased => 1,
+                crate::api::state::CancelPhase::Released => 2,
+                crate::api::state::CancelPhase::Unknown => 3,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 
@@ -11108,8 +11222,16 @@ impl SseEncode for crate::api::error::SwapErrorKind {
             crate::api::error::SwapErrorKind::QuoteTermsDiffer => {
                 <i32>::sse_encode(15, serializer);
             }
-            crate::api::error::SwapErrorKind::Unknown => {
+            crate::api::error::SwapErrorKind::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            } => {
                 <i32>::sse_encode(16, serializer);
+                <u32>::sse_encode(activation_height, serializer);
+                <u32>::sse_encode(blocks_left, serializer);
+            }
+            crate::api::error::SwapErrorKind::Unknown => {
+                <i32>::sse_encode(17, serializer);
             }
             _ => {
                 unimplemented!("");
@@ -11622,8 +11744,18 @@ impl SseEncode for crate::api::state::TxStatus {
             crate::api::state::TxStatus::Failed => {
                 <i32>::sse_encode(4, serializer);
             }
-            crate::api::state::TxStatus::Unknown => {
+            crate::api::state::TxStatus::CancelledByUpgrade {
+                stopped_at,
+                released_at,
+                phase,
+            } => {
                 <i32>::sse_encode(5, serializer);
+                <u32>::sse_encode(stopped_at, serializer);
+                <Option<u32>>::sse_encode(released_at, serializer);
+                <crate::api::state::CancelPhase>::sse_encode(phase, serializer);
+            }
+            crate::api::state::TxStatus::Unknown => {
+                <i32>::sse_encode(6, serializer);
             }
             _ => {
                 unimplemented!("");
@@ -12031,11 +12163,19 @@ impl SseEncode for crate::api::error::WalletErrorKind {
             crate::api::error::WalletErrorKind::TexSendLimitReached => {
                 <i32>::sse_encode(61, serializer);
             }
-            crate::api::error::WalletErrorKind::Io => {
+            crate::api::error::WalletErrorKind::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            } => {
                 <i32>::sse_encode(62, serializer);
+                <u32>::sse_encode(activation_height, serializer);
+                <u32>::sse_encode(blocks_left, serializer);
+            }
+            crate::api::error::WalletErrorKind::Io => {
+                <i32>::sse_encode(63, serializer);
             }
             crate::api::error::WalletErrorKind::Unknown => {
-                <i32>::sse_encode(63, serializer);
+                <i32>::sse_encode(64, serializer);
             }
             _ => {
                 unimplemented!("");

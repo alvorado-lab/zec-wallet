@@ -3271,4 +3271,39 @@ class WalletLocalizationsFi extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Tämä yritys vanheni ennen kuin verkko vahvisti sen. Lompakkosi lähettää maksun uudelleen automaattisesti, joten älä lähetä sitä itse uudelleen.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Peruttu päivityksen vuoksi';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Verkkopäivitys perui tämän maksun ennen kuin se vahvistettiin. Tämä ei ole vielä lopullista, joten älä lähetä sitä uudelleen.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Verkkopäivitys perui tämän maksun. Lompakko pitää summan varattuna maksun vanhenemiseen asti.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Verkkopäivitys perui tämän maksun ennen kuin se vahvistettiin. Summa on taas käytettävissäsi.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Verkkopäivitys perui tämän yrityksen ennen kuin se vahvistettiin. Lompakkosi lähettää maksun uudelleen itsestään, joten älä lähetä sitä itse uudelleen.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Zcash-verkko päivitetään noin $minutes minuutin kuluttua. Lähettäminen on keskeytetty siihen asti, jotta maksusi ei voi juuttua.',
+      one:
+          'Zcash-verkko päivitetään noin 1 minuutin kuluttua. Lähettäminen on keskeytetty siihen asti, jotta maksusi ei voi juuttua.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Suojaus on keskeytetty';
 }

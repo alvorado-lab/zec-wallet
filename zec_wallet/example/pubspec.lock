@@ -1087,7 +1087,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.4"
+    version: "0.0.5"
   zec_wallet_tor:
     dependency: "direct main"
     description:
@@ -1101,7 +1101,7 @@ packages:
       path: "../../zec_wallet_ui"
       relative: true
     source: path
-    version: "0.0.3"
+    version: "0.0.4"
   zec_wallet_ui_platform:
     dependency: "direct main"
     description:

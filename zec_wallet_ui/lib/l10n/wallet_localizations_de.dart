@@ -3296,4 +3296,39 @@ class WalletLocalizationsDe extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Dieser Versuch ist abgelaufen, bevor das Netzwerk ihn bestätigt hat. Ihr Wallet sendet die Zahlung von selbst erneut, senden Sie sie also nicht selbst noch einmal.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Durch Upgrade storniert';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Ein Netzwerk-Upgrade hat diese Zahlung storniert, bevor sie bestätigt wurde. Das ist noch nicht endgültig, senden Sie sie also nicht erneut.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Ein Netzwerk-Upgrade hat diese Zahlung storniert. Ihre Wallet hält den Betrag noch bis zum Ablauf der Zahlung zurück.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Ein Netzwerk-Upgrade hat diese Zahlung storniert, bevor sie bestätigt wurde. Der Betrag steht Ihnen wieder zur Verfügung.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Ein Netzwerk-Upgrade hat diesen Versuch storniert, bevor er bestätigt wurde. Ihr Wallet sendet die Zahlung von selbst erneut, senden Sie sie also nicht selbst noch einmal.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Das Zcash-Netzwerk wird in etwa $minutes Minuten aktualisiert. Bis dahin ist das Senden pausiert, damit Ihre Zahlung nicht hängen bleibt.',
+      one:
+          'Das Zcash-Netzwerk wird in etwa 1 Minute aktualisiert. Bis dahin ist das Senden pausiert, damit Ihre Zahlung nicht hängen bleibt.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Schirmen ist pausiert';
 }

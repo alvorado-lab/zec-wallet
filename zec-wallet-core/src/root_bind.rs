@@ -1993,8 +1993,8 @@ pub(crate) fn read_scanned_hashes(
 /// **Read the TABLE, not `checkpoints::bundled_treestate`.** That function clamps
 /// its answer to the anchor ceiling (`checkpoints/mod.rs:218-223`) and would hand
 /// back a different row than the one asked for — which for provisioning is exactly
-/// right and here would silently drop every row above the newest activation, i.e.
-/// all 13 mainnet Ironwood rows.
+/// right and here would silently drop every row above the newest activation this
+/// build knows (all 13 mainnet Ironwood rows, until `Nu7` was listed).
 ///
 /// A row whose frontier is EMPTY is kept, not skipped: an empty Ironwood frontier
 /// below the NU6.3 activation is the correct treestate there, it decodes to a tree

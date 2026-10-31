@@ -6,7 +6,8 @@ use crate::error::WalletError;
 /// (rust-patterns § Async: never block the runtime). Every EXPECTED failure is a
 /// typed `Result`; the only panic sources are the shared-`Mutex` `.expect("…
 /// poisoned")` guards (a poison means another thread already panicked mid-write —
-/// the wallet is genuinely broken) and a bug in the audited engine. A `JoinError`
+/// the wallet is genuinely broken), a bug in the audited engine, and the operating
+/// system failing to supply a create's entropy (`crate::rng`). A `JoinError`
 /// panic therefore means a genuine bug — re-raise it LOUDLY rather than swallow it
 /// into a misleading typed error (no silent failures). A poisoned mutex bricks
 /// EVERY subsequent `run_blocking` on that connection identically, which is what
@@ -19,6 +20,10 @@ where
     F: FnOnce() -> Result<T, WalletError> + Send + 'static,
     T: Send + 'static,
 {
+    // A test's armed entropy failure follows the work its thread dispatches
+    // (`crate::rng::testing`); no other build has the hook.
+    #[cfg(test)]
+    let f = crate::rng::testing::carried(f);
     match tokio::task::spawn_blocking(f).await {
         Ok(inner) => inner,
         Err(join_err) if join_err.is_panic() => std::panic::resume_unwind(join_err.into_panic()),

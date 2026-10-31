@@ -13,7 +13,7 @@ library;
 /// equal `BRIDGE_ABI_VERSION` in `rust/src/bridge_abi.rs`; the Rust test
 /// `the_dart_bridge_abi_constant_equals_the_rust_one` parses this line, so keep
 /// it a single `const int` declaration with an integer literal.
-const int kBridgeAbiVersion = 11;
+const int kBridgeAbiVersion = 12;
 
 /// The Dart package and the native wallet library were built from different
 /// versions of the bridge, so values crossing between them would be decoded

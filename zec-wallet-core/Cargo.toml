@@ -64,7 +64,7 @@ zcash_protocol = { workspace = true }
 # `decrypt_and_store_transaction`. Exact-pinned at the zcash_primitives generation (same pin
 # the funded test harness already used as a dev-dep); default-features off (the core
 # transaction module needs no extra features). Audited crate WHOLE (Rule Zero).
-zcash_primitives = { version = "=0.30.1", default-features = false }
+zcash_primitives = { version = "=0.31.0", default-features = false }
 # Recv-2 transparent address derivation (ADR-0528): the BIP44 external-scope
 # transparent address types behind `transparent-inputs` (set at the workspace root —
 # see the note there). Used to derive the external-scope RECEIVE address
@@ -115,7 +115,7 @@ shardtree      = { workspace = true }
 # stays open behind the injected-prover seam). Audited crate WHOLE (Rule Zero) — we hand
 # `LocalTxProver::bundled()` to the engine and write no proving code. Orchard spends need
 # no external params (Halo2). Exact-pinned at the zcash_primitives generation.
-zcash_proofs = { version = "=0.30.0", default-features = false, features = ["bundled-prover"] }
+zcash_proofs = { version = "=0.31.0", default-features = false, features = ["bundled-prover"] }
 # §3.2a connector: build the tonic Channel over OUR NetDialer (connect_with_
 # connector_lazy + a tower::Service), wrap the dialed stream for hyper (TokioIo),
 # and do TLS ourselves (rustls + tokio-rustls + webpki-roots, the W-swap-1 stack;
@@ -126,8 +126,11 @@ hyper-util   = { workspace = true, features = ["tokio"] }
 rustls       = { workspace = true }
 tokio-rustls = { workspace = true }
 webpki-roots = { workspace = true }
-# RNG capability for `WalletDb` (init_wallet_db `R: RngCore + Clone`) — OsRng.
+# `OsRng` for our own draws that never reach upstream (tokens, jitter, nonces).
 rand_core           = { workspace = true }
+# The generator upstream proves and signs with, through the one seam `src/rng.rs`
+# (ADR-0579 Decision 3; the risk and the pin rules are at the workspace root).
+getrandom           = { workspace = true }
 # §3.2b account import: the `SecretVec<u8>` the audited `import_account_hd` /
 # `init_wallet_db(Some(seed))` API takes. We hold the seed in `Zeroizing`; this
 # is the transient zeroizing wrapper the upstream signature demands at the call.
@@ -182,6 +185,9 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread", "sync", "te
 # test-only subscriber records emitted span/event fields to assert the allowlist.
 tracing-subscriber = { workspace = true }
 proptest = { workspace = true }
+# `tests/pins_policy.rs` reads every SDK manifest through `cargo metadata`, cargo's own
+# parser, and this reads its JSON. Already in the lock (the swap crate's), so no new crate.
+serde_json = { workspace = true }
 static_assertions = { workspace = true }
 tempfile = { workspace = true }
 # A6/A6b + BIND-1-R's `witness_stabilized`: `frontier::Frontier` to hand-build the

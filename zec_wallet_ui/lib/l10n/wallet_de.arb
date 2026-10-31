@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Wir konnten dieses Schirmen nicht bestätigen. Prüfen Sie „Aktivität“, bevor Sie es erneut versuchen.",
   "walletMoveUnknownTitle": "Vor erneutem Verschieben prüfen",
   "walletMoveUnknownBody": "Wir konnten diese Verschiebung nicht bestätigen. Prüfen Sie „Aktivität“, bevor Sie es erneut versuchen.",
-  "walletTxExplainRetryingExpired": "Dieser Versuch ist abgelaufen, bevor das Netzwerk ihn bestätigt hat. Ihr Wallet sendet die Zahlung von selbst erneut, senden Sie sie also nicht selbst noch einmal."
+  "walletTxExplainRetryingExpired": "Dieser Versuch ist abgelaufen, bevor das Netzwerk ihn bestätigt hat. Ihr Wallet sendet die Zahlung von selbst erneut, senden Sie sie also nicht selbst noch einmal.",
+  "walletActivityCancelledByUpgrade": "Durch Upgrade storniert",
+  "walletTxExplainCancelledNotFinal": "Ein Netzwerk-Upgrade hat diese Zahlung storniert, bevor sie bestätigt wurde. Das ist noch nicht endgültig, senden Sie sie also nicht erneut.",
+  "walletTxExplainCancelledHeld": "Ein Netzwerk-Upgrade hat diese Zahlung storniert. Ihre Wallet hält den Betrag noch bis zum Ablauf der Zahlung zurück.",
+  "walletTxExplainCancelledReleased": "Ein Netzwerk-Upgrade hat diese Zahlung storniert, bevor sie bestätigt wurde. Der Betrag steht Ihnen wieder zur Verfügung.",
+  "walletTxExplainRetryingCancelled": "Ein Netzwerk-Upgrade hat diesen Versuch storniert, bevor er bestätigt wurde. Ihr Wallet sendet die Zahlung von selbst erneut, senden Sie sie also nicht selbst noch einmal.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{Das Zcash-Netzwerk wird in etwa 1 Minute aktualisiert. Bis dahin ist das Senden pausiert, damit Ihre Zahlung nicht hängen bleibt.} other{Das Zcash-Netzwerk wird in etwa {minutes} Minuten aktualisiert. Bis dahin ist das Senden pausiert, damit Ihre Zahlung nicht hängen bleibt.}}",
+  "walletShieldPausedTitle": "Schirmen ist pausiert"
 }

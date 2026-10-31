@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Non è stato possibile confermare questa schermatura. Controlla Attività prima di riprovare.",
   "walletMoveUnknownTitle": "Controlla prima di spostare di nuovo",
   "walletMoveUnknownBody": "Non è stato possibile confermare questo spostamento. Controlla Attività prima di riprovare.",
-  "walletTxExplainRetryingExpired": "Questo tentativo è scaduto prima che la rete lo confermasse. Il portafoglio invierà di nuovo il pagamento da solo, quindi non inviarlo di nuovo tu."
+  "walletTxExplainRetryingExpired": "Questo tentativo è scaduto prima che la rete lo confermasse. Il portafoglio invierà di nuovo il pagamento da solo, quindi non inviarlo di nuovo tu.",
+  "walletActivityCancelledByUpgrade": "Annullato dall'aggiornamento",
+  "walletTxExplainCancelledNotFinal": "Un aggiornamento della rete ha annullato questo pagamento prima della conferma. Non è ancora definitivo, quindi non inviarlo di nuovo.",
+  "walletTxExplainCancelledHeld": "Un aggiornamento della rete ha annullato questo pagamento. Il portafoglio trattiene l'importo fino alla scadenza del pagamento.",
+  "walletTxExplainCancelledReleased": "Un aggiornamento della rete ha annullato questo pagamento prima della conferma. L'importo è di nuovo disponibile.",
+  "walletTxExplainRetryingCancelled": "Un aggiornamento della rete ha annullato questo tentativo prima della conferma. Il portafoglio invierà di nuovo il pagamento da solo, quindi non inviarlo di nuovo tu.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{La rete Zcash verrà aggiornata tra circa 1 minuto. Fino ad allora gli invii sono in pausa, così il tuo pagamento non può bloccarsi.} other{La rete Zcash verrà aggiornata tra circa {minutes} minuti. Fino ad allora gli invii sono in pausa, così il tuo pagamento non può bloccarsi.}}",
+  "walletShieldPausedTitle": "La schermatura è in pausa"
 }

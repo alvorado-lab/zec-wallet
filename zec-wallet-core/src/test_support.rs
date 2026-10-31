@@ -28,7 +28,6 @@ use std::convert::Infallible;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use rand_core::OsRng;
 use rusqlite::Connection;
 use tempfile::TempDir;
 use zcash_client_backend::data_api::WalletWrite;
@@ -51,12 +50,13 @@ use zcash_protocol::local_consensus::LocalNetwork;
 use zcash_protocol::value::Zatoshis as ProtoZat;
 
 use crate::constants::SQLITE_BUSY_TIMEOUT_MS;
+use crate::rng::{WalletRng, wallet_rng};
 
 /// The harness wallet DB — the SAME `WalletDb` shape the live wallet uses, on the fake
 /// `LocalNetwork` the `data_api::testing` builder requires. (Deliberately the same shape as
 /// `send::tests`'s aliases; the distinguishing axis between the two harnesses is the cache's
 /// `InsertResult` and in-memory-vs-file storage, not these types — see the module doc.)
-pub(crate) type HarnessDb = WalletDb<Connection, LocalNetwork, SystemClock, OsRng>;
+pub(crate) type HarnessDb = WalletDb<Connection, LocalNetwork, SystemClock, WalletRng>;
 pub(crate) type HarnessState = TestState<MemCache, HarnessDb, LocalNetwork>;
 
 // ── In-memory block cache (a `TestCache` over a height→block map) ───────────────
@@ -156,7 +156,8 @@ impl DataStoreFactory for FileBackedDsf {
     ) -> Result<Self::DataStore, ()> {
         // `for_path` opens the file AND loads the rarray vtab module `WalletDb` requires. No
         // SQLCipher key (see module doc — query/scan logic under test, not at-rest crypto).
-        let mut db = WalletDb::for_path(&self.path, network, SystemClock, OsRng).map_err(|_| ())?;
+        let mut db =
+            WalletDb::for_path(&self.path, network, SystemClock, wallet_rng()).map_err(|_| ())?;
         // 0.24.0's anchor-retention knob, applied as upstream's own `TestDbFactory`
         // does (None ⇒ the engine default, `ZIP_318`). Ignoring it would silently
         // hand a test the default when it asked for something else.
@@ -199,9 +200,19 @@ pub(crate) struct HistoryHarness {
 impl HistoryHarness {
     /// A fresh wallet with one Sapling account at activation and no history yet.
     pub(crate) fn new() -> Self {
+        Self::on_network(TestBuilder::<(), ()>::DEFAULT_NETWORK)
+    }
+
+    /// [`Self::new`] on `network` instead of upstream's default. The NU7 wave's step 4
+    /// needs a chain that STRADDLES an activation (`LocalNetwork { nu7: Some(h), .. }`),
+    /// which the default, with every upgrade from Sapling on at one height, never does.
+    /// The account's birthday is still the network's Sapling activation, so the first
+    /// mined block lands there.
+    pub(crate) fn on_network(network: LocalNetwork) -> Self {
         let dir = tempfile::tempdir().expect("tempdir");
         let path = dir.path().join("wallet.db");
         let state = TestBuilder::new()
+            .with_network(network)
             .with_data_store_factory(FileBackedDsf { path: path.clone() })
             .with_block_cache(MemCache::default())
             .with_account_from_sapling_activation(BlockHash([0; 32]))
@@ -583,6 +594,14 @@ impl HistoryHarness {
     pub(crate) fn wallet(&self) -> &HarnessDb {
         self.state.wallet()
     }
+
+    /// The whole harness state, for a test that must PROPOSE and SIGN in two steps
+    /// with the chain moving between them ([`Self::create_send`] does both at once).
+    /// Mining through it bypasses this harness's block count: a caller that mines
+    /// here keeps using it, never `mine_*` afterwards.
+    pub(crate) fn state_mut(&mut self) -> &mut HarnessState {
+        &mut self.state
+    }
 }
 
 // ── R12 §4.5: a REAL held lock on a keyed wallet or cache file ───────────────
@@ -650,7 +669,7 @@ pub(crate) fn wallet_conn_that_has_not_read(
         keyed_connection_that_has_not_read(path, key),
         network.consensus(),
         SystemClock,
-        OsRng,
+        wallet_rng(),
     )
 }
 

@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "לא הצלחנו לאשר את ההגנה הזו. בדוק בפעילות לפני שתנסה שוב.",
   "walletMoveUnknownTitle": "בדוק לפני שתעביר שוב",
   "walletMoveUnknownBody": "לא הצלחנו לאשר את ההעברה הזו. בדוק בפעילות לפני שתנסה שוב.",
-  "walletTxExplainRetryingExpired": "תוקף הניסיון הזה פג לפני שהרשת אישרה אותו. הארנק שלך ישלח את התשלום שוב בעצמו, אז אל תשלח אותו שוב בעצמך."
+  "walletTxExplainRetryingExpired": "תוקף הניסיון הזה פג לפני שהרשת אישרה אותו. הארנק שלך ישלח את התשלום שוב בעצמו, אז אל תשלח אותו שוב בעצמך.",
+  "walletActivityCancelledByUpgrade": "בוטל בגלל שדרוג",
+  "walletTxExplainCancelledNotFinal": "שדרוג רשת ביטל את התשלום הזה לפני שאושר. זה עדיין לא סופי, לכן אל תשלח אותו שוב.",
+  "walletTxExplainCancelledHeld": "שדרוג רשת ביטל את התשלום הזה. הארנק מחזיק את הסכום עד שתוקף התשלום יפוג.",
+  "walletTxExplainCancelledReleased": "שדרוג רשת ביטל את התשלום הזה לפני שאושר. הסכום זמין שוב לשימוש.",
+  "walletTxExplainRetryingCancelled": "שדרוג רשת ביטל את הניסיון הזה לפני שאושר. הארנק ישלח את התשלום שוב בעצמו, לכן אל תשלח אותו שוב בעצמך.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{רשת Zcash תשודרג בעוד דקה בערך. עד אז השליחה מושהית, כדי שהתשלום שלך לא ייתקע.} other{רשת Zcash תשודרג בעוד כ־{minutes} דקות. עד אז השליחה מושהית, כדי שהתשלום שלך לא ייתקע.}}",
+  "walletShieldPausedTitle": "ההגנה מושהית"
 }

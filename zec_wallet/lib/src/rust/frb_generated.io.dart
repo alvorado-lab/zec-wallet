@@ -176,6 +176,9 @@ abstract class ZecWalletRustLibApiImplPlatform
   WalletConfig dco_decode_box_autoadd_wallet_config(dynamic raw);
 
   @protected
+  CancelPhase dco_decode_cancel_phase(dynamic raw);
+
+  @protected
   CustodyDisclosure dco_decode_custody_disclosure(dynamic raw);
 
   @protected
@@ -778,6 +781,9 @@ abstract class ZecWalletRustLibApiImplPlatform
   WalletConfig sse_decode_box_autoadd_wallet_config(
     SseDeserializer deserializer,
   );
+
+  @protected
+  CancelPhase sse_decode_cancel_phase(SseDeserializer deserializer);
 
   @protected
   CustodyDisclosure sse_decode_custody_disclosure(SseDeserializer deserializer);
@@ -1502,6 +1508,9 @@ abstract class ZecWalletRustLibApiImplPlatform
     WalletConfig self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_cancel_phase(CancelPhase self, SseSerializer serializer);
 
   @protected
   void sse_encode_custody_disclosure(

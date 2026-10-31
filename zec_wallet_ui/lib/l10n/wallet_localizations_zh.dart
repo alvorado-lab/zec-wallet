@@ -3021,4 +3021,34 @@ class WalletLocalizationsZh extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       '此次尝试在网络确认前已过期。您的钱包会自动重新发送这笔付款，请勿自行再次发送。';
+
+  @override
+  String get walletActivityCancelledByUpgrade => '因升级而取消';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      '网络升级在此付款确认前将其取消。这还不是最终结果，请不要再次发送。';
+
+  @override
+  String get walletTxExplainCancelledHeld => '网络升级取消了此付款。在付款到期前，钱包仍会保留这笔金额。';
+
+  @override
+  String get walletTxExplainCancelledReleased => '网络升级在此付款确认前将其取消。这笔金额已可再次使用。';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      '网络升级在此次尝试确认前将其取消。您的钱包会自动重新发送这笔付款，请不要自己再次发送。';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'Zcash 网络将在大约 $minutes 分钟后升级。在此之前暂停发送，以免您的付款被卡住。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => '屏蔽已暂停';
 }

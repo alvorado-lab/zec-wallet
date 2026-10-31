@@ -3272,4 +3272,39 @@ class WalletLocalizationsNl extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Deze poging is verlopen voordat het netwerk haar bevestigde. Uw wallet verzendt de betaling vanzelf opnieuw, dus verzend deze niet zelf opnieuw.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Geannuleerd door upgrade';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'Een netwerkupgrade heeft deze betaling geannuleerd voordat die werd bevestigd. Dit is nog niet definitief, dus verstuur hem niet opnieuw.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'Een netwerkupgrade heeft deze betaling geannuleerd. Uw wallet houdt het bedrag vast tot de betaling verloopt.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'Een netwerkupgrade heeft deze betaling geannuleerd voordat die werd bevestigd. Het bedrag is weer beschikbaar.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'Een netwerkupgrade heeft deze poging geannuleerd voordat die werd bevestigd. Uw wallet verstuurt de betaling vanzelf opnieuw, dus verstuur hem niet zelf nog een keer.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Het Zcash-netwerk wordt over ongeveer $minutes minuten bijgewerkt. Tot dan is verzenden gepauzeerd, zodat uw betaling niet vast kan komen te zitten.',
+      one:
+          'Het Zcash-netwerk wordt over ongeveer 1 minuut bijgewerkt. Tot dan is verzenden gepauzeerd, zodat uw betaling niet vast kan komen te zitten.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Afschermen is gepauzeerd';
 }

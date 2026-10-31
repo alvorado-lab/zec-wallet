@@ -6,6 +6,7 @@ import '../../../core/theme/icons.dart';
 import 'package:zec_wallet_ui/l10n/wallet_localizations.dart';
 import '../../../shared/wallet_notice.dart';
 import '../sync_status_presentation.dart' show graceEndedText;
+import '../upgrade_pause.dart' show upgradePausedText;
 import '../wallet_sync_controller.dart' show walletSyncPassesRunProvider;
 import '../wallet_rescan_controller.dart'
     show WalletCatchUpNone, walletCatchUpCueProvider;
@@ -89,6 +90,11 @@ class SendFormFaultView extends ConsumerWidget {
       // servers", plus the device clock for the clock rule); never the
       // update-the-app copy.
       message = graceEndedText(l10n, f.by, f.blocksSinceLastCurrent);
+    } else if (f is SendUpgradePausedFault) {
+      // ADR-0580: the decided sentence, with the wait in whole minutes from
+      // the SDK's blocksLeft. One source for both hosting forms (Send and
+      // Move-to-transparent) and the other surfaces (`upgrade_pause.dart`).
+      message = upgradePausedText(l10n, f.blocksLeft);
     } else if (f is SendCategoricalFault) {
       // The not-synced copy must not say "wait for sync to catch up" while
       // no sync pass will run (nothing is catching up). Read HERE,

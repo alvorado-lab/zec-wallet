@@ -258,7 +258,7 @@ pub(crate) fn account_ufvk_encoding(
         .ok_or(WalletError::StoreCorrupt)?;
     // a stored account always carries a UFVK; its absence is corruption
     let ufvk = account.ufvk().ok_or(WalletError::StoreCorrupt)?;
-    Ok(Some(crate::derivation::encode_ufvk(network, ufvk)))
+    crate::derivation::encode_ufvk(network, ufvk).map(Some)
 }
 
 /// The wallet's transparent RECEIVE address, read from the STORED account's UFVK
@@ -454,7 +454,8 @@ pub(crate) fn tx_mined_height(
 /// depth — a 1-confirmation ephemeral output appears fully in `Balance::spendable_value` (the
 /// confirmations policy governs SHIELDING eligibility, not a depth bucketing of the read). So a
 /// reorg-finality split cannot come from this call; iii derives `is_final` from per-tx/per-output depth
-/// (the host's `transactions()` view or a per-output read) against the `REORG_MAX_BLOCKS` SSOT.
+/// (the host's `transactions()` view or a per-output read) against the burial SSOT
+/// (`stranded::irreversibly_buried`).
 ///
 /// `Ok(Vec::new())` before any account exists AND when no ephemeral was ever reserved (a wallet that has
 /// made no TEX send). An unsynced wallet (no chain state for the read) yields empty, NOT
@@ -519,7 +520,7 @@ pub(crate) fn ephemeral_recoverable_balances(
 /// applies the SAME `excluding_wallet_internal_ephemeral_outputs` predicate AND the SAME dust floor
 /// (`value > MARGINAL_FEE`) as the balance read, so its per-UTXO values reconcile with `recoverable_zat`
 /// (the buried sum is `<= recoverable_zat`, the invariant `StrandedAmount::welded` relies on). We keep
-/// only UTXOs [`buried`](crate::stranded::buried) beyond `REORG_MAX_BLOCKS`; `is_final` is true only when
+/// only UTXOs [irreversibly buried](crate::stranded::irreversibly_buried); `is_final` is true only when
 /// that buried sum equals the whole economic amount — CONSERVATIVE (any shallow/pending portion ⇒ not
 /// final). The reads are LOCAL sqlite (no RPC); the recoverable-ephemeral count is tiny (≤ the gap
 /// limit, usually 0–1), so the per-ephemeral query is cheap.
@@ -552,14 +553,15 @@ pub(crate) fn ephemeral_recoverable_finality(
                 LockFilter::Unfiltered,
             )
             .map_err(|e| e.into_store_fault())?;
-        // Sum the value of the UTXOs already buried beyond the reorg horizon. An unmined output
-        // (`mined_height = None`) is never buried; a shallow one fails the `buried` depth test — both
+        // Sum the value of the UTXOs already irreversibly buried. An unmined output
+        // (`mined_height = None`) is never buried; a shallow one fails the burial predicate — both
         // are excluded, so `is_final` stays false until the WHOLE amount is irreversible.
         let buried_zat: u64 = utxos
             .iter()
             .filter(|u| {
-                u.mined_height()
-                    .is_some_and(|h| crate::stranded::buried(u32::from(h), tip))
+                u.mined_height().is_some_and(|h| {
+                    crate::stranded::irreversibly_buried(wdb.params(), u32::from(h), tip)
+                })
             })
             .map(|u| u64::from(u.value()))
             .sum();
@@ -714,7 +716,9 @@ pub(crate) fn mint_diversified_receive(
 /// height is a battery/bandwidth scan-DoS), not only reject too-high.
 //
 // Consumed by `provision::resolve_birthday` (inc-2c-iv-c) — which decodes the
-// TRUSTED bundled frontier (§3.2f), NOT a live treestate — and by the §8 tests.
+// bundled row (§3.2f), NOT a live treestate; the trees are seeded later by the
+// first sync pass's live `GetTreeState` (`provision`'s module doc) — and by the
+// §8 tests.
 pub(crate) fn birthday_from_treestate(
     treestate: TreeState,
 ) -> Result<AccountBirthday, TreeStateInvalid> {
@@ -2159,7 +2163,7 @@ mod tests {
             conn,
             Network::Test.consensus(),
             zcash_client_sqlite::util::SystemClock,
-            rand_core::OsRng,
+            crate::rng::wallet_rng(),
         );
         match primary_account_id(&wdb) {
             Err(WalletError::StoreCorrupt) => {}

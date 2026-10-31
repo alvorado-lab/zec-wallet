@@ -12,6 +12,7 @@ import 'reclaim.dart';
 import 'send/send_state.dart' show parkedAuthorizeErrorPrecedesPersistence;
 import 'send_authorization.dart';
 import 'sync_status_presentation.dart' show walletCompactTimeFormat;
+import 'upgrade_pause.dart' show upgradePausedTextFor;
 import 'wallet_activity_controller.dart';
 import 'wallet_session.dart' show WalletSession;
 import 'wallet_providers.dart';
@@ -995,9 +996,14 @@ class _ParkedRow extends ConsumerWidget {
           (identical(error, authorizeThrew) &&
               parkedAuthorizeErrorPrecedesPersistence(error));
       if (beforeSigning) {
-        message = rearmCalled && wasRearmed()
-            ? l10n.walletParkedAuthorizeRearmed
-            : l10n.walletParkedAuthorizeFailed;
+        // ADR-0580: the pre-upgrade pause is not a failure. The row stays
+        // queued and the wallet sends it after the upgrade, so the line says
+        // why and how long, never "couldn't send".
+        message =
+            upgradePausedTextFor(l10n, error) ??
+            (rearmCalled && wasRearmed()
+                ? l10n.walletParkedAuthorizeRearmed
+                : l10n.walletParkedAuthorizeFailed);
       } else {
         final (text, left) = await _rereadAfterLostAnswer(
           l10n,

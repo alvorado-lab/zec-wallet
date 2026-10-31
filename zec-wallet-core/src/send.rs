@@ -51,7 +51,7 @@ use zcash_client_sqlite::ReceivedNoteId;
 use zcash_client_sqlite::error::SqliteClientError;
 use zcash_keys::keys::UnifiedSpendingKey;
 use zcash_protocol::TxId;
-use zcash_protocol::consensus::Parameters;
+use zcash_protocol::consensus::{BlockHeight, BranchId, Parameters};
 // `ShieldedProtocol` is a deprecated alias for `ShieldedPool` as of zcash_protocol
 // 0.10.5, and CI runs `clippy --all-targets -D warnings` — so the alias is a BUILD
 // FAILURE, not a nit. Renaming it here rather than silencing the lint is deliberate:
@@ -68,6 +68,7 @@ use crate::constants::{
     SHIELDING_THRESHOLD_ZAT,
 };
 use crate::error::WalletError;
+use crate::expiry::EffectiveExpiry;
 use crate::intent_store::{
     InFlightIntent, MAX_CLAIM_NOTES, NoteClaim, PROTO_IRONWOOD, PROTO_ORCHARD, PROTO_SAPLING,
 };
@@ -322,6 +323,10 @@ where
     <DbT as InputSource>::NoteRef: Copy + Eq + Ord,
     P: Parameters + Clone,
 {
+    // The pre-upgrade pause (ADR-0580), before any note is selected: a send whose mining
+    // window would cross an activation is refused here with the error the host renders,
+    // and again at sign (`create_signed_core`) for a proposal confirmed inside the window.
+    assert_no_upgrade_imminent(&*wdb, params)?;
     let input_selector = GreedyInputSelector::new();
     let change_strategy = standard::SingleOutputChangeStrategy::new(
         StandardFeeRule::Zip317,
@@ -394,7 +399,12 @@ where
         None,
     );
     match result {
-        Ok(proposal) => Ok(proposal),
+        // ZIP 218's per-block limits, which upstream does not check: from the NU7
+        // activation a proposal no block may carry is refused here, `ProposeFailed`.
+        Ok(proposal) => {
+            crate::block_limits::check_proposal(params, &proposal)?;
+            Ok(proposal)
+        }
         // The mutable borrow for `propose_transfer` is released here, so the error
         // mapper can re-read `wdb` (immutably) for the `pending_incoming` enrichment.
         Err(e) => Err(map_propose_err(wdb, e)),
@@ -541,8 +551,10 @@ fn propose_refusal_is_transient<DE, CE, SE, FE, ChE, N>(
     )
 }
 
-/// Every string [`propose_err_variant`] can return — the CLOSED static vocabulary
-/// the `code` field carries on a `wallet.propose_refused` event (phase-3 P3-2).
+/// Every string [`propose_err_variant`] can return, plus the code of the SDK's own
+/// refusal at propose (`block_limits::REFUSAL_CODE`, ZIP 218's per-block limits): the
+/// CLOSED static vocabulary the `code` field carries on a `wallet.propose_refused`
+/// event (phase-3 P3-2).
 /// `tracing_guard::first_violation` exempts a `code` VALUE from the §5.4
 /// forbidden-substring scan only when it is exactly one of these: five of them
 /// (`address`, `address_not_recognized`, `key_not_recognized`,
@@ -583,6 +595,7 @@ pub(crate) const PROPOSE_ERR_VARIANT_CODES: &[&str] = &[
     "expiry_height_below_target_height",
     "expiry_height_conflicts_with_canonical_crossing",
     "other",
+    crate::block_limits::REFUSAL_CODE,
 ];
 
 /// The NAME of an upstream propose error's variant, and nothing else — no payload,
@@ -920,7 +933,7 @@ fn checked_add(acc: Zatoshis, value: Zatoshis) -> Result<Zatoshis, WalletError> 
 ///   (the engine's `InsufficientFunds` — an honest "not worth a fee yet", NOT an error; the
 ///   host hides the shield action); and
 /// - a typed `WalletError` for a real fault (corruption ⇒ `StoreCorrupt`, not synced far
-///   enough ⇒ `ProposalStale`).
+///   enough ⇒ `ProposalStale`), or the pre-upgrade pause (`UpgradeImminent`, ADR-0580).
 ///
 /// Money-decision-only, exactly like [`propose_core`]: no spending key, no proof, no
 /// network, no DB write. Generic over DB + params so the funded `data_api::testing` harness
@@ -1012,6 +1025,12 @@ where
     use zcash_client_backend::data_api::error::Error;
     use zcash_client_backend::fees::ChangeError;
 
+    // The pre-upgrade pause (ADR-0580), as in `propose_core`: a shield or a sweep is a
+    // transaction like any other, and one signed under the ending branch that missed its
+    // last blocks would hold its UTXOs until its stored expiry and burial. Refused before
+    // any UTXO is selected; the background caller of the shield (the host's auto-shield)
+    // treats it as a quiet deferral.
+    assert_no_upgrade_imminent(&*wdb, params)?;
     let input_selector = GreedyInputSelector::new();
     let change_strategy = standard::SingleOutputChangeStrategy::new(
         StandardFeeRule::Zip317,
@@ -1045,7 +1064,12 @@ where
         None,
     );
     match result {
-        Ok(proposal) => Ok(Some(proposal)),
+        // ZIP 218's per-block limits, as in `propose_core`. A shield or a sweep cannot
+        // reach them today (no shielded input, one shielded output); the check keeps it so.
+        Ok(proposal) => {
+            crate::block_limits::check_proposal(params, &proposal)?;
+            Ok(Some(proposal))
+        }
         // Below the explicit §7 threshold gate (`balance.total() < threshold`) — an
         // honest no-op, not an error (the host hides the shield CTA / the sweep skips this ephemeral).
         Err(Error::InsufficientFunds { .. }) => Ok(None),
@@ -1152,6 +1176,109 @@ pub(crate) fn summarize_shield<N>(
 // packaging decision (bundle vs host-asset vs verified-download — §3.2h inc-2d-2 AS
 // BUILT) is a wiring choice, not a core one; only the test names a concrete prover.
 
+/// The pre-upgrade send pause (ADR-0580, decided 2026-10-30): refuse a send whose
+/// mining window would cross a network upgrade's activation.
+///
+/// `tip` is the wallet's recorded chain tip, so the first block a new transaction can be
+/// mined in is `tip + 1`. When the branch there differs from the branch
+/// [`PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS`] (`K`) blocks later, an activation `H` lies in
+/// `(tip + 1, tip + 1 + K]`, and a transaction signed now under the branch that is ending
+/// could be mined only in the `H - (tip + 1)` blocks before it. If it missed them it would
+/// be dead, and the engine would hold its notes until its stored expiry: 30 to 60 days for
+/// a canonical ZIP-318 crossing (the doc of [`assert_proposal_anchor_fresh`]). So the
+/// refused tips are `H - K - 1` to `H - 2`. From the tip `H - K - 2` a send still has
+/// `K + 1` blocks before `H`; from the tip `H - 1` the next block is under the new branch,
+/// and sends work again at once, unless another activation falls in the next `K` blocks,
+/// in which case the pause runs on and names that one.
+///
+/// Both branches are read through the crate (`BranchId::for_height`), and `H` is the upper
+/// bound of the next block's branch (`BranchId::height_bounds`), never the hand-kept
+/// `KNOWN_UPGRADES`. The `unwrap_or` cannot be taken: the next block's branch is in effect
+/// at `tip + 1` and a later one at `tip + 1 + K`, so its upper bound exists and lies in that
+/// range. Were it ever absent, the refusal would still stand, naming the window's end.
+///
+/// `BlockHeight` arithmetic saturates, so a hostile tip near `u32::MAX` cannot panic here.
+pub(crate) fn upgrade_pause<P: Parameters>(
+    params: &P,
+    tip: BlockHeight,
+) -> Result<(), WalletError> {
+    let next = tip + 1;
+    let window_end = next + PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS;
+    let branch = BranchId::for_height(params, next);
+    if branch == BranchId::for_height(params, window_end) {
+        return Ok(());
+    }
+    let activation = branch
+        .height_bounds(params)
+        .and_then(|(_, upper)| upper)
+        .unwrap_or(window_end);
+    Err(WalletError::UpgradeImminent {
+        activation_height: u32::from(activation),
+        blocks_left: activation - next,
+    })
+}
+
+/// [`upgrade_pause`] at the wallet's recorded chain tip, the check every propose and sign
+/// path runs. A wallet with no recorded tip passes it: it is not synced far enough to
+/// anchor anything, and the gates that need the tip refuse it (`propose_transfer`'s
+/// `ScanRequired` and [`assert_proposal_anchor_fresh`], both `ProposalStale`). A DB fault
+/// is the corruption door.
+pub(crate) fn assert_no_upgrade_imminent<DbT, P>(wdb: &DbT, params: &P) -> Result<(), WalletError>
+where
+    DbT: WalletRead<Error: ClassifyStoreFault>,
+    P: Parameters,
+{
+    #[cfg(test)]
+    if upgrade_pause_testing::suspended() {
+        return Ok(());
+    }
+    match wdb.chain_height().map_err(|e| e.into_store_fault())? {
+        Some(tip) => upgrade_pause(params, tip),
+        None => Ok(()),
+    }
+}
+
+/// Test builds only: build what the pause refuses. Several of the activation check's rows
+/// need a send signed under the ending branch inside the window, the transaction an older
+/// build of this SDK, or another wallet on the same seed, can leave pending at an
+/// activation, and which the readers must still judge. [`suspend`](upgrade_pause_testing::suspend)
+/// lifts the pause on the calling thread while its guard lives; every other gate on the
+/// path runs as in production.
+#[cfg(test)]
+pub(crate) mod upgrade_pause_testing {
+    use std::cell::Cell;
+    use std::marker::PhantomData;
+
+    thread_local! {
+        static SUSPENDED: Cell<bool> = const { Cell::new(false) };
+    }
+
+    /// Lifts the pause until dropped, then puts back what was in force before it, so a
+    /// nested guard's drop does not bring the pause back while an outer guard still lives.
+    /// Not `Send`: it governs the thread that made it.
+    pub(crate) struct Suspended {
+        previous: bool,
+        _not_send: PhantomData<*const ()>,
+    }
+
+    pub(crate) fn suspend() -> Suspended {
+        Suspended {
+            previous: SUSPENDED.replace(true),
+            _not_send: PhantomData,
+        }
+    }
+
+    impl Drop for Suspended {
+        fn drop(&mut self) {
+            SUSPENDED.set(self.previous);
+        }
+    }
+
+    pub(crate) fn suspended() -> bool {
+        SUSPENDED.get()
+    }
+}
+
 /// Re-anchor guard (§3.2h re-anchor obligation — the discharged suspend tripwire).
 ///
 /// **NOT ALWAYS 40 BLOCKS ANY MORE (`zcash_client_backend` 0.24.0).** For a
@@ -1166,38 +1293,68 @@ pub(crate) fn summarize_shield<N>(
 /// every downstream statement about how fast an unbroadcast send self-heals; see
 /// `note_spendable` and `docs/plan/ironwood-phase-b.md` §3.
 ///
-/// For every other send the builder still sets `min_target_height +
-/// DEFAULT_TX_EXPIRY_DELTA` (40 blocks). Either way it NEVER consults the live tip, and
+/// For every other send the builder still sets `min_target_height +` the target
+/// branch's default delta (pre-NU7 40 blocks, NU7 120; `default_tx_expiry_delta`).
+/// Either way it NEVER consults the live tip, and
 /// `create_proposed_transactions` errors only on a *pruned* anchor — never a merely
 /// *stale* one. So a proposal resumed after a device suspend (the monotonic
 /// `PROPOSAL_TTL_SECS` clock PAUSED while the chain advanced) could otherwise build a
 /// BORN-EXPIRED tx (funds locked to a dead expiry height until it un-mines — §6.2).
-/// This runs FIRST, before any key is derived: it compares the proposal's anchor
-/// (`min_target_height`) against the wallet's recorded chain tip (`chain_height()`)
-/// and rejects `ProposalStale` (re-`propose`) when the chain has advanced past
-/// `min_target_height + PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS` — keeping a signed tx ≥ 20
-/// blocks of mining headroom. A wallet with no recorded tip (`None`, not synced far
-/// enough) is also `ProposalStale` (sync first). A DB fault is the corruption door.
+/// This runs inside [`create_signed_core`] after the pre-upgrade pause and before the
+/// spending key is used: it compares the proposal's anchor (`min_target_height`)
+/// against the wallet's recorded chain tip (`chain_height()`) and rejects
+/// `ProposalStale` (re-`propose`) when the chain has advanced past
+/// `min_target_height + PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS`. A wallet with no recorded tip
+/// (`None`, not synced far enough) is also `ProposalStale` (sync first). A DB fault is
+/// the corruption door.
 ///
-/// This catches the realistic suspend case (post-resume sync recorded the new tip);
-/// the resume-before-sync residual (the DB tip is itself still stale, so no drift is
-/// visible here) degrades to the engine's expiry + the §6.2 resubmission/expiry
-/// machinery — an honest expiry, never a fund loss.
-fn assert_proposal_anchor_fresh<DbT, N>(
+/// **The headroom a signed transaction keeps, said exactly.** With `t` the tip recorded
+/// at signing, the drift bound gives `t <= target + 20`, and the builder's expiry is at
+/// least `target + 40` (120 under NU7, weeks for a crossing), so the expiry admits every
+/// block from `t + 1` to `t + 20`. Within one branch that is the whole argument: at
+/// least 20 blocks of mining headroom. Across an activation two more clauses make it
+/// hold: the pre-upgrade pause ([`upgrade_pause`]) refuses unless `t + 1` and `t + 21`
+/// share a branch, and the branch clause below refuses unless that branch is the
+/// target's, so all 20 blocks are under the branch the transaction is signed for.
+/// The headroom is measured from the RECORDED tip, so where that tip lags the chain it
+/// is shorter by the lag. Two residuals remain. The first is a class: any sign before
+/// the first sync since the chain moved (a resume, an old database opened, a device whose
+/// sync keeps failing), where the DB tip is stale, so neither drift nor a coming
+/// activation is visible here. The second is a server whose reported tip is wrong. Either
+/// degrades to the engine's expiry, the §6.2 resubmission and expiry machinery, and,
+/// across an activation, the
+/// expiry kernel ([`crate::expiry`]), which marks a transaction signed under the ending
+/// branch dead once the wallet has synced: an honest expiry, never a fund loss, though
+/// a crossing's notes then stay held until its stored expiry.
+///
+/// **The branch clause (ADR-0579 Decision 4, the signing-time half, kept by ADR-0580).**
+/// Upstream builds at the proposal's target, so a proposal targeted below a network
+/// upgrade's activation and signed once the tip has reached the block before it would be
+/// built under the branch that is ending: no block could carry it. So the guard ALSO
+/// returns `ProposalStale` when the branch at the proposal's target differs from the
+/// branch at the next block (`tip + 1`); a fresh proposal is then built under the new
+/// branch. With the pause refusing the tips `H - 21` to `H - 2`, the clause is what
+/// refuses a proposal made at the last allowed tip `H - 22` (target `H - 21`) and signed
+/// at `H - 1`, where the drift is exactly 20 and the drift bound lets it through.
+fn assert_proposal_anchor_fresh<DbT, P, N>(
     wdb: &DbT,
+    params: &P,
     proposal: &Proposal<StandardFeeRule, N>,
 ) -> Result<(), WalletError>
 where
     DbT: WalletRead<Error: ClassifyStoreFault>,
+    P: Parameters,
 {
-    let target = u32::from(proposal.min_target_height());
+    let target = proposal.min_target_height();
     let tip = wdb
         .chain_height()
         .map_err(|e| e.into_store_fault())?
         // No recorded chain tip ⇒ not synced far enough to anchor a send safely.
         .ok_or(WalletError::ProposalStale)?;
-    let tip = u32::from(tip);
-    if tip > target.saturating_add(PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS) {
+    if u32::from(tip) > u32::from(target).saturating_add(PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS) {
+        return Err(WalletError::ProposalStale);
+    }
+    if BranchId::for_height(params, target.into()) != BranchId::for_height(params, tip + 1) {
         return Err(WalletError::ProposalStale);
     }
     Ok(())
@@ -1208,8 +1365,10 @@ where
 /// [`propose_core`] (the funded `LocalNetwork` harness and the live `Network` wallet
 /// run the SAME code), and over the injected Sapling spend/output provers.
 ///
-/// Order is load-bearing: (1) the [`assert_proposal_anchor_fresh`] re-anchor guard
-/// rejects a suspend-stale proposal BEFORE any key material is touched; (2) the engine
+/// Order is load-bearing: (1) the pre-upgrade pause ([`assert_no_upgrade_imminent`],
+/// ADR-0580) and then the [`assert_proposal_anchor_fresh`] re-anchor guard reject a send
+/// inside an activation's window and a suspend-stale proposal BEFORE the spending key is
+/// used; (2) the engine
 /// builds, proves, signs, and PERSISTS every tx via `store_transactions_to_be_sent`
 /// BEFORE returning the ids — so a kill between this return and the broadcast (inc-2d-3)
 /// loses no bookkeeping (the resubmission machinery re-submits unexpired unmined txs on
@@ -1222,6 +1381,13 @@ where
 /// runs it inside `spawn_blocking`), and never placed in a `Debug`-reachable container.
 /// The caller derives it transiently via [`crate::derivation::derive_spending_key`] and
 /// moves it straight in. The un-zeroized residue is the documented §4.2(a) residual.
+///
+/// **ENTROPY FAILURE PANICS HERE, UNDER THE CALLER'S LOCK.** The generator is drawn
+/// only inside this call (`crate::rng`), and every production caller holds the
+/// wallet's db mutex across it. An operating-system entropy failure panics
+/// (`UnwrapErr`), the unwind poisons that mutex, and every later sign on the wallet
+/// stops at the poisoned `.expect` (`crate::runtime::run_blocking`): nothing signs
+/// twice. Never catch that panic here to retry.
 ///
 /// Reached in production through the public `send` (2d-3 landed); the test-only
 /// `Wallet::sign_proposal` drives it directly over the harness prover (P3-7 measured
@@ -1273,13 +1439,21 @@ where
         return Err(WalletError::ProposeFailed);
     }
 
-    // (1) Re-anchor against the live tip BEFORE deriving/using any spend authority. The
+    // (1) The pre-upgrade pause (ADR-0580), FIRST of the height checks: a proposal made
+    //     before the window and confirmed inside it is refused `UpgradeImminent`, the same
+    //     answer propose gives, never the `ProposalStale` below, on which a host would
+    //     re-propose into the pause for up to 20 blocks. The wallet's own callers run the
+    //     same check before they pull a seed; this one, under the db lock the create holds,
+    //     is the one no signing path can skip.
+    assert_no_upgrade_imminent(wdb, params)?;
+
+    // (2) Re-anchor against the live tip BEFORE using any spend authority. The
     //     check is HEIGHT-based (not clock-based), and it is the ONLY freshness gate on this
     //     path — a device suspend DURING the proving below is latency-only (no clock/TTL is
     //     consulted after this point), so there is no frozen-monotonic-clock hazard here. Do
     //     NOT add a post-proving freshness re-check: it would re-introduce exactly the
     //     suspend-paused-TTL trap the §3.2h consume SAFETY-OBLIGATION warns against.
-    assert_proposal_anchor_fresh(wdb, proposal)?;
+    assert_proposal_anchor_fresh(wdb, params, proposal)?;
 
     // (2) Create + prove + sign + persist. InputsErrT/ChangeErrT are pinned `Infallible`
     //     — create+sign runs neither input selection nor change selection (both already
@@ -1294,6 +1468,14 @@ where
     >(
         wdb,
         params,
+        // The clock the `WalletDb` holds, from the same seam. Read once, used twice:
+        // it judges ZIP 316 Revision 2 recipient expiry, and it stamps the
+        // transaction's `created`, the column the delivery and history readers
+        // select wallet-created rows on (`delivery.rs`, `history.rs`).
+        &crate::rng::wallet_db_clock(),
+        // The randomness to construct, prove and sign with: the ONE seam (ADR-0579
+        // Decision 3), drawn here, inside the locked create.
+        &mut crate::rng::wallet_rng(),
         spend_prover,
         output_prover,
         &SpendingKeys::from_unified_spending_key(usk),
@@ -1521,8 +1703,8 @@ pub(crate) fn claim_from_proposal<N>(
 /// is not 40 blocks for the modal send.** A canonical ZIP-318 crossing — a lone payment
 /// of a `{1,2,5}×10^k` denomination at a height where NU6.3 is active, i.e. mainnet today
 /// and the amount a person actually types — is built with the ZIP-318 ROLLING expiry:
-/// 34,561–69,120 blocks, roughly **30 to 60 days**, not the ~50 minutes
-/// `DEFAULT_TX_EXPIRY_DELTA` gives everything else. So for such a send, a sign that
+/// 34,561–69,120 blocks, roughly **30 to 60 days**, not the ~50 minutes the default
+/// delta gives everything else (pre-NU7 40 blocks, NU7 120). So for such a send, a sign that
 /// succeeded followed by a broadcast that did not (offline, endpoint down, crash between
 /// the two) leaves the claimed note held and the intent `Submitting` for that whole
 /// window instead of an hour. Nothing here is wrong — the witness is still correct and
@@ -1781,9 +1963,9 @@ pub(crate) enum Reconciled {
         txs: Vec<Vec<u8>>,
         continues: Vec<bool>,
     },
-    /// A multi-step send STRANDED (§3.2i-2 round-2 BLOCKER #1 + #6): an earlier tx mined AND BURIED
-    /// beyond `REORG_MAX_BLOCKS` but a later tx expired un-mined, so re-broadcast can never complete
-    /// it AND the irreversible step can no longer reorg out. The row was moved to the terminal
+    /// A multi-step send STRANDED (§3.2i-2 round-2 BLOCKER #1 + #6): an earlier tx mined AND
+    /// irreversibly BURIED but a later tx expired un-mined with its expiry buried too, so
+    /// re-broadcast can never complete it AND the irreversible step can no longer reorg out. The row was moved to the terminal
     /// `Stranded` state (it leaves the reconcile loop) and the funds — on a wallet-controlled
     /// ephemeral address — are owned by the 2e-2b detect surface. Money-safe: the funds are the
     /// user's and recoverable, just not via this outbox.
@@ -1795,7 +1977,7 @@ pub(crate) enum Reconciled {
     /// WHOLE, whatever the note witness reads (the engine frees the notes at BARE expiry — S7
     /// C1 — and a mid-scan kill can leave it reading "spent").
     Requeued,
-    /// The recorded FINAL tx is mined AND buried beyond `REORG_MAX_BLOCKS` (round-2 #6) ⇒ the chain
+    /// The recorded FINAL tx is mined AND irreversibly buried (round-2 #6) ⇒ the chain
     /// irreversibly owns the send; the row was deleted (the §6.3 delete-on-mined cleanup). A shallow
     /// (reorg-reversible) mine is NOT yet deleted — it waits as [`AwaitingBurial`](Self::AwaitingBurial).
     Deleted,
@@ -1808,18 +1990,17 @@ pub(crate) enum Reconciled {
     Awaiting,
     /// Wait for REORG BURIAL (round-2 #6) — an EXPECTED depth accumulation, distinct from
     /// [`Awaiting`](Self::Awaiting): the recorded final tx is mined but still shallow (delete
-    /// waits for burial beyond `REORG_MAX_BLOCKS`); OR an earlier tx is mined-but-shallow while the
-    /// final is un-minable (strand waits for it to bury); OR no leg mined and EVERY leg is past its
-    /// expiry, not yet buried (S7 C1: no leg can enter a block on this branch, so no re-broadcast —
-    /// the requeue waits). Resolves to `Deleted`/`Stranded`/`Requeued`. The orchestrator counts
+    /// waits for its irreversible burial); OR an earlier tx is mined-but-shallow, or the final
+    /// tx's expiry is not yet buried, while the final is un-minable (strand waits for both to
+    /// bury); OR no leg mined and EVERY leg is past its expiry, not yet buried (S7 C1: no leg can
+    /// enter a block on this branch, so no re-broadcast — the requeue waits). Resolves to
+    /// `Deleted`/`Stranded`/`Requeued`. The orchestrator counts
     /// it on its OWN field and does NOT treat it as `did_work` (so it emits NO per-pass
-    /// `wallet.resubmit` event during the ~`REORG_MAX_BLOCKS`-block wait — it is neither a fault nor
-    /// a move). HOST NOTE: the user-facing finality signal is `TxStatus::Confirmed { depth >
-    /// REORG_MAX_BLOCKS }` from `transactions()` — `depth = tip - mined + 1`, so `depth >
-    /// REORG_MAX_BLOCKS` is EXACTLY this code's own burial/irreversibility threshold
-    /// `tip - mined >= REORG_MAX_BLOCKS` (NOT `depth >= REORG_MAX_BLOCKS`, which is one block too
-    /// eager) — NOT the presence/absence of this recovery row (which lingers ~`REORG_MAX_BLOCKS`
-    /// past the mine before cleanup).
+    /// `wallet.resubmit` event during the burial wait — it is neither a fault nor
+    /// a move). HOST NOTE: the user-facing finality signal is `confirmation_depth_is_final` over
+    /// a `transactions()` row's mined height and `TxStatus::Confirmed { depth }` — the SAME
+    /// burial predicate this code uses (`stranded::irreversibly_buried`) — NOT the
+    /// presence/absence of this recovery row (which lingers past the mine until it is buried).
     AwaitingBurial,
     /// A SWAP-DEPOSIT intent whose quote deadline has lapsed AND whose notes are spendable again
     /// (never created / expired) ⇒ the row was DELETED — re-proposing would feed a dead quote
@@ -1966,10 +2147,10 @@ where
     Ok(Some(bytes))
 }
 
-/// Read a persisted tx's `expiry_height` (0 ⇒ no expiry), or `None` if it is no longer in the
-/// store (pruned/expired-and-collected). Like [`read_raw_tx`], a miss is `Ok(None)` on the
-/// resubmission path (NOT corruption — a re-read can legitimately miss). Drives the
-/// expiry→`Stranded` terminal: a recorded tx whose `expiry_height < tip` can never mine.
+/// Read a persisted tx's STORED `expiry_height` (0 ⇒ no expiry), or `None` if it is no longer in
+/// the store (pruned/expired-and-collected). Like [`read_raw_tx`], a miss is `Ok(None)` on the
+/// resubmission path (NOT corruption — a re-read can legitimately miss). One of the two inputs
+/// [`read_effective_expiry`] hands the expiry kernel; never compared with a tip on its own.
 fn read_tx_expiry<DbT>(wdb: &DbT, txid: [u8; 32]) -> Result<Option<u32>, WalletError>
 where
     DbT: WalletRead<Error: ClassifyStoreFault>,
@@ -1980,18 +2161,31 @@ where
         .map(|tx| u32::from(tx.expiry_height())))
 }
 
-/// `true` iff a persisted tx's `expiry_height` proves it PAST its validity window at `tip`:
-/// the next block (`tip + 1` = target) exceeds `expiry`, so it can never enter a block on the
-/// CURRENT branch (ZIP-203 — the wallet's own `expiry < target` notion). `expiry == 0` means
-/// NO expiry: such a tx can mine at ANY height and is NEVER past-expiry — the `!= 0` arm is a
-/// live double-send door if ever dropped (`0 <= tip` holds at every tip). BRANCH-LOCAL only:
-/// a reorg whose fork point is below `expiry` re-creates heights `<= expiry`, so an
-/// IRREVERSIBLE decision must ALSO gate on burial (round-2 #6). The shared kernel of the
-/// all-expired requeue terminal and the strand gate, so the two sites can never drift.
-/// `pub(crate)` since stage S8: the delivery obligation (`crate::delivery`) judges a
-/// wallet-created transaction's expiry by the SAME kernel, against the scanned tip.
-pub(crate) fn past_expiry(expiry: u32, tip: u32) -> bool {
-    expiry != 0 && expiry <= tip
+/// Read a persisted tx's EFFECTIVE expiry through the expiry kernel ([`crate::expiry`]), or
+/// `None` if it is no longer in the store. The kernel reads the transaction's own header (its
+/// branch, from the bytes [`read_raw_tx`] would send) and its stored expiry
+/// ([`read_tx_expiry`]): a tx signed under a branch a network upgrade has since ended is dead from
+/// the block before the activation, whatever its stored expiry says. Drives the all-expired
+/// requeue, the bare-expiry wait and the expiry→`Stranded` terminal. The answer is BRANCH-LOCAL:
+/// a reorg whose fork point is below it re-creates the heights that admit the tx, so an
+/// IRREVERSIBLE decision gates on its burial ([`EffectiveExpiry::is_buried`], round-2 #6), never
+/// the bare expiry.
+fn read_effective_expiry<DbT, P>(
+    wdb: &DbT,
+    params: &P,
+    txid: [u8; 32],
+) -> Result<Option<EffectiveExpiry>, WalletError>
+where
+    DbT: WalletRead<Error: ClassifyStoreFault>,
+    P: Parameters,
+{
+    let Some(stored) = read_tx_expiry(wdb, txid)? else {
+        return Ok(None);
+    };
+    let Some(raw) = read_raw_tx(wdb, txid)? else {
+        return Ok(None);
+    };
+    Ok(Some(crate::expiry::effective_expiry(params, &raw, stored)))
 }
 
 /// Reconcile a `Sent` intent's recorded tx GROUP over the chain (§3.2i-2 pt 4 + round-2 #1). The
@@ -1999,15 +2193,22 @@ pub(crate) fn past_expiry(expiry: u32, tip: u32) -> bool {
 /// the note witness reads (S7 C1). `group` is the ordered txids (tx0→tx1…) the engine created;
 /// a single-step send is a one-element group. Decides:
 ///
+/// Every expiry below is the EFFECTIVE one ([`crate::expiry`], ADR-0579 Decision 4): the stored
+/// expiry, or the block before the activation that ended the branch the tx was signed under,
+/// whichever is earlier. From that block on the group is rebuilt (requeued), never re-broadcast.
+/// Every burial is [`crate::stranded::irreversibly_buried`] (ADR-0579 Decision 6: 15,000 s of
+/// chain time).
+///
 /// - **delete-on-FINAL-BURIED (round-2 #6):** the FINAL tx mined ⇒ the whole pool-crossing chain
 ///   landed (a later tx cannot mine before the earlier one it spends), so the chain owns the send —
-///   but the row is DELETED only once that final tx is BURIED beyond `REORG_MAX_BLOCKS` (the deepest
-///   reorg the wallet auto-recovers) ⇒ [`Reconciled::Deleted`]; a shallow (still-reversible) mine
+///   but the row is DELETED only once that final tx is irreversibly BURIED (beyond the deepest
+///   reorg the wallet must survive) ⇒ [`Reconciled::Deleted`]; a shallow (still-reversible) mine
 ///   WAITS as [`Reconciled::AwaitingBurial`] (the tx is on-chain — nothing to re-broadcast — until
 ///   it buries). Deleting at one confirmation would, on a deeper reorg un-mining the chain afterwards,
 ///   leave NO recovery row and no possible re-propose (post-tx0 is irreversible).
 /// - **expiry→Stranded (round-2 BLOCKER #1 + #6 burial):** the final tx is UNMINED + past its
-///   expiry (can never mine) AND an EARLIER tx already mined+BURIED (the shielded notes left
+///   expiry with that expiry BURIED (it can never mine, even across a reorg the wallet must
+///   survive) AND an EARLIER tx already mined+BURIED (the shielded notes left
 ///   IRREVERSIBLY, so re-propose is impossible) ⇒ STOP re-broadcasting, move the row to terminal
 ///   `Stranded` (it leaves the reconcile loop) and hand the ephemeral funds to the 2e-2b detect ⇒
 ///   [`Reconciled::Stranded`]. While the earlier tx is mined but still SHALLOW the row WAITS
@@ -2016,20 +2217,21 @@ pub(crate) fn past_expiry(expiry: u32, tip: u32) -> bool {
 ///   so it can NEVER strand here (an expired single-step waits for the all-expired requeue
 ///   below) — the explicit `earlier_mined` guard makes that structural.
 /// - **all-expired→Requeued (v-5c finding #1):** NO tx of the group mined and EVERY tx is past
-///   its expiry WITH the expiry BURIED (`expiry != 0 && expiry <= tip && tip - expiry >=
-///   REORG_MAX_BLOCKS` — the same round-2 #6 margin every irreversible terminal gates on) ⇒
+///   its expiry WITH the expiry BURIED ([`EffectiveExpiry::is_buried`] — the same round-2 #6
+///   margin every irreversible terminal gates on) ⇒
 ///   the created group is dead WHOLE even across any auto-recoverable reorg, and no money
 ///   moved: reset the row to `Queued` for a fresh re-propose ⇒ [`Reconciled::Requeued`] — the
 ///   ONLY exit that sends a `Sent` payment again, whatever the note witness reads (it frees
 ///   the notes at BARE expiry, and a mid-scan kill can leave it reading "spent"). The margin
 ///   is the double-spend hinge: the re-propose may select other inputs, so a reorg reviving
 ///   the old group would pay the recipient twice — burial puts revival beyond the wallet's
-///   reorg model. A leg with an unreadable (pruned) or absent (`0`) expiry is NOT proven dead
-///   (it could still mine) ⇒ no requeue — it lands `Awaiting` below.
+///   reorg model. A leg with an unreadable (pruned) or absent (`0`, and no next activation)
+///   expiry is NOT proven dead (it could still mine) ⇒ no requeue — it lands `Awaiting` below.
 /// - **bare-expired→AwaitingBurial (S7 C1):** no tx mined and EVERY tx past its expiry, the
 ///   expiry NOT yet buried ⇒ no leg can enter a block on this branch: WAIT with no network (a
-///   reorg that lowers the tip makes `past_expiry` false and the re-broadcast resumes by
-///   itself). A lapsed deposit reads [`Reconciled::DepositBroadcastHold`] (checked first).
+///   reorg that lowers the tip below the expiry makes it minable again and the re-broadcast
+///   resumes by itself — nothing latches "cancelled"). A lapsed deposit reads
+///   [`Reconciled::DepositBroadcastHold`] (checked first).
 /// - **skip-mined re-broadcast:** otherwise re-broadcast every UNMINED tx IN ORDER, skipping any
 ///   already-mined tx (a re-broadcast of a mined/already-known tx0 must not stop tx1) ⇒
 ///   [`Reconciled::Rebroadcast`]. A read miss (pruned) of a needed tx is a conservative
@@ -2045,8 +2247,9 @@ pub(crate) fn past_expiry(expiry: u32, tip: u32) -> bool {
 /// the controller's single-writer pass guard), so "unmined at `tip`" is honest there. A future
 /// second caller on an unsynced view could read a mined-in-the-gap leg as unmined and requeue
 /// a live group (a double-pay door) — do NOT call this outside the post-sync pass.
-fn rebroadcast_group<DbT>(
+fn rebroadcast_group<DbT, P>(
     wdb: &DbT,
+    params: &P,
     aux: &mut rusqlite::Connection,
     id: QueuedSendId,
     group: &[[u8; 32]],
@@ -2055,6 +2258,7 @@ fn rebroadcast_group<DbT>(
 ) -> Result<Reconciled, WalletError>
 where
     DbT: WalletRead<Error: ClassifyStoreFault>, // tip/mined/tx reads only, no `InputSource` (NIT)
+    P: Parameters,
 {
     let Some((target, _anchor)) = wdb
         .get_target_and_anchor_heights(NonZeroU32::MIN)
@@ -2063,21 +2267,20 @@ where
         return Ok(Reconciled::Awaiting); // unsynced — can't judge mined/expiry; wait
     };
     let tip = u32::from(target).saturating_sub(1);
-    // The mined HEIGHT of a tx (`None` ⇒ not on-chain) and its BURIAL test. A tx is buried once it
-    // sits at least `REORG_MAX_BLOCKS` deep — the deepest reorg the wallet auto-recovers
-    // (`constants::REORG_MAX_BLOCKS`) — so no reorg the recovery handles can un-mine it. The
+    // The mined HEIGHT of a tx (`None` ⇒ not on-chain) and its BURIAL test. A tx is buried once
+    // 15,000 s of chain time sit atop it (`stranded::irreversibly_buried`, ADR-0579 Decision 6:
+    // ZIP 218's rollback target), so no reorg the wallet must survive can un-mine it. The
     // IRREVERSIBLE terminal decisions (delete-on-final, mark-stranded) gate on burial, NOT a shallow
     // one-confirmation mine (round-2 #6): a deeper reorg AFTER an irreversible delete/strand would
     // un-mine the tx with no recovery row left to re-broadcast or re-queue from, and a post-tx0
-    // re-propose is structurally impossible. `tip - mined >= REORG_MAX_BLOCKS` ⇒ ≥ that many blocks
-    // were built atop the mining block, beyond auto-recoverable reorg depth.
+    // re-propose is structurally impossible.
     let mined_height = |txid: [u8; 32]| -> Result<Option<u32>, WalletError> {
         Ok(wdb
             .get_tx_height(TxId::from_bytes(txid))
             .map_err(|e| e.into_store_fault())?
             .map(u32::from))
     };
-    let buried = |mined: u32| crate::stranded::buried(mined, tip);
+    let buried = |mined: u32| crate::stranded::irreversibly_buried(params, mined, tip);
 
     // A `ReBroadcast` group is non-empty by construction (`reconcile` only yields it for a
     // non-empty slice, and `list_in_flight` rejects a `Sent` row with no group). Fail closed
@@ -2085,7 +2288,7 @@ where
     let final_txid = *group.last().ok_or(WalletError::StoreCorrupt)?;
     // delete-on-FINAL-BURIED (round-2 #6): the chain owns the whole group (a later tx can't mine
     // before the earlier one it spends), but only DELETE the recovery row once the FINAL tx is
-    // BURIED beyond `REORG_MAX_BLOCKS`. A shallow mine is reversible — a deep reorg un-mining the
+    // irreversibly BURIED. A shallow mine is reversible — a deep reorg un-mining the
     // chain AFTER the row is gone would leave nothing to recover from. While mined-but-shallow the
     // tx is already on-chain (nothing to re-broadcast), so WAIT for burial.
     if let Some(h) = mined_height(final_txid)? {
@@ -2114,23 +2317,25 @@ where
     }
     if !earlier_mined {
         // all-expired→Requeued TERMINAL (v-5c device-proof FINDING #1): NO tx of the group
-        // mined and EVERY tx is past its expiry AND that expiry is BURIED (`tip - expiry >=
-        // REORG_MAX_BLOCKS`, the round-2 #6 margin) ⇒ nothing in the group can ever enter a
-        // block, even across the deepest reorg the wallet auto-recovers: the send is dead WHOLE,
+        // mined and EVERY tx is past its EFFECTIVE expiry AND that expiry is BURIED (the round-2
+        // #6 margin, `EffectiveExpiry::is_buried`) ⇒ nothing in the group can ever enter a
+        // block, even across the deepest reorg the wallet must survive: the send is dead WHOLE,
         // no money moved — reset the row to `Queued` for a fresh re-propose (the intent store's
         // documented third `Sent` exit, and since S7 C1 the ONLY one that sends it again). WHY
         // THE MARGIN (double-spend hinge): the re-propose may select other inputs, and at bare
         // `expiry <= tip` a reorg back below the expiry could revive a retained copy of the old
         // group ALONGSIDE the new send (recipient paid twice). Between bare expiry and burial
         // the row WAITS (`legs_expired` → `AwaitingBurial`, below the deposit hold). CONSERVATIVE
-        // on an unprovable leg: an unreadable (`None`, pruned) or absent (`0`) expiry does not
+        // on an unprovable leg: an unreadable (`None`, pruned) or absent (`Never`) expiry does not
         // prove it dead, so fall through — `Awaiting` on the re-broadcast read, never a requeue.
         // Deadline-AGNOSTIC on purpose: a requeued lapsed swap deposit is deleted by the drain's
-        // own `deposit_gate` before any propose (`prepare_queued`) — its terminal path.
+        // own `deposit_gate` before any propose (`prepare_queued`) — its terminal path. A swap
+        // deposit the upgrade killed takes this same path: its purge is measured from the
+        // effective expiry, the block before the activation.
         let mut all_legs_dead_buried = true;
         for &txid in group {
-            match read_tx_expiry(wdb, txid)? {
-                Some(expiry) if past_expiry(expiry, tip) && buried(expiry) => {}
+            match read_effective_expiry(wdb, params, txid)? {
+                Some(expiry) if expiry.is_buried(params, tip) => {}
                 _ => {
                     all_legs_dead_buried = false;
                     break;
@@ -2143,31 +2348,39 @@ where
         }
         legs_expired = true;
         for &txid in group {
-            legs_expired &= matches!(read_tx_expiry(wdb, txid)?, Some(e) if past_expiry(e, tip));
+            legs_expired &= matches!(
+                read_effective_expiry(wdb, params, txid)?,
+                Some(expiry) if expiry.is_past(tip)
+            );
         }
     } else {
         // expiry→Stranded TERMINAL (round-2 BLOCKER #1 — "the state machine MUST terminate" — +
         // #6 burial): with an earlier tx mined the final tx can never complete the send if it
-        // (a) is past its expiry (`expired` above), OR (b) is GONE from the store
+        // (a) is past its effective expiry, OR (b) is GONE from the store
         // (pruned/collected) so it can never even be re-broadcast. EITHER way the funds
-        // stranded on the ephemeral address. But only commit the terminal `Stranded` once the
-        // earlier (irreversible) tx is BURIED; while it is shallow, WAIT — a reorg could still
-        // un-mine it into the `!earlier_mined` arm above (never busy-loop a dead tx either
-        // way). A single-step group never reaches here (it is the `!earlier_mined` arm — the
-        // mutual exclusion is structural). The expiry-known and pruned cases are folded so a
-        // pruned final tx can never leave the row Awaiting-forever (the termination hole the
-        // review caught).
-        let final_unminable = match read_tx_expiry(wdb, final_txid)? {
-            Some(expiry) => past_expiry(expiry, tip), // past its validity window
-            None => true,                             // pruned — un-broadcastable, stuck
+        // stranded on the ephemeral address. But only commit the terminal `Stranded` once BOTH
+        // are irreversible: the earlier tx BURIED, and the final tx's expiry BURIED (ADR-0579
+        // Decision 4: every irreversible step waits for the effective expiry's burial — a reorg
+        // back below the block before an activation would make the final tx minable again and
+        // the send completable). While either is shallow, WAIT — never busy-loop a dead tx, and
+        // never re-broadcast one past its expiry. A single-step group never reaches here (it is
+        // the `!earlier_mined` arm — the mutual exclusion is structural). The expiry-known and
+        // pruned cases are folded so a pruned final tx can never leave the row Awaiting-forever
+        // (the termination hole the review caught).
+        let (final_unminable, final_buried) = match read_effective_expiry(wdb, params, final_txid)?
+        {
+            // past its validity window, and whether that is beyond any reorg we must survive
+            Some(expiry) => (expiry.is_past(tip), expiry.is_buried(params, tip)),
+            None => (true, true), // pruned — un-broadcastable, stuck
         };
         if final_unminable {
-            if earlier_buried {
+            if earlier_buried && final_buried {
                 crate::intent_store::mark_stranded(aux, id)?;
                 return Ok(Reconciled::Stranded);
             }
-            // Earlier tx mined but still SHALLOW — do not strand yet (a reorg could un-mine it back
-            // into the re-broadcast / burial-gated requeue); wait for it to bury.
+            // Earlier tx mined but still SHALLOW, or the final tx's expiry not yet buried — do not
+            // strand yet (a reorg could un-mine the earlier tx back into the re-broadcast /
+            // burial-gated requeue, or make the final tx minable again); wait for both to bury.
             return Ok(Reconciled::AwaitingBurial);
         }
     }
@@ -2226,7 +2439,8 @@ where
 
     // Every leg past its expiry, the expiry not yet buried (S7 C1): no leg can enter a block on
     // this branch, so no network — the burial-gated requeue above ends the wait. A reorg that
-    // lowers the tip makes `past_expiry` false again, and the re-broadcast below resumes.
+    // lowers the tip below the expiry makes the legs minable again, and the re-broadcast below
+    // resumes.
     if legs_expired {
         return Ok(Reconciled::AwaitingBurial);
     }
@@ -2264,10 +2478,10 @@ where
 /// harness drives the production logic.
 ///
 /// **delete-on-FINAL-BURIED / Stranded (the §6.3 `delete` B-OBLIGATION + §3.2i-2 pt 4 / round-2
-/// #1 + #6):** see [`rebroadcast_group`] — a row is deleted ONLY when its FINAL tx mined AND buried
-/// beyond `REORG_MAX_BLOCKS` (a re-broadcast-but-unmined OR shallow-mined tx is NEVER deleted); a
+/// #1 + #6):** see [`rebroadcast_group`] — a row is deleted ONLY when its FINAL tx mined AND is
+/// irreversibly buried (a re-broadcast-but-unmined OR shallow-mined tx is NEVER deleted); a
 /// partially-mined multi-step whose later tx expired moves to terminal `Stranded` once the earlier
-/// tx is buried (never a busy-loop of a dead tx, never a false terminal); a group with NO tx mined
+/// tx and that expiry are buried (never a busy-loop of a dead tx, never a false terminal); a group with NO tx mined
 /// and EVERY tx past its BURIED expiry resets to `Queued` (v-5c finding #1 — dead whole, no money
 /// moved: the third `Sent` exit and the only requeue of a `Sent` row, whatever the witness reads —
 /// before burial it waits, `AwaitingBurial`, S7 C1); a recorded tx gone from the store (a
@@ -2285,14 +2499,16 @@ where
 /// HOLDS it ([`Reconciled::DepositBroadcastHold`]), because post-FR-23-a the FIRST broadcast
 /// can be deferred to this pass and must never first-feed a dead quote (the tx then expires, its
 /// expiry buries → the group requeue → the drain's `deposit_gate`/purge deletes the lapsed row).
-pub(crate) fn reconcile_inflight<DbT>(
+pub(crate) fn reconcile_inflight<DbT, P>(
     wdb: &DbT,
+    params: &P,
     aux: &mut rusqlite::Connection,
     intent: &InFlightIntent,
     now_unix: u64,
 ) -> Result<Reconciled, WalletError>
 where
     DbT: WalletRead<Error: ClassifyStoreFault> + InputSource<Error: ClassifyStoreFault>,
+    P: Parameters,
 {
     let mut all_spendable = true;
     for claim in &intent.claims {
@@ -2326,6 +2542,7 @@ where
         // terminal — §3.2i-2 pt 4 + round-2 #1/#6). A single-step send is a one-element group.
         Recovery::ReBroadcast(group) => rebroadcast_group(
             wdb,
+            params,
             aux,
             intent.id,
             &group,
@@ -3006,10 +3223,13 @@ impl ProposalRegistry {
 pub(crate) mod tests {
     use super::*;
 
-    // The non-test `buried` predicate now delegates to `crate::stranded::buried` (the SSOT), so
-    // REORG_MAX_BLOCKS is referenced ONLY by these burial-boundary tests.
-    use crate::constants::REORG_MAX_BLOCKS;
-    use rand_core::OsRng;
+    // The irreversible burial depth on this module's harness chain (ADR-0579 Decision 6;
+    // `docs/plan/nu7-wave.md` §3 step 4, "its boundary tests move to the new predicate"):
+    // 15,000 s of chain time, at 75 s a block because the harness network carries no NU7
+    // height, so 200 blocks. The burial-boundary rows below read it where they read
+    // `REORG_MAX_BLOCKS` (100) before step 4; that constant stays for the keepers only.
+    const IRREVERSIBLE_DEPTH: u32 = 200;
+    use crate::rng::{WalletRng, wallet_rng};
     use rusqlite::Connection;
     use std::collections::BTreeMap;
     use std::convert::Infallible;
@@ -3041,7 +3261,7 @@ pub(crate) mod tests {
 
     /// The harness wallet DB — the SAME `WalletDb` shape the live wallet uses, on the
     /// fake `LocalNetwork` the `data_api::testing` builder requires.
-    type HarnessDb = WalletDb<Connection, LocalNetwork, SystemClock, OsRng>;
+    type HarnessDb = WalletDb<Connection, LocalNetwork, SystemClock, WalletRng>;
     type HarnessState = TestState<MemCache, HarnessDb, LocalNetwork>;
 
     // ── In-memory block cache (a `TestCache` over a height→block map) ───────────
@@ -3126,7 +3346,7 @@ pub(crate) mod tests {
             // encryption). The rarray vtab is the one module `WalletDb` requires.
             let conn = Connection::open_in_memory().map_err(|_| ())?;
             rusqlite::vtab::array::load_module(&conn).map_err(|_| ())?;
-            let mut db = WalletDb::from_connection(conn, network, SystemClock, OsRng);
+            let mut db = WalletDb::from_connection(conn, network, SystemClock, wallet_rng());
             // 0.24.0's new builder knob, applied exactly as upstream's own
             // `TestDbFactory` does: `None` ⇒ the engine default (`ZIP_318`). Honoring
             // the builder's value rather than ignoring it matters — a test that asks
@@ -3310,7 +3530,9 @@ pub(crate) mod tests {
 
         // A chain whose blocks DON'T pay us, so our ONLY funds are the transparent UTXOs
         // put below (a clean shield: the proposal can select nothing else).
-        let not_our_key = ExtendedSpendingKey::master(&[]).to_diversifiable_full_viewing_key();
+        let not_our_key = ExtendedSpendingKey::master(&[])
+            .expect("a Sapling master key from the empty seed")
+            .to_diversifiable_full_viewing_key();
         let not_our_value = ProtoZat::const_from_u64(10_000);
         let (start, _, _) =
             st.generate_next_block(&not_our_key, AddressType::DefaultExternal, not_our_value);
@@ -3808,9 +4030,9 @@ pub(crate) mod tests {
         // (exact encoded-string match only). This pins the known false-negative as DELIBERATE
         // behavior: a future upgrade to a real ownership test must consciously flip this assertion
         // (and the host's self-send-note expectation), not discover it as a surprise.
-        use zcash_address::unified::{Address as Ua, Encoding, Receiver};
+        use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
         let sap = [0x33u8; 43];
-        let own_ua = Ua::try_from_items(vec![Receiver::Sapling(sap)])
+        let own_ua = Ua::try_from_items(Revision::R0, vec![Uitem::Data(Receiver::Sapling(sap))])
             .expect("a sapling-only UA")
             .encode(&NetworkType::Main);
         let bare_sapling = ZcashAddress::from_sapling(NetworkType::Main, sap).encode();
@@ -3821,7 +4043,8 @@ pub(crate) mod tests {
     }
 
     fn sapling_recipient(seed: &[u8]) -> ZcashAddress {
-        let extsk = sapling_crypto::zip32::ExtendedSpendingKey::master(seed);
+        let extsk = sapling_crypto::zip32::ExtendedSpendingKey::master(seed)
+            .expect("a Sapling master key from the test seed");
         let (_, addr) = extsk.default_address();
         ZcashAddress::from_sapling(NetworkType::Regtest, addr.to_bytes())
     }
@@ -4470,6 +4693,8 @@ pub(crate) mod tests {
         create_proposed_transactions::<_, _, Infallible, StandardFeeRule, Infallible, _>(
             st.wallet_mut(),
             &network,
+            &SystemClock,
+            &mut wallet_rng(),
             prover,
             prover,
             &SpendingKeys::from_unified_spending_key(usk),
@@ -4498,6 +4723,8 @@ pub(crate) mod tests {
         create_proposed_transactions::<_, _, Infallible, StandardFeeRule, Infallible, _>(
             st.wallet_mut(),
             &network,
+            &SystemClock,
+            &mut wallet_rng(),
             prover,
             prover,
             &SpendingKeys::from_unified_spending_key(usk),
@@ -5347,7 +5574,7 @@ pub(crate) mod tests {
         );
         assert!(
             matches!(
-                assert_proposal_anchor_fresh(fresh.wallet(), &proposal),
+                assert_proposal_anchor_fresh(fresh.wallet(), fresh.network(), &proposal),
                 Err(WalletError::ProposalStale)
             ),
             "an unsynced wallet can't anchor a send → ProposalStale",
@@ -5405,16 +5632,25 @@ pub(crate) mod tests {
     fn create_signed_core_anchors_a_mineable_future_expiry() {
         // §8 (MONEY — the re-anchor's CONSTRUCTIVE half): the boundary tests prove WHEN we
         // reject a stale anchor; this proves that a tx we DO sign is actually MINEABLE — its
-        // on-chain expiry is `target + DEFAULT_TX_EXPIRY_DELTA` (40) and strictly above the
+        // on-chain expiry is `target +` the target branch's default delta and strictly above the
         // recorded tip, never born-expired (which would lock funds to a dead height until it
         // un-mines, §6.2). Read the persisted tx back and check the real expiry, tied to the
-        // upstream constant (gate 7 — never a hardcoded 40), so a builder/dep change that
-        // shifted the expiry can't leave the guard green and the tx born-dead.
-        use zcash_primitives::transaction::builder::DEFAULT_TX_EXPIRY_DELTA;
+        // upstream function (gate 7: never a hardcoded 40), so a builder/dep change that
+        // shifted the expiry can't leave the guard green and the tx born-dead. The harness
+        // network has no NU7 height, so the branch's delta is the pre-NU7 40.
+        use zcash_primitives::transaction::builder::default_tx_expiry_delta;
+        use zcash_protocol::consensus::BranchId;
         let mut st = funded(NOTE_VALUE);
         let to = sapling_recipient(&[0xc2; 32]);
         let proposal = propose_on(&mut st, request(vec![(to, 10_000)])).expect("proposes");
         let target = u32::from(proposal.min_target_height());
+        let delta = default_tx_expiry_delta(BranchId::for_height(st.network(), target.into()));
+        // The harness has no NU7 height, so the branch's delta is the pre-NU7 one,
+        // the 40 the removed `DEFAULT_TX_EXPIRY_DELTA` had.
+        assert_eq!(
+            delta,
+            zcash_primitives::transaction::builder::BLOSSOM_DEFAULT_TX_EXPIRY_DELTA
+        );
 
         let txids = sign_on(&mut st, &proposal).expect("signs");
         let tx = st
@@ -5425,7 +5661,7 @@ pub(crate) mod tests {
         let expiry = u32::from(tx.expiry_height());
         assert_eq!(
             expiry,
-            target + DEFAULT_TX_EXPIRY_DELTA,
+            target + delta,
             "the signed tx expiry is the audited builder's target + delta",
         );
         let tip = u32::from(
@@ -5502,14 +5738,46 @@ pub(crate) mod tests {
 
     // §8 (gate 7 — the named-constant RELATIONSHIP, arch review fold): the re-anchor
     // drift window must leave ≥ half the upstream tx-expiry delta as mining headroom (the
-    // Builder sets expiry = target + DEFAULT_TX_EXPIRY_DELTA). Tied to the REAL upstream
+    // Builder sets expiry = target + the branch's default delta). Tied to the REAL upstream
     // constant at COMPILE TIME — a dep bump that narrows the expiry window, OR a drive-by
     // edit that widens our drift, fails to COMPILE rather than shipping born-near-expired
     // txs (mirrors the constants.rs `const _: () = assert!(…)` SSOT proofs).
+    // `zcash_primitives` 0.31 split the delta per branch; this pins the pre-NU7 one, the
+    // value the removed `DEFAULT_TX_EXPIRY_DELTA` had (the NU7 one, 120, only widens it).
     const _: () = assert!(
         PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS
-            <= zcash_primitives::transaction::builder::DEFAULT_TX_EXPIRY_DELTA / 2,
+            <= zcash_primitives::transaction::builder::BLOSSOM_DEFAULT_TX_EXPIRY_DELTA / 2,
     );
+
+    /// NU7 wave step 7m: the drift window against half of EACH branch's delta, read from the
+    /// function the builder itself calls (`default_tx_expiry_delta`), at the target heights where
+    /// it changes: `H - 1`, whose branch takes 40 (so at most 20), and `H`, which takes NU7's 120
+    /// (at most 60), on both networks. The compile-time pin above reads the pre-NU7 constant; this
+    /// row reads the per-branch function, so a branch whose delta the crate narrows is caught too.
+    #[test]
+    fn the_drift_window_leaves_half_of_each_branch_s_expiry_delta() {
+        use zcash_primitives::transaction::builder::default_tx_expiry_delta;
+        use zcash_protocol::consensus::{
+            BranchId, MAIN_NETWORK, NetworkUpgrade, Parameters, TEST_NETWORK,
+        };
+        fn assert_half_of_each<P: Parameters>(name: &str, params: &P) {
+            let h = params
+                .activation_height(NetworkUpgrade::Nu7)
+                .expect("the pinned crate carries the NU7 height");
+            for target in [h - 1, h] {
+                let branch = BranchId::for_height(params, target);
+                let delta = default_tx_expiry_delta(branch);
+                assert!(
+                    PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS <= delta / 2,
+                    "{name}: a proposal targeted at {target} ({branch:?}) expires {delta} blocks \
+                     after its target, and a drift of {PROPOSAL_ANCHOR_DRIFT_MAX_BLOCKS} leaves it \
+                     less than half of them to be mined in"
+                );
+            }
+        }
+        assert_half_of_each("mainnet", &MAIN_NETWORK);
+        assert_half_of_each("testnet", &TEST_NETWORK);
+    }
 
     #[test]
     fn map_create_err_routes_stale_vs_signfailed() {
@@ -5672,7 +5940,7 @@ pub(crate) mod tests {
             "spent right after create",
         );
 
-        // Advance well past DEFAULT_TX_EXPIRY_DELTA (40) so the unbroadcast tx expires.
+        // Advance well past the pre-NU7 default delta (40) so the unbroadcast tx expires.
         let mut first = None;
         let mut count = 0u32;
         for _ in 0..50 {
@@ -6074,7 +6342,8 @@ pub(crate) mod tests {
         // delivery on every pass until it lands), and the row is untouched (NOT deleted until mined).
         let (st, mut aux, _id, _txid) = prepared_sent_intent();
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert!(
             matches!(action, Reconciled::Rebroadcast { txs: ref raw, .. } if !raw.is_empty()),
             "unmined Sent ⇒ re-broadcast the persisted tx, got {action:?}",
@@ -6090,10 +6359,11 @@ pub(crate) mod tests {
 
     #[test]
     fn resubmit_reconcile_waits_for_burial_then_deletes_a_mined_sent_intent() {
-        // The §6.3 delete-on-mined cleanup, NOW gated on REORG BURIAL (round-2 #6): a tx mined but
-        // still SHALLOW (≤ `REORG_MAX_BLOCKS` deep) is reversible, so the row WAITS (Awaiting); only
-        // once it is buried beyond `REORG_MAX_BLOCKS` is it irreversibly owned by the chain and the
-        // row deleted. Mine the created tx, scan it, then drive the tip across the burial boundary.
+        // The §6.3 delete-on-mined cleanup, NOW gated on IRREVERSIBLE BURIAL (round-2 #6; ADR-0579
+        // Decision 6): a tx mined but still SHALLOW (less than `IRREVERSIBLE_DEPTH` deep) is
+        // reversible, so the row WAITS (Awaiting); only once it is `IRREVERSIBLE_DEPTH` deep is it
+        // irreversibly owned by the chain and the row deleted. Mine the created tx, scan it, then
+        // drive the tip across the burial boundary.
         let (mut st, mut aux, _id, txid) = prepared_sent_intent();
         let (mined_h, _) = st.generate_next_block_including(TxId::from_bytes(txid));
         st.scan_cached_blocks(mined_h, 1);
@@ -6104,7 +6374,8 @@ pub(crate) mod tests {
             .update_chain_tip(mined_h)
             .expect("tip at the mined block (one confirmation)");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let shallow = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let shallow =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             shallow,
             Reconciled::AwaitingBurial,
@@ -6118,33 +6389,34 @@ pub(crate) mod tests {
             "the recovery row survives until the mine is buried",
         );
 
-        // BURIAL BOUNDARY (tip == mined + REORG_MAX_BLOCKS - 1): exactly ONE block short of burial —
-        // a depth-`REORG_MAX_BLOCKS` reorg can still reach the mining block, so STILL AwaitingBurial.
-        // Pins the `>=` against an off-by-one that would delete a block too early.
-        let one_short = BlockHeight::from_u32(u32::from(mined_h) + REORG_MAX_BLOCKS - 1);
+        // BURIAL BOUNDARY (tip == mined + IRREVERSIBLE_DEPTH - 1): exactly ONE block short of
+        // 15,000 s of chain time, so STILL AwaitingBurial. Pins the `>=` against an off-by-one
+        // that would delete a block too early.
+        let one_short = BlockHeight::from_u32(u32::from(mined_h) + IRREVERSIBLE_DEPTH - 1);
         st.wallet_mut()
             .update_chain_tip(one_short)
             .expect("tip one block short of burial");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
         assert_eq!(
-            reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile"),
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile"),
             Reconciled::AwaitingBurial,
-            "one block short of REORG_MAX_BLOCKS depth ⇒ still waiting, not yet deleted",
+            "one block short of the irreversible depth ⇒ still waiting, not yet deleted",
         );
 
-        // BURIED (tip == mined height + REORG_MAX_BLOCKS): beyond the deepest auto-recoverable reorg
-        // ⇒ the chain irreversibly owns the send, delete the row. The intervening blocks need not be
+        // BURIED (tip == mined height + IRREVERSIBLE_DEPTH): irreversibly buried (ADR-0579
+        // Decision 6) ⇒ the chain owns the send, delete the row. The intervening blocks need not be
         // scanned — burial reads `get_tx_height` (the mined height) against the chain tip only.
-        let buried_tip = BlockHeight::from_u32(u32::from(mined_h) + REORG_MAX_BLOCKS);
+        let buried_tip = BlockHeight::from_u32(u32::from(mined_h) + IRREVERSIBLE_DEPTH);
         st.wallet_mut()
             .update_chain_tip(buried_tip)
             .expect("tip a full reorg-depth past the mined block");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Deleted,
-            "once buried beyond REORG_MAX_BLOCKS ⇒ delete (the chain irreversibly owns it)",
+            "once irreversibly buried ⇒ delete (the chain owns it)",
         );
         assert!(
             crate::intent_store::list_in_flight(&aux)
@@ -6223,7 +6495,8 @@ pub(crate) mod tests {
             "the Sent row carries the ordered two-tx group"
         );
 
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         let raws = match action {
             Reconciled::Rebroadcast { txs: raws, .. } => raws,
             other => panic!("both unmined ⇒ Rebroadcast the group, got {other:?}"),
@@ -6312,7 +6585,8 @@ pub(crate) mod tests {
         // It reconciles identically to a queued-enrolled `tex_two_step_sent_row`: neither mined ⇒
         // re-broadcast the whole ordered group, tx0 before tx1.
         let row = inflight[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         match action {
             Reconciled::Rebroadcast { txs: raws, .. } => {
                 assert_eq!(raws.len(), 2, "both unmined txs re-broadcast, in order");
@@ -6492,6 +6766,8 @@ pub(crate) mod tests {
                 create_proposed_transactions::<_, _, Infallible, StandardFeeRule, Infallible, _>(
                     db,
                     &network,
+                    &SystemClock,
+                    &mut wallet_rng(),
                     prover,
                     prover,
                     &SpendingKeys::from_unified_spending_key(usk),
@@ -6548,7 +6824,7 @@ pub(crate) mod tests {
 
         // It plugs into the SAME recovery: neither mined ⇒ re-broadcast the whole ordered group.
         let row = inflight[0].clone();
-        match reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile") {
+        match reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile") {
             Reconciled::Rebroadcast {
                 txs: group_raws, ..
             } => {
@@ -6714,6 +6990,8 @@ pub(crate) mod tests {
                 create_proposed_transactions::<_, _, Infallible, StandardFeeRule, Infallible, _>(
                     db,
                     &network,
+                    &SystemClock,
+                    &mut wallet_rng(),
                     prover,
                     prover,
                     &SpendingKeys::from_unified_spending_key(usk),
@@ -7335,6 +7613,7 @@ pub(crate) mod tests {
         crate::delivery::mark_accepted(&aux, &group[0], None, 1).expect("mark tx0");
         let action = rebroadcast_group(
             st.wallet(),
+            st.network(),
             &mut aux,
             id,
             &group,
@@ -7361,6 +7640,7 @@ pub(crate) mod tests {
         st.wallet_mut().update_chain_tip(mined_h).expect("tip");
         let action = rebroadcast_group(
             st.wallet(),
+            st.network(),
             &mut aux,
             id,
             &group,
@@ -7385,6 +7665,7 @@ pub(crate) mod tests {
         crate::delivery::ensure_table(&aux).expect("accepted table");
         let action = rebroadcast_group(
             st.wallet(),
+            st.network(),
             &mut aux,
             id,
             &group,
@@ -7410,7 +7691,8 @@ pub(crate) mod tests {
             .expect("tip past the mined tx0");
 
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         let raws = match action {
             Reconciled::Rebroadcast { txs: raws, .. } => raws,
             other => panic!("tx0 mined / tx1 unmined ⇒ Rebroadcast only tx1, got {other:?}"),
@@ -7442,7 +7724,7 @@ pub(crate) mod tests {
     // UTXO spend that would mark it mined, so `get_tx_height(tx1)` stays `None` here (the funded
     // testnet `textest1…` proof in the e2e checklist covers the real tx0+tx1 mine). The delete-on-
     // FINAL code path IS covered structurally: `rebroadcast_group` deletes on `group.last()` mined
-    // AND buried beyond `REORG_MAX_BLOCKS` (round-2 #6), exercised by
+    // AND irreversibly buried (`IRREVERSIBLE_DEPTH` on this harness; round-2 #6), exercised by
     // `resubmit_reconcile_waits_for_burial_then_deletes_a_mined_sent_intent` (a one-tx group, final
     // == only — shallow→AwaitingBurial, buried→Deleted), and the "NEVER delete on tx0-mined" half
     // (delete keys on the FINAL, not tx0) is proven by
@@ -7470,7 +7752,8 @@ pub(crate) mod tests {
             .update_chain_tip(BlockHeight::from_u32(tx1_expiry - 1))
             .expect("tip one block before tx1's expiry");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let pre = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let pre =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert!(
             matches!(pre, Reconciled::Rebroadcast { txs: ref r, .. } if r.len() == 1),
             "one block before tx1's expiry it is still mineable ⇒ re-broadcast tx1, got {pre:?}",
@@ -7485,18 +7768,20 @@ pub(crate) mod tests {
 
         // tx1 DEAD but tx0 still SHALLOW (round-2 #6): at `tip = expiry` the next block `tip+1 >
         // expiry`, so tx1 can NEVER enter a block — yet tx0's mine is still reorg-reversible (its
-        // standard ~40-block expiry window is well within `REORG_MAX_BLOCKS = 100`). Stranding here
-        // would be a FALSE terminal: a deep reorg could un-mine tx0, returning the notes to spendable
-        // for a fresh re-propose. So WAIT (Awaiting) for tx0 to bury before committing the terminal.
+        // standard ~40-block expiry window is well within the `IRREVERSIBLE_DEPTH` burial). Stranding
+        // here would be a FALSE terminal: a deep reorg could un-mine tx0, returning the notes to
+        // spendable for a fresh re-propose. So WAIT (Awaiting) for tx0 to bury before committing the
+        // terminal.
         assert!(
-            tx1_expiry < u32::from(h0) + REORG_MAX_BLOCKS,
+            tx1_expiry < u32::from(h0) + IRREVERSIBLE_DEPTH,
             "test precondition: tx1's expiry must fall within tx0's burial window so the strand WAITS",
         );
         st.wallet_mut()
             .update_chain_tip(BlockHeight::from_u32(tx1_expiry))
             .expect("tip exactly at tx1's expiry — tx1 dead, tx0 still shallow");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let pending = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let pending =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             pending,
             Reconciled::AwaitingBurial,
@@ -7510,19 +7795,49 @@ pub(crate) mod tests {
             "the row stays Sent while tx0 buries — not a premature terminal",
         );
 
-        // tx0 BURIED + tx1 DEAD (`tip = h0 + REORG_MAX_BLOCKS`, also well past tx1's expiry): the
+        // tx0 BURIED but tx1's EXPIRY NOT YET (ADR-0579 Decision 4: the irreversible steps wait
+        // for irreversible burial of the effective expiry). At `tip = h0 + IRREVERSIBLE_DEPTH` tx0
+        // can no longer reorg out, but tx1's expiry (about `h0 + 40`) is buried only
+        // `IRREVERSIBLE_DEPTH` blocks after IT: a reorg below that expiry could still let tx1
+        // mine. One block short of that burial the row still waits.
+        for (tip, why) in [
+            (
+                u32::from(h0) + IRREVERSIBLE_DEPTH,
+                "tx0 buried, tx1's expiry not",
+            ),
+            (
+                tx1_expiry + IRREVERSIBLE_DEPTH - 1,
+                "one block short of tx1's expiry burial",
+            ),
+        ] {
+            st.wallet_mut()
+                .update_chain_tip(BlockHeight::from_u32(tip))
+                .expect("tip past tx0's burial, short of tx1's expiry burial");
+            let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
+            let waiting = reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0)
+                .expect("reconcile");
+            assert_eq!(
+                waiting,
+                Reconciled::AwaitingBurial,
+                "at the tip {tip} ({why}) the group waits — not a premature terminal",
+            );
+        }
+
+        // tx0 BURIED + tx1's EXPIRY BURIED (`tip = tx1_expiry + IRREVERSIBLE_DEPTH`): the
         // irreversible step can no longer reorg out AND tx1 can never mine ⇒ terminal Stranded (leave
         // the reconcile loop, hand the ephemeral funds to the 2e-2b detect).
-        let buried_tip = BlockHeight::from_u32(u32::from(h0) + REORG_MAX_BLOCKS);
+        let buried_tip = BlockHeight::from_u32(tx1_expiry + IRREVERSIBLE_DEPTH);
         st.wallet_mut()
             .update_chain_tip(buried_tip)
-            .expect("tip a full reorg-depth past tx0 — tx0 now buried, tx1 long dead");
+            .expect("tip a full burial depth past tx1's expiry — tx0 and tx1's expiry both buried");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Stranded,
-            "tx0 mined+buried + tx1 dead ⇒ terminal Stranded, never a doomed re-broadcast",
+            "tx0 mined+buried + tx1 dead and its expiry buried ⇒ terminal Stranded, never a doomed \
+             re-broadcast",
         );
         assert!(
             crate::intent_store::list_in_flight(&aux)
@@ -7568,21 +7883,40 @@ pub(crate) mod tests {
             .update_chain_tip(h0)
             .expect("tip at tx0 (shallow)");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let shallow = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let shallow =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             shallow,
             Reconciled::AwaitingBurial,
             "final tx absent but tx0 shallow ⇒ WAIT for burial, not a premature terminal",
         );
 
+        // ONE BLOCK SHORT of tx0's burial (`tip = h0 + IRREVERSIBLE_DEPTH - 1`): with no final
+        // tx there is no expiry to wait for, so tx0's own burial is the only thing the terminal
+        // waits on, and one block short of it the row still waits.
+        st.wallet_mut()
+            .update_chain_tip(BlockHeight::from_u32(
+                u32::from(h0) + IRREVERSIBLE_DEPTH - 1,
+            ))
+            .expect("tip one block short of tx0's burial");
+        let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
+        let one_short =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
+        assert_eq!(
+            one_short,
+            Reconciled::AwaitingBurial,
+            "final tx absent, tx0 one block short of burial ⇒ still WAIT, not a terminal",
+        );
+
         // tx0 BURIED + final tx absent ⇒ it can never be re-broadcast AND can never mine, and the
         // irreversible step is now permanent ⇒ terminal `Stranded`, never `Awaiting`-forever.
-        let buried_tip = BlockHeight::from_u32(u32::from(h0) + REORG_MAX_BLOCKS);
+        let buried_tip = BlockHeight::from_u32(u32::from(h0) + IRREVERSIBLE_DEPTH);
         st.wallet_mut()
             .update_chain_tip(buried_tip)
             .expect("tip a reorg-depth past tx0");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Stranded,
@@ -7598,22 +7932,24 @@ pub(crate) mod tests {
 
     #[test]
     fn past_expiry_never_declares_a_no_expiry_tx_dead() {
-        // The `expiry != 0` arm is a live double-send door if ever dropped: `0` means NO
+        // The stored-0 arm is a live double-send door if ever dropped: `0` means NO
         // expiry (mineable at ANY height), and a plain `expiry <= tip` reads it dead at
         // every tip — every engine-created tx carries a real expiry, so no group test can
-        // catch that rewrite. Pin the arm directly, plus the exact ZIP-203 boundary the
-        // group terminals share.
-        assert!(!past_expiry(0, 0), "no-expiry at tip 0");
+        // catch that rewrite. Pin the arm directly at the expiry kernel (no next
+        // activation), plus the exact ZIP-203 boundary the group terminals share.
+        use crate::expiry::effective_expiry_before;
+        let stored = |expiry: u32| effective_expiry_before(None, expiry);
+        assert!(!stored(0).is_past(0), "no-expiry at tip 0");
         assert!(
-            !past_expiry(0, u32::MAX),
+            !stored(0).is_past(u32::MAX),
             "no-expiry is never dead, at any tip"
         );
         assert!(
-            !past_expiry(100, 99),
+            !stored(100).is_past(99),
             "tip = expiry - 1: the next block IS the expiry height — still mineable",
         );
         assert!(
-            past_expiry(100, 100),
+            stored(100).is_past(100),
             "tip = expiry: the next block is past the window — dead on this branch",
         );
     }
@@ -7641,8 +7977,8 @@ pub(crate) mod tests {
         st.wallet_mut()
             .update_chain_tip(BlockHeight::from_u32(expiry0.min(expiry1) - 1))
             .expect("tip one block before the earliest expiry");
-        let live =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let live = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert!(
             matches!(live, Reconciled::Rebroadcast { txs: ref r, .. } if r.len() == 2),
             "one block before expiry both legs are still mineable ⇒ re-broadcast, got {live:?}",
@@ -7656,17 +7992,17 @@ pub(crate) mod tests {
         );
 
         // BOTH legs dead but the expiry NOT YET BURIED (`tip` one block short of `expiry +
-        // REORG_MAX_BLOCKS`): an auto-recoverable reorg could still rewind below the expiry
+        // IRREVERSIBLE_DEPTH`): an auto-recoverable reorg could still rewind below the expiry
         // and revive a retained copy of the old group — and THIS path's fresh re-propose
         // selects disjoint inputs, so a revival would pay the recipient twice. NO requeue
         // inside the reorg window (the round-2 #6 margin); the group WAITS for burial, with no
         // re-broadcast of two dead legs (S7 C1: `AwaitingBurial`).
         let dead = expiry0.max(expiry1);
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(dead + REORG_MAX_BLOCKS - 1))
+            .update_chain_tip(BlockHeight::from_u32(dead + IRREVERSIBLE_DEPTH - 1))
             .expect("tip one block short of the expiry burying");
-        let shallow =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let shallow = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert!(
             matches!(shallow, Reconciled::AwaitingBurial),
             "dead but not expiry-buried ⇒ keep waiting inside the reorg window, got {shallow:?}",
@@ -7679,14 +8015,14 @@ pub(crate) mod tests {
             "still Sent — never a requeue inside the reorg window",
         );
 
-        // BOTH legs dead AND expiry-buried (`tip = expiry + REORG_MAX_BLOCKS`) with NEITHER
+        // BOTH legs dead AND expiry-buried (`tip = expiry + IRREVERSIBLE_DEPTH`) with NEITHER
         // mined ⇒ the group can never move money, across any auto-recoverable reorg —
         // terminal Requeued.
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(dead + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(dead + IRREVERSIBLE_DEPTH))
             .expect("tip a full reorg-depth past the latest expiry — the group is dead whole");
-        let action =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let action = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Requeued,
@@ -7734,10 +8070,10 @@ pub(crate) mod tests {
         assert!(crate::intent_store::mark_sent_multi(&mut aux, id, &group).expect("sent"));
 
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(expiry + IRREVERSIBLE_DEPTH))
             .expect("tip a full reorg-depth past the tx's expiry — dead whole");
-        let action =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let action = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Requeued,
@@ -7892,8 +8228,16 @@ pub(crate) mod tests {
 
         // LIVE (now + margin < deadline, clock plausible) ⇒ the normal re-broadcast.
         let live_now = CLOCK_PLAUSIBILITY_FLOOR_SECS + 1;
-        let live = rebroadcast_group(st.wallet(), &mut aux, id, &group, Some(deadline), live_now)
-            .expect("reconcile");
+        let live = rebroadcast_group(
+            st.wallet(),
+            st.network(),
+            &mut aux,
+            id,
+            &group,
+            Some(deadline),
+            live_now,
+        )
+        .expect("reconcile");
         assert!(
             matches!(live, Reconciled::Rebroadcast { txs: ref r, .. } if r.len() == 1),
             "a live-deadline deposit broadcasts normally, got {live:?}",
@@ -7904,6 +8248,7 @@ pub(crate) mod tests {
         // `deposit_gate` delete terminal resolves it once the tx expires + buries).
         let lapsed = rebroadcast_group(
             st.wallet(),
+            st.network(),
             &mut aux,
             id,
             &group,
@@ -7942,6 +8287,7 @@ pub(crate) mod tests {
         let (mut aux, id, group) = deposit_sent_row(&mut st, 1_800_000_000);
         let action = rebroadcast_group(
             st.wallet(),
+            st.network(),
             &mut aux,
             id,
             &group,
@@ -7975,11 +8321,13 @@ pub(crate) mod tests {
         let (mined_h, _) = st.generate_next_block_including(TxId::from_bytes(group[0]));
         st.scan_cached_blocks(mined_h, 1);
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(u32::from(mined_h) + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(
+                u32::from(mined_h) + IRREVERSIBLE_DEPTH,
+            ))
             .expect("tip a full reorg-depth past the mined block");
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action =
-            reconcile_inflight(st.wallet(), &mut aux, &row, 1_900_000_000).expect("reconcile");
+        let action = reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 1_900_000_000)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Deleted,
@@ -8020,10 +8368,10 @@ pub(crate) mod tests {
 
         // Far past tx0's expiry — the only READABLE leg is dead, but the group is not PROVEN dead.
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry0 + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(expiry0 + IRREVERSIBLE_DEPTH))
             .expect("tip far past tx0's expiry");
-        let action =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let action = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Awaiting,
@@ -8062,7 +8410,7 @@ pub(crate) mod tests {
         // A full reorg-depth + margin later (scanned so the wallet stays consistent), create
         // B — its expiry lands past A's burial point, so a tip can see A dead+buried while B
         // is still inside its validity window.
-        let gap = REORG_MAX_BLOCKS + 20;
+        let gap = IRREVERSIBLE_DEPTH + 20;
         let mut first = None;
         for _ in 0..gap {
             let (h, _) = st.generate_empty_block();
@@ -8074,7 +8422,7 @@ pub(crate) mod tests {
         let tx_b = sign_on(&mut st, &prop_b).expect("create B")[0];
         let expiry_b = created_tx_expiry(&st, tx_b);
         assert!(
-            expiry_a + REORG_MAX_BLOCKS < expiry_b,
+            expiry_a + IRREVERSIBLE_DEPTH < expiry_b,
             "test precondition: A buries while B is still live",
         );
 
@@ -8086,13 +8434,13 @@ pub(crate) mod tests {
         assert!(crate::intent_store::mark_submitting(&mut aux, id, &claims).expect("submit"));
         assert!(crate::intent_store::mark_sent_multi(&mut aux, id, &group).expect("sent group"));
 
-        // A dead AND expiry-buried (`tip = expiry_a + REORG_MAX_BLOCKS`), B live
+        // A dead AND expiry-buried (`tip = expiry_a + IRREVERSIBLE_DEPTH`), B live
         // (`expiry_b > tip`).
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry_a + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(expiry_a + IRREVERSIBLE_DEPTH))
             .expect("tip past A's burial, inside B's validity window");
-        let action =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let action = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert!(
             matches!(action, Reconciled::Rebroadcast { txs: ref r, .. } if r.len() == 2),
             "one live leg keeps the group in the re-broadcast regime, got {action:?}",
@@ -8141,10 +8489,10 @@ pub(crate) mod tests {
 
         // Hop 1: dead + expiry-buried ⇒ the terminal requeues, deadline unexamined.
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(expiry + IRREVERSIBLE_DEPTH))
             .expect("tip a reorg-depth past the expiry");
-        let action =
-            rebroadcast_group(st.wallet(), &mut aux, id, &group, None, 0).expect("reconcile");
+        let action = rebroadcast_group(st.wallet(), st.network(), &mut aux, id, &group, None, 0)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Requeued,
@@ -8206,7 +8554,8 @@ pub(crate) mod tests {
         assert!(crate::intent_store::mark_submitting(&mut aux, id, &claims).expect("submit"));
         // No create — the notes are still spendable.
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action = reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile");
+        let action =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile");
         assert_eq!(
             action,
             Reconciled::Requeued,
@@ -8385,7 +8734,8 @@ pub(crate) mod tests {
         let (st, mut aux, _id, txid) = prepared_sent_intent();
 
         let row1 = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
-        let action1 = reconcile_inflight(st.wallet(), &mut aux, &row1, 0).expect("pass 1");
+        let action1 =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row1, 0).expect("pass 1");
         let raw1 = match action1 {
             Reconciled::Rebroadcast { txs: raw, .. } => raw,
             other => panic!("pass 1: expected Rebroadcast, got {other:?}"),
@@ -8397,7 +8747,8 @@ pub(crate) mod tests {
             row2, row1,
             "the row is unchanged between passes (no txid churn)"
         );
-        let action2 = reconcile_inflight(st.wallet(), &mut aux, &row2, 0).expect("pass 2");
+        let action2 =
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row2, 0).expect("pass 2");
         let raw2 = match action2 {
             Reconciled::Rebroadcast { txs: raw, .. } => raw,
             other => panic!("pass 2: expected Rebroadcast, got {other:?}"),
@@ -8454,7 +8805,7 @@ pub(crate) mod tests {
         // Pass 1 — phase-1 reconcile: the notes are spendable ⇒ re-queue (recover the crashed send).
         let row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
         assert_eq!(
-            reconcile_inflight(st.wallet(), &mut aux, &row, 0).expect("reconcile"),
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, 0).expect("reconcile"),
             Reconciled::Requeued,
             "the crashed Submitting send is recovered to Queued, never stranded",
         );
@@ -8659,7 +9010,8 @@ pub(crate) mod tests {
             Some(lapsed),
             "the deadline tag rode into the in-flight row",
         );
-        let action = reconcile_inflight(st2.wallet(), &mut aux2, &row, now).expect("reconcile");
+        let action = reconcile_inflight(st2.wallet(), st2.network(), &mut aux2, &row, now)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::DepositExpired,
@@ -8845,8 +9197,8 @@ pub(crate) mod tests {
         // (W-swap-4-a-2 rule 2 — never a first feed of a dead quote), NOT delete and NOT
         // DepositExpired — the §4.4 delete is reached only in the ReProposeFresh arm, which a
         // Sent (notes-spent) row never enters.
-        let action =
-            reconcile_inflight(st.wallet(), &mut aux, &row, lapsed_now).expect("reconcile");
+        let action = reconcile_inflight(st.wallet(), st.network(), &mut aux, &row, lapsed_now)
+            .expect("reconcile");
         assert_eq!(
             action,
             Reconciled::DepositBroadcastHold,
@@ -8870,13 +9222,14 @@ pub(crate) mod tests {
         // (round-2 #6 burial) runs exactly as for any ordinary send.
         let (mined_h, _) = st.generate_next_block_including(TxId::from_bytes(txid_before));
         st.scan_cached_blocks(mined_h, 1);
-        let buried_tip = BlockHeight::from_u32(u32::from(mined_h) + REORG_MAX_BLOCKS);
+        let buried_tip = BlockHeight::from_u32(u32::from(mined_h) + IRREVERSIBLE_DEPTH);
         st.wallet_mut()
             .update_chain_tip(buried_tip)
             .expect("update tip a reorg-depth past the mined block");
         let mined_row = crate::intent_store::list_in_flight(&aux).expect("inflight")[0].clone();
         assert_eq!(
-            reconcile_inflight(st.wallet(), &mut aux, &mined_row, lapsed_now).expect("reconcile"),
+            reconcile_inflight(st.wallet(), st.network(), &mut aux, &mined_row, lapsed_now)
+                .expect("reconcile"),
             Reconciled::Deleted,
             "a MINED+buried deposit is delete-on-mined like any send — the lapsed deadline is irrelevant",
         );
@@ -9378,7 +9731,7 @@ pub(crate) mod tests {
     /// Reconcile the ONE in-flight row through the production entry point.
     fn c1_reconcile(st: &HarnessState, aux: &mut Connection, now_unix: u64) -> Reconciled {
         let row = crate::intent_store::list_in_flight(aux).expect("in flight")[0].clone();
-        reconcile_inflight(st.wallet(), aux, &row, now_unix).expect("reconcile")
+        reconcile_inflight(st.wallet(), st.network(), aux, &row, now_unix).expect("reconcile")
     }
 
     #[test]
@@ -9421,13 +9774,13 @@ pub(crate) mod tests {
 
         // One block short of burial: still waiting.
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry + REORG_MAX_BLOCKS - 1))
+            .update_chain_tip(BlockHeight::from_u32(expiry + IRREVERSIBLE_DEPTH - 1))
             .expect("tip one block short of burial");
         assert_eq!(c1_reconcile(&st, &mut aux, 0), Reconciled::AwaitingBurial);
 
         // Buried: the group is dead whole across any auto-recoverable reorg — requeue.
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(expiry + IRREVERSIBLE_DEPTH))
             .expect("tip at burial");
         assert_eq!(c1_reconcile(&st, &mut aux, 0), Reconciled::Requeued);
         assert_eq!(
@@ -9466,7 +9819,7 @@ pub(crate) mod tests {
         );
 
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(dead + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(dead + IRREVERSIBLE_DEPTH))
             .expect("tip at burial of the later expiry");
         assert_eq!(c1_reconcile(&st, &mut aux, 0), Reconciled::Requeued);
     }
@@ -9496,7 +9849,7 @@ pub(crate) mod tests {
         );
 
         st.wallet_mut()
-            .update_chain_tip(BlockHeight::from_u32(expiry + REORG_MAX_BLOCKS))
+            .update_chain_tip(BlockHeight::from_u32(expiry + IRREVERSIBLE_DEPTH))
             .expect("tip at burial");
         assert_eq!(
             c1_reconcile(&st, &mut aux, lapsed_now),
@@ -9508,4 +9861,9 @@ pub(crate) mod tests {
             "the requeued lapsed deposit is purged, never re-proposed to a dead quote"
         );
     }
+
+    // The NU7 wave's step 4, the activation check: the test author's send-side rows
+    // (a partly mined two-step and a swap deposit the upgrade killed) on a chain that
+    // straddles the activation, over this module's fixtures.
+    mod nu7_activation;
 }

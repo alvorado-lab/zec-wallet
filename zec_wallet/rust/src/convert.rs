@@ -262,11 +262,20 @@ impl From<rw::ReservationPressure> for api_state::ReservationPressure {
     }
 }
 
-/// The host depth-finality predicate (§3.2i-2 2e-2b-iii) — delegates to the core SSOT so the reorg
-/// horizon lives in ONE place and the host never hard-codes it. Pure passthrough (no core type
-/// crosses), exposed `#[frb(sync)]` from `api::state::tx_confirmation_is_final`.
-pub(crate) fn tx_confirmation_is_final(confirmation_depth: u32) -> bool {
-    rw::confirmation_depth_is_final(confirmation_depth)
+/// The host depth-finality predicate (§3.2i-2 2e-2b-iii) — delegates to the core SSOT so the burial
+/// rule lives in ONE place and the host never hard-codes it (ADR-0579 Decision 6: the badge follows
+/// the 15,000 s burial predicate). Pure passthrough over the row's own mined height and depth (no
+/// core type crosses), exposed `#[frb(sync)]` from `api::state::tx_confirmation_is_final`.
+pub(crate) fn tx_confirmation_is_final(
+    network: api_config::Network,
+    mined_height: u32,
+    confirmation_depth: u32,
+) -> bool {
+    rw::confirmation_depth_is_final(
+        network.into(),
+        rw::BlockHeight::new(mined_height),
+        confirmation_depth,
+    )
 }
 
 impl From<rw::SyncStamp> for api_state::SyncStamp {
@@ -507,6 +516,29 @@ impl From<rw::TxStatus> for api_state::TxStatus {
             rw::TxStatus::Confirmed { depth } => Self::Confirmed { depth },
             rw::TxStatus::Expired => Self::Expired,
             rw::TxStatus::Failed => Self::Failed,
+            rw::TxStatus::CancelledByUpgrade {
+                stopped_at,
+                released_at,
+                phase,
+            } => Self::CancelledByUpgrade {
+                stopped_at: stopped_at.value(),
+                released_at: released_at.map(rw::BlockHeight::value),
+                phase: phase.into(),
+            },
+            _ => Self::Unknown,
+        }
+    }
+}
+
+impl From<rw::CancelPhase> for api_state::CancelPhase {
+    fn from(p: rw::CancelPhase) -> Self {
+        // EXHAUSTIVE-by-name (the lockstep drift guard `bridge_enums_cover_core_variants`):
+        // a NEW core phase trips CI until this arm learns it. The core enum is
+        // `#[non_exhaustive]`, so the wildcard is unreachable in a lockstep build.
+        match p {
+            rw::CancelPhase::NotFinal => Self::NotFinal,
+            rw::CancelPhase::FinalNotReleased => Self::FinalNotReleased,
+            rw::CancelPhase::Released => Self::Released,
             _ => Self::Unknown,
         }
     }
@@ -912,6 +944,18 @@ impl From<rw::WalletError> for api_error::WalletApiError {
             // any "recover" affordance scopes to OTHER prior transfers' funds, never implying THIS send
             // stranded (it spent nothing). The Dart `classifySendFailure` arm landed 2e-2b-iv.
             rw::WalletError::TexSendLimitReached => K::TexSendLimitReached,
+            // ADR-0580: the pre-upgrade send pause crosses TYPED with its two heights
+            // (public protocol numbers, no wallet data), so the host renders the wait and
+            // returns to the form. Left to the `_ => K::Unknown` arm below it would reach
+            // Dart as "couldn't prepare", and the user would retry into the pause. Pinned
+            // by `upgrade_imminent_crosses_the_ffi_typed_with_its_heights`.
+            rw::WalletError::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            } => K::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            },
             // §6.2 broadcast/outbox taxonomy (inc-2d-3-b-ii). Payload-free.
             rw::WalletError::QueuedSendStale => K::QueuedSendStale,
             rw::WalletError::QueuedSendsFull => K::QueuedSendsFull,
@@ -965,6 +1009,16 @@ impl From<rw::SwapError> for api_error::SwapApiError {
             rw::SwapError::WatchOnly => K::WatchOnly,
             // S8 (R01): the caller-DTO terms compare's refusal (RW-SWAP-016).
             rw::SwapError::QuoteTermsDiffer => K::QuoteTermsDiffer,
+            // ADR-0580: the pre-upgrade pause refusing an OutOfZec execute (RW-SWAP-017),
+            // typed with both heights so the host renders the wait. Left to the wildcard it
+            // would read as an unknown swap failure and invite a re-quote into the pause.
+            rw::SwapError::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            } => K::UpgradeImminent {
+                activation_height,
+                blocks_left,
+            },
             _ => K::Unknown,
         };
         Self {
@@ -3665,6 +3719,33 @@ mod tests {
         assert_eq!(deterministic.code, "RW-SEND-005");
     }
 
+    /// ADR-0580: the pre-upgrade send pause crosses the FFI typed, with both heights
+    /// field for field, under its own stable code. The match ends in
+    /// `_ => K::Unknown`, so an arm left out would reach Dart as `unknown`, rendered
+    /// "couldn't prepare", and the user would retry into the pause. Distinct values,
+    /// so a transposed pair reds too. Mutant: delete the `UpgradeImminent` arm in
+    /// `From<rw::WalletError>`; the first assertion reds.
+    #[test]
+    fn upgrade_imminent_crosses_the_ffi_typed_with_its_heights() {
+        let paused: api_error::WalletApiError = rw::WalletError::UpgradeImminent {
+            activation_height: 3_543_405,
+            blocks_left: 20,
+        }
+        .into();
+        assert!(
+            matches!(
+                paused.kind,
+                api_error::WalletErrorKind::UpgradeImminent {
+                    activation_height: 3_543_405,
+                    blocks_left: 20,
+                }
+            ),
+            "the pause must cross typed with its heights, never as Unknown (code {})",
+            paused.code
+        );
+        assert_eq!(paused.code, "RW-SEND-009");
+    }
+
     #[test]
     fn custody_disclosure_dto_maps_fields_without_transposition() {
         // FR-14 H1 (money/security honesty): the pre-wipe disclosure DTO must
@@ -3773,11 +3854,14 @@ mod tests {
         // a UNIFIED address bundling a shielded receiver — THE realistic Zcash
         // recipient — is memo-capable (private). Pins the common case, not only
         // the bare-Sapling / bare-p2pkh extremes.
-        use zcash_address::unified::{Address as Ua, Encoding, Receiver};
-        let ua = Ua::try_from_items(vec![
-            Receiver::Orchard([0xEF; 43]),
-            Receiver::Sapling([0xAB; 43]),
-        ])
+        use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
+        let ua = Ua::try_from_items(
+            Revision::R0,
+            vec![
+                Uitem::Data(Receiver::Orchard([0xEF; 43])),
+                Uitem::Data(Receiver::Sapling([0xAB; 43])),
+            ],
+        )
         .expect("valid receiver set")
         .encode(&NetworkType::Main);
         assert!(

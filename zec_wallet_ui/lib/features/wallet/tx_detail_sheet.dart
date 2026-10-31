@@ -38,6 +38,10 @@ String txStatusLabel(WalletLocalizations l10n, TxStatus s) => switch (s) {
   TxStatus_Confirmed(:final depth) => l10n.walletActivityConfirmations(depth),
   TxStatus_Expired() => l10n.walletActivityExpired,
   TxStatus_Failed() => l10n.walletActivityFailed,
+  // A network upgrade cancelled it (ADR-0579 Decision 4): never "Pending" —
+  // no block can carry it any more — and never "Expired", whose sentence
+  // promises the amount back before the core says it is.
+  TxStatus_CancelledByUpgrade() => l10n.walletActivityCancelledByUpgrade,
   // Forward-compat arm (a future Rust status the bridge maps to Unknown):
   // render as Pending rather than crash — honest "in progress". Matched
   // EXPLICITLY (no `_`) so a regen that adds a named arm fails the build
@@ -90,9 +94,22 @@ String txRowStatusLabel(WalletLocalizations l10n, TxSummary tx) =>
 /// [DeliveryState.retryPending] until the replacement goes out, and striking
 /// it through with "no funds left your wallet" is what tempts a user to pay a
 /// second time by hand.
+///
+/// A payment a network upgrade cancelled counts ONLY in the released phase
+/// (ADR-0579 Decision 4): before that the block before the activation is not
+/// final, or the wallet still holds the amount, so the strike-through and the
+/// banner would promise money that is not back yet.
 bool txIsCancelled(TxSummary tx) =>
     tx.delivery == null &&
-    (tx.status is TxStatus_Expired || tx.status is TxStatus_Failed);
+    switch (tx.status) {
+      TxStatus_Expired() || TxStatus_Failed() => true,
+      TxStatus_CancelledByUpgrade(:final phase) =>
+        phase == CancelPhase.released,
+      TxStatus_Queued() ||
+      TxStatus_Pending() ||
+      TxStatus_Confirmed() ||
+      TxStatus_Unknown() => false,
+    };
 
 /// Plain-language explanation of the status for the detail sheet.
 String txStatusExplanation(WalletLocalizations l10n, TxStatus s) => switch (s) {
@@ -101,6 +118,15 @@ String txStatusExplanation(WalletLocalizations l10n, TxStatus s) => switch (s) {
   TxStatus_Confirmed() => l10n.walletTxExplainConfirmed,
   TxStatus_Expired() => l10n.walletTxExplainExpired,
   TxStatus_Failed() => l10n.walletTxExplainFailed,
+  // One sentence per phase, computed by the core: the amount is called
+  // spendable only once released, and before the block is final nothing
+  // invites a re-send (an activation is when deep reorgs happen).
+  TxStatus_CancelledByUpgrade(:final phase) => switch (phase) {
+    CancelPhase.notFinal ||
+    CancelPhase.unknown => l10n.walletTxExplainCancelledNotFinal,
+    CancelPhase.finalNotReleased => l10n.walletTxExplainCancelledHeld,
+    CancelPhase.released => l10n.walletTxExplainCancelledReleased,
+  },
   // The unknown LABEL reads as Pending (see txStatusLabel), but the
   // explanatory sentence must not AFFIRM a broadcast the binding can't
   // verify — a neutral, honest unknown instead.
@@ -112,13 +138,17 @@ String txStatusExplanation(WalletLocalizations l10n, TxStatus s) => switch (s) {
 /// network", which is FALSE for a transaction the wallet is still retrying
 /// (no endpoint has taken it yet) and for one it is holding — those two get
 /// their own honest sentences; everything else falls through. An EXPIRED
-/// attempt the wallet will send again (S7 C1) says so, and says not to.
+/// attempt the wallet will send again (S7 C1) says so, and says not to; so
+/// does one a network upgrade cancelled, for which "tries again until it goes
+/// through" would be false (no block can carry it), and so would "this attempt
+/// expired": it did not, the upgrade ended it. It gets its own sentence.
 String txRowStatusExplanation(WalletLocalizations l10n, TxSummary tx) =>
     switch (tx.delivery) {
-      DeliveryState.retryPending =>
-        tx.status is TxStatus_Expired
-            ? l10n.walletTxExplainRetryingExpired
-            : l10n.walletTxExplainRetrying,
+      DeliveryState.retryPending => switch (tx.status) {
+        TxStatus_Expired() => l10n.walletTxExplainRetryingExpired,
+        TxStatus_CancelledByUpgrade() => l10n.walletTxExplainRetryingCancelled,
+        _ => l10n.walletTxExplainRetrying,
+      },
       DeliveryState.persisted => l10n.walletTxExplainSaved,
       DeliveryState.accepted ||
       DeliveryState.confirmed ||

@@ -147,6 +147,9 @@ _Membership _expected(WalletErrorKind kind) => switch (kind) {
     parked: false,
   ),
   WalletErrorKind_TexSendLimitReached() => _sendAndSingleStep,
+  // ADR-0580: the pre-upgrade pause, checked before the seed pull on every
+  // signing path (and inside the create, before it); queueing is not signing.
+  WalletErrorKind_UpgradeImminent() => _beforeEverySign,
   WalletErrorKind_Io() => _singleStepOnly,
   WalletErrorKind_Unknown() => _none,
 };
@@ -229,6 +232,10 @@ List<WalletErrorKind> get _samples => [
   const WalletErrorKind.queuedSendStale(),
   const WalletErrorKind.queuedSendsFull(),
   const WalletErrorKind.texSendLimitReached(),
+  const WalletErrorKind.upgradeImminent(
+    activationHeight: 3543405,
+    blocksLeft: 20,
+  ),
   const WalletErrorKind.io(),
   const WalletErrorKind.unknown(),
 ];

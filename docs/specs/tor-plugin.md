@@ -1506,9 +1506,11 @@ assumes one user = one device.
 
 ## 12. Spec patch — the OWNED client in `dialer-tor` (2026-10-07)
 
-**Status of this section: Implementing — built, its review fan-out on the
-built diff pending** (design-reviewed; founder 2026-10-07: "in v1.0b", and
-before the 0.0.1 publish). §3.3 "Threading" and §3.6 point here; §3.3 and §4
+**Status of this section: Shipped** in `dialer-tor` 0.1.1 (2026-10-08), after
+the review fan-out on the built diff and its folds (`plan/tor-owned-client.md`
+§8, record §12.11); `ClientShutDown` (§12.11's F5) ships first in 0.1.3
+(2026-10-23). Design-reviewed; founder 2026-10-07: "in v1.0b", and before the
+0.0.1 publish. §3.3 "Threading" and §3.6 point here; §3.3 and §4
 now describe the built state. Agreed in contract shape with the Relim session (relim-9e, 2026-10-07:
 C1–C8 plus C2', and `shutdown(&self)`), and wanted by the founder for Relim's
 v1.0b. ADR-0572 (Proposed) records the decision. Built BEFORE the 0.0.1

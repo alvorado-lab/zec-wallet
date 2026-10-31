@@ -5,6 +5,7 @@ import 'package:zec_wallet/zec_wallet.dart';
 import 'package:zec_wallet_ui/l10n/wallet_localizations.dart';
 import '../../shared/wallet_dialog.dart';
 import 'send_authorization.dart';
+import 'upgrade_pause.dart' show upgradePausedText;
 import 'wallet_providers.dart';
 
 /// §3.2i-2 2e-2b-vi (#315 slice 2) — the "reopen one-time-address sending" flow.
@@ -120,8 +121,14 @@ Future<void> confirmAndReclaim(BuildContext context, WidgetRef ref) async {
   } on WalletApiError catch (e) {
     // The one branch worth distinguishing: the user needs shielded funds to
     // self-mint. Everything else is an honest "couldn't reopen; unchanged".
+    // The pre-upgrade pause (ADR-0580) is the other: nothing was minted, and
+    // the reopen runs again once the upgrade is through.
     message = switch (e.kind) {
       WalletErrorKind_InsufficientFunds() => l10n.walletReclaimNeedsFunds,
+      WalletErrorKind_UpgradeImminent(:final blocksLeft) => upgradePausedText(
+        l10n,
+        blocksLeft,
+      ),
       _ => l10n.walletReclaimFailed,
     };
   } catch (_) {

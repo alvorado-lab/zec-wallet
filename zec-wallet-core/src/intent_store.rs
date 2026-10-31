@@ -1017,7 +1017,7 @@ pub(crate) fn reset_to_queued_refunding_attempt(
 /// callers: a `Submitting` row whose claimed notes read spendable (the tx was never created),
 /// and — the ONLY exit that re-sends a `Sent` row — the group-side all-expired terminal (v-5c
 /// finding #1, `rebroadcast_group`): a `Sent` group with NO tx mined and EVERY tx past an
-/// expiry BURIED beyond `REORG_MAX_BLOCKS` is dead whole, whatever the note witness reads
+/// irreversibly BURIED effective expiry is dead whole, whatever the note witness reads
 /// (S7 C1: the engine frees the notes at BARE expiry, while a reorg could still revive the
 /// signed group), so the user's intended payment did NOT land and must be re-attempted, NOT
 /// dropped. This is the
@@ -1135,7 +1135,7 @@ pub(crate) fn list_in_flight(conn: &Connection) -> Result<Vec<InFlightIntent>, W
 
 /// One terminal-`Stranded` intent the §3.2i-2 2e-2b reap inspects (ADR-0535 Decision 3): its id +
 /// the ORDERED tx group it recorded. `txids[0]` is tx0 — the tx that unshielded to the wallet's
-/// ephemeral address — and the reap deletes the row once THAT tx is buried beyond `REORG_MAX_BLOCKS`.
+/// ephemeral address — and the reap deletes the row once THAT tx is irreversibly buried.
 /// Distinct from [`InFlightIntent`]: a `Stranded` row is NOT reconciled/re-broadcast (it left
 /// [`list_in_flight`]), so this carries only what the reap needs.
 #[derive(Debug)]
@@ -1305,11 +1305,14 @@ mod tests {
 
     /// A unified (Orchard+Sapling) recipient — the default modern pool.
     fn unified_addr() -> crate::memo::Address {
-        use zcash_address::unified::{Address as Ua, Encoding, Receiver};
-        let encoded = Ua::try_from_items(vec![
-            Receiver::Orchard([0xEF; 43]),
-            Receiver::Sapling([0xAB; 43]),
-        ])
+        use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
+        let encoded = Ua::try_from_items(
+            Revision::R0,
+            vec![
+                Uitem::Data(Receiver::Orchard([0xEF; 43])),
+                Uitem::Data(Receiver::Sapling([0xAB; 43])),
+            ],
+        )
         .expect("valid receiver set")
         .encode(&NetworkType::Test);
         crate::memo::Address::parse(&encoded, Network::Test).expect("valid ua")

@@ -5335,6 +5335,48 @@ abstract class WalletLocalizations {
   /// In en, this message translates to:
   /// **'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself, so don\'t send it again yourself.'**
   String get walletTxExplainRetryingExpired;
+
+  /// History row label for a wallet-created payment a network upgrade cancelled (TxStatus.cancelledByUpgrade, ADR-0579 Decision 4): it was signed under the consensus branch the upgrade ended, so no block from the activation on can carry it. Never 'Pending' and never 'Expired'.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled by upgrade'**
+  String get walletActivityCancelledByUpgrade;
+
+  /// Detail-sheet explanation for TxStatus.cancelledByUpgrade in CancelPhase.notFinal: the block before the activation is not yet irreversibly buried, so a deep reorg could still let the payment through. Must neither say the amount is back nor invite a re-send (the plan's rule (b)).
+  ///
+  /// In en, this message translates to:
+  /// **'A network upgrade cancelled this payment before it was confirmed. This isn\'t final yet, so don\'t send it again.'**
+  String get walletTxExplainCancelledNotFinal;
+
+  /// Detail-sheet explanation for TxStatus.cancelledByUpgrade in CancelPhase.finalNotReleased: final, but the engine keeps the notes reserved until the payment's stored expiry (TxSummary.expiryHeight). Must not say the amount is spendable.
+  ///
+  /// In en, this message translates to:
+  /// **'A network upgrade cancelled this payment. Your wallet still holds the amount until the payment\'s own expiry.'**
+  String get walletTxExplainCancelledHeld;
+
+  /// Detail-sheet explanation for TxStatus.cancelledByUpgrade in CancelPhase.released: final and released, the only phase in which the amount is called spendable again (and the strike-through and walletTxFundsKept banner show).
+  ///
+  /// In en, this message translates to:
+  /// **'A network upgrade cancelled this payment before it was confirmed. The amount is yours to spend again.'**
+  String get walletTxExplainCancelledReleased;
+
+  /// Detail-sheet explanation for a wallet-created row a network upgrade cancelled while the wallet still owes the payment (TxStatus.cancelledByUpgrade with TxSummary.delivery == retryPending): no block can carry the old transaction, and the wallet will build and send a fresh one by itself. The sibling of walletTxExplainRetryingExpired, which would be false here (the attempt did not expire). The 'don't send it again yourself' clause is the point: a manual re-send pays twice.
+  ///
+  /// In en, this message translates to:
+  /// **'A network upgrade cancelled this attempt before it was confirmed. Your wallet will send the payment again by itself, so don\'t send it again yourself.'**
+  String get walletTxExplainRetryingCancelled;
+
+  /// Inline fault on the send form (and the shield, move, parked-send, recovery, reopen and swap-execute surfaces) for WalletErrorKind.upgradeImminent and SwapErrorKind.upgradeImminent (ADR-0580, wording decided 2026-10-30): a network upgrade activates within 20 blocks, so the wallet refuses new sends until it has. {minutes} is the wait in whole minutes, rounded up from blocksLeft at 75 s a block (upgradePauseMinutes). The minutes are never below 2 (blocksLeft is at least 1, and one 75 s block rounds up to 2), so every locale's =1 / one arm is unreachable; it stays so the message is total. Orange, not a failure: nothing was sent, and sending works again right after the upgrade unless another activation falls in the next 20 blocks.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{The Zcash network upgrades in about 1 minute. Sending is paused until then so your payment can\'t get stuck.} other{The Zcash network upgrades in about {minutes} minutes. Sending is paused until then so your payment can\'t get stuck.}}'**
+  String walletSendFaultUpgradePaused(int minutes);
+
+  /// Shield sheet title for ShieldFaultReason.upgradePaused (ADR-0580): a network upgrade activates within 20 blocks, so the wallet refuses new transactions, a shield among them. The body is walletSendFaultUpgradePaused with the wait. A wait, never a failure: it must not say the shield failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Shielding is paused'**
+  String get walletShieldPausedTitle;
 }
 
 class _WalletLocalizationsDelegate

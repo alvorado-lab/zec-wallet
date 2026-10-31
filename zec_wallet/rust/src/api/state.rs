@@ -4,6 +4,8 @@
 //! supply ≈ 2.1e15 < 2^53, so the value is exact even under JS-number
 //! semantics; spec §2.1).
 
+use crate::api::config::Network;
+
 /// Balance breakdown. `transparentZat` is REAL, privacy-relevant user state
 /// (drives the host's shield banner); a nonzero value after a failed
 /// auto-shield must stay visible.
@@ -431,13 +433,19 @@ pub struct MintedDiversifiedAddress {
     pub diversifier_index: u64,
 }
 
-/// Whether a confirmed transaction at `confirmationDepth` is reorg-FINAL — buried beyond the deepest
-/// reorg the wallet auto-recovers. The SDK owns the reorg horizon: pass the `depth` from
-/// [TxStatus.confirmed] and never hard-code a block count. (`depth = tip − mined + 1`, so finality is
-/// `depth > horizon`, one block past the horizon.) Pure + sub-millisecond ⇒ `#[frb(sync)]`.
+/// Whether a confirmed transaction is reorg-FINAL: irreversibly buried, beyond the deepest reorg
+/// the wallet must survive (15,000 s of chain time: 200 blocks before the NU7 activation, 600 from
+/// it, summed for a span across it). The SDK owns the burial rule: pass the wallet's [Network],
+/// the row's own [TxSummary.minedHeight] and the `depth` from [TxStatus.confirmed], and never
+/// hard-code a block count: the count changes at a network upgrade. (`depth = tip − mined + 1`.)
+/// Pure and sub-millisecond, so the Dart call is synchronous (`#[frb(sync)]`).
 #[flutter_rust_bridge::frb(sync)]
-pub fn tx_confirmation_is_final(confirmation_depth: u32) -> bool {
-    crate::convert::tx_confirmation_is_final(confirmation_depth)
+pub fn tx_confirmation_is_final(
+    network: Network,
+    mined_height: u32,
+    confirmation_depth: u32,
+) -> bool {
+    crate::convert::tx_confirmation_is_final(network, mined_height, confirmation_depth)
 }
 
 /// When the balances/history shown were last chain-confirmed. `at` is unix
@@ -561,8 +569,10 @@ pub enum SyncStatus {
     /// on, so this app cannot confirm that a payment it signs will be accepted.
     /// Sending is allowed for a short grace — `grace` says how much is left
     /// (whichever of blocks and time runs out first; `secsLeft` is null when
-    /// the device clock cannot be trusted for it, then show the blocks alone)
-    /// — or, once it has ended, why (a day of blocks, a day on the device
+    /// the device clock cannot be trusted for it, then show the blocks alone;
+    /// from NU7 `secsLeft` can overstate the time left, see
+    /// [UnknownBranchGrace.running]).
+    /// Once it has ended, `grace` says why (its 1,152 blocks, a day on the device
     /// clock, or this wallet never confirmed at all) and that sending is
     /// refused until a server that reports its network is used.
     ///
@@ -708,9 +718,10 @@ pub enum StallReason {
 /// rendered alike, and NEVER the "update the app" copy — nothing was upgraded
 /// and an update fixes nothing.
 pub enum GraceExpiry {
-    /// A day's worth of blocks passed since this app last confirmed, with a
-    /// server that reports its network, that it can send — and this server
-    /// never said. Next step: switch servers.
+    /// 1,152 blocks passed since this app last confirmed that it can send (with a
+    /// server that reports its network), and this server never said.
+    /// That is a day of 75 s blocks before NU7 and about 8 hours of NU7's 25 s
+    /// blocks after it. Next step: switch servers.
     Blocks,
     /// A day passed on the DEVICE clock since that confirmation, whatever this
     /// server's block height did (the one thing a server that freezes its
@@ -737,10 +748,12 @@ pub enum GraceExpiry {
 /// only — never a timestamp.
 pub enum UnknownBranchGrace {
     /// Sending still works. `blocksLeft` on the block rule; `secsLeft` is the
-    /// time left on whichever rule runs out first (the blocks converted
-    /// through the network's target block spacing by the SDK, so hosts never
-    /// need to know it) — null when the device clock cannot be trusted for
-    /// it, in which case show the blocks and no time.
+    /// time left on whichever rule runs out first, the blocks converted by the
+    /// SDK at 75 s a block; it is null when the device clock cannot be trusted for
+    /// it, in which case show the blocks and no time. LIMIT: from NU7 a block
+    /// comes every 25 s, so there the block rule can run out up to three times
+    /// sooner than `secsLeft` says; the refusal itself is on time. From NU7,
+    /// show the smaller of `secsLeft` and `blocksLeft` × 25 s instead.
     Running {
         blocks_left: u32,
         secs_left: Option<u32>,
@@ -796,7 +809,41 @@ pub enum TxStatus {
     Expired,
     /// Endpoint rejected it.
     Failed,
+    /// Signed before a network upgrade and not mined before it activated: the upgrade
+    /// cancelled the payment, and no block from the activation on can carry it.
+    /// `stoppedAt` is the activation height, the height the network stopped
+    /// accepting the payment at. `releasedAt` is the height its amount is
+    /// released at, the same value as the row's [TxSummary.expiryHeight]
+    /// (`null` for a payment built with no expiry). Render `phase` and compute
+    /// nothing: before [CancelPhase.released], never say the amount is back or
+    /// strike it through, and while `phase` is [CancelPhase.notFinal] never invite a
+    /// re-send. Beside `delivery == retryPending` the wallet is sending the
+    /// payment again itself. Replaces [TxStatus.expired] for such a payment,
+    /// even after its own expiry passes.
+    CancelledByUpgrade {
+        stopped_at: u32,
+        released_at: Option<u32>,
+        phase: CancelPhase,
+    },
     /// Forward-compatibility arm (see [SyncStatus.unknown]).
+    Unknown,
+}
+
+/// How far a payment cancelled by a network upgrade has settled
+/// ([TxStatus.cancelledByUpgrade]), computed by the SDK. The amount is back
+/// only once it is released and the block before the activation is final.
+pub enum CancelPhase {
+    /// The block before the activation is not yet final: a deep reorg could
+    /// still let the payment through. Do not say the amount is back, and do not
+    /// invite sending it again.
+    NotFinal,
+    /// Final, but the wallet still holds the amount until the release height
+    /// ([TxSummary.expiryHeight]); a payment built with no expiry is never released.
+    FinalNotReleased,
+    /// Final and released: the amount is spendable again.
+    Released,
+    /// Forward-compatibility arm (see [SyncStatus.unknown]): render as not
+    /// final.
     Unknown,
 }
 
@@ -862,19 +909,30 @@ pub struct TxSummary {
     /// [WalletHandle.deliveryState].
     pub delivery: Option<DeliveryState>,
     /// The height at which the outcome of a transaction THIS WALLET CREATED
-    /// resolves either way: the last block it can be mined in (its expiry).
-    /// `null` for a received transaction and for one built with no expiry.
+    /// resolves either way: the last block its own expiry lets it be mined in
+    /// (a network upgrade can end it sooner; see below). `null` for a received
+    /// transaction and for one built with no expiry.
     ///
     /// **How to read it.** The row's status is judged against the wallet's OWN
     /// scan, never the chain tip. So beside a pending row (and
     /// `delivery == retryPending`), read this height against a bounded sync's
     /// `{scannedTo, tip}` (`syncFor`):
-    /// - `expiryHeight <= tip` — the chain has already decided; the wallet has
+    /// - `expiryHeight <= tip`: the chain has already decided; the wallet has
     ///   not looked yet. A sync that scans to at least `expiryHeight` resolves
-    ///   the row (confirmed, or expired with the funds spendable again).
-    /// - `expiryHeight > tip` — unresolved on chain: wait for block
-    ///   `expiryHeight`. Until then the transaction can still be mined, so do
+    ///   the row: confirmed, expired with the funds spendable again, or
+    ///   cancelled by upgrade (render its phase).
+    /// - `expiryHeight > tip`: unresolved on chain, unless a network upgrade
+    ///   activates first: a sync that scans to the block before that activation
+    ///   resolves the row: confirmed if it was mined by then, otherwise cancelled
+    ///   by upgrade (render its phase). Otherwise
+    ///   wait for block
+    ///   `expiryHeight`; until then the transaction can still be mined, so do
     ///   not tell the user to send again.
+    ///
+    /// Beside [TxStatus.cancelledByUpgrade] it is the RELEASE height, the
+    /// status's `releasedAt`: the network stopped accepting the transaction at
+    /// the activation (`stoppedAt`), but the wallet holds its amount until this
+    /// block.
     pub expiry_height: Option<u32>,
 }
 

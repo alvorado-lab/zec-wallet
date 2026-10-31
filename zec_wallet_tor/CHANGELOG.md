@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The README's install snippet names `zec_wallet` 0.0.5.
+
 ## 0.0.4
 
 A security release. Update: the plugin's lock moves to `zstd` 0.14.3,

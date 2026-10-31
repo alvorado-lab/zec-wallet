@@ -3253,4 +3253,39 @@ class WalletLocalizationsEn extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'This attempt expired before the network confirmed it. Your wallet will send the payment again by itself, so don\'t send it again yourself.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Cancelled by upgrade';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'A network upgrade cancelled this payment before it was confirmed. This isn\'t final yet, so don\'t send it again.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'A network upgrade cancelled this payment. Your wallet still holds the amount until the payment\'s own expiry.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'A network upgrade cancelled this payment before it was confirmed. The amount is yours to spend again.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'A network upgrade cancelled this attempt before it was confirmed. Your wallet will send the payment again by itself, so don\'t send it again yourself.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'The Zcash network upgrades in about $minutes minutes. Sending is paused until then so your payment can\'t get stuck.',
+      one:
+          'The Zcash network upgrades in about 1 minute. Sending is paused until then so your payment can\'t get stuck.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Shielding is paused';
 }

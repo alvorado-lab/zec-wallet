@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Nie udało się potwierdzić objęcia ochroną. Sprawdź sekcję Aktywność, zanim spróbujesz ponownie.",
   "walletMoveUnknownTitle": "Sprawdź, zanim ponownie przeniesiesz",
   "walletMoveUnknownBody": "Nie udało się potwierdzić tego przeniesienia. Sprawdź sekcję Aktywność, zanim spróbujesz ponownie.",
-  "walletTxExplainRetryingExpired": "Ta próba wygasła, zanim sieć ją potwierdziła. Twój portfel sam wyśle płatność ponownie, więc nie wysyłaj jej ponownie samodzielnie."
+  "walletTxExplainRetryingExpired": "Ta próba wygasła, zanim sieć ją potwierdziła. Twój portfel sam wyśle płatność ponownie, więc nie wysyłaj jej ponownie samodzielnie.",
+  "walletActivityCancelledByUpgrade": "Anulowano przez aktualizację",
+  "walletTxExplainCancelledNotFinal": "Aktualizacja sieci anulowała tę płatność przed jej potwierdzeniem. To jeszcze nie jest ostateczne, więc nie wysyłaj jej ponownie.",
+  "walletTxExplainCancelledHeld": "Aktualizacja sieci anulowała tę płatność. Portfel wstrzymuje kwotę do wygaśnięcia płatności.",
+  "walletTxExplainCancelledReleased": "Aktualizacja sieci anulowała tę płatność przed jej potwierdzeniem. Kwota jest znowu dostępna.",
+  "walletTxExplainRetryingCancelled": "Aktualizacja sieci anulowała tę próbę przed jej potwierdzeniem. Portfel sam wyśle płatność ponownie, więc nie wysyłaj jej ponownie samodzielnie.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, one{Sieć Zcash zostanie zaktualizowana za około {minutes} minutę. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.} few{Sieć Zcash zostanie zaktualizowana za około {minutes} minuty. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.} many{Sieć Zcash zostanie zaktualizowana za około {minutes} minut. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.} other{Sieć Zcash zostanie zaktualizowana za około {minutes} minuty. Do tego czasu wysyłanie jest wstrzymane, aby Twoja płatność nie utknęła.}}",
+  "walletShieldPausedTitle": "Ochrona środków jest wstrzymana"
 }

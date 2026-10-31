@@ -24,6 +24,7 @@ use zcash_protocol::TxId;
 use zcash_protocol::consensus::{BlockHeight, BranchId, Parameters};
 
 use crate::error::WalletError;
+use crate::expiry::EffectiveExpiry;
 use crate::net::grpc::GrpcError;
 
 /// The raw transaction the endpoint returned for an enhancement/get-status request, flattened
@@ -286,8 +287,11 @@ pub(crate) fn select_enhancement_targets(
 ///   endpoint's claim is refused outright. This is the only check that closes case 1, and it is a
 ///   correctness rule, not a judgement call.
 /// - **`expiry` — a CONSENSUS bound, the only one that does not rest on endpoint data.** ZIP-203:
-///   a transaction with a nonzero expiry height cannot be mined above it. Free — the parsed
-///   transaction is already in scope at the call site.
+///   a transaction with a nonzero expiry height cannot be mined above it, and ZIP 259: nor in a
+///   block past the activation that ended the branch it was signed under. Both are the expiry
+///   kernel's answer ([`crate::expiry`]), so a hostile "mined at `h`" with `H <= h <=` the stored
+///   expiry, for a payment the upgrade killed, is refused like one above the stored expiry. Free —
+///   the parsed transaction is already in scope at the call site.
 /// - **`birthday` — a lower bound.** Refuses a backdated claim below the wallet's own birthday.
 ///   Weak (the window above the birthday is still open) but it costs nothing and backdating is the
 ///   worse direction, since the `MIN(…)` ratchets never recover.
@@ -336,8 +340,7 @@ pub(crate) fn chain_status(
     }
     // No birthday ⇒ no accounts ⇒ no requests should exist. Refuse rather than assume a floor.
     let birthday = evidence.birthday?;
-    let expiry = u32::from(evidence.expiry);
-    if h > evidence.known_tip || h < birthday || (expiry != 0 && u32::from(h) > expiry) {
+    if h > evidence.known_tip || h < birthday || !evidence.expiry.admits(u32::from(h)) {
         return None;
     }
     Some(CheckedStatus(TransactionStatus::Mined(h)))
@@ -360,9 +363,11 @@ pub(crate) struct StatusEvidence {
     /// reads back as `None` here. That state needs a prior bad write or a rewind to reach, and the
     /// remaining checks still apply, so it is documented rather than worked around.
     pub(crate) already_known: Option<BlockHeight>,
-    /// The transaction's own ZIP-203 expiry height, read from the §4.6-validated bytes. `0` means
-    /// "never expires" and disables this check. The ONLY check here not derived from endpoint data.
-    pub(crate) expiry: BlockHeight,
+    /// The expiry kernel's answer for the transaction ([`crate::expiry::effective_expiry`]), from
+    /// the §4.6-validated bytes: its stored ZIP-203 expiry, shortened to the block before the
+    /// activation that ended its branch. [`EffectiveExpiry::Never`] (a stored 0 and no next
+    /// activation) disables this check. The ONLY check here not derived from endpoint data.
+    pub(crate) expiry: EffectiveExpiry,
 }
 
 /// A [`TransactionStatus`] that has passed [`chain_status`] — the ONLY thing
@@ -398,19 +403,52 @@ pub(crate) fn map_wire_height(height: u64) -> Option<BlockHeight> {
         .then_some(BlockHeight::from_u32(height as u32))
 }
 
-/// The §4.6 hostile-input boundary for an enhancement reply: re-parse the endpoint's bytes into
-/// a `Transaction` and verify its consensus txid EQUALS the requested one. Returns `Some(tx)`
-/// only when both hold; `None` rejects a garbled/truncated tx OR a WRONG transaction (a lying
-/// endpoint that answers a different tx — the M2 threat). The caller then skips it: nothing is
-/// decrypted or stored from an unvalidated reply.
-///
-/// `parse_height` selects the consensus branch for LEGACY (v4) transactions; modern v5 txs
-/// self-describe their branch (`Transaction::read_v5` ignores the passed branch), so this is
-/// only consulted for old transactions a deep restore might surface.
 /// Read the consensus branch id out of a v5 OR v6 transaction header without
-/// parsing the transaction (`ironwood-nu63-support.md` §4).
+/// parsing the transaction (`ironwood-nu63-support.md` §4): bytes 8 to 12, and only
+/// behind a WHOLE header, the version and the version-group id together as one of
+/// the two known pairs (INC-007's rule). `None` for a short read, a legacy v3/v4
+/// transaction, or a mismatched pair. The first 12 bytes of a transaction are enough.
 ///
-/// Returns `Some(branch)` only when the bytes name a branch THIS BUILD does not
+/// Two readers sit on it, and they fail in opposite directions on purpose:
+///
+/// - [`unknown_branch_evidence`] keeps only a branch this build does NOT know, as
+///   evidence that the chain has moved past our rules;
+/// - the expiry kernel ([`crate::expiry::effective_expiry`]) keeps only a branch the
+///   crate DOES know, to find the activation that ends it. There a `None` (an
+///   unreadable header) leaves the stored expiry standing: it never shortens one.
+pub(crate) fn header_branch(data: &[u8]) -> Option<u32> {
+    use zcash_protocol::constants::{
+        V5_TX_VERSION, V5_VERSION_GROUP_ID, V6_TX_VERSION, V6_VERSION_GROUP_ID,
+    };
+
+    // Bytes 8..12 are the consensus branch id ONLY in a v5 or v6 header. The
+    // fOverwintered bit alone does not establish that: v3 (`0x8000_0003`) and
+    // v4 (`0x8000_0004`) set it too, and at that offset a v4 transaction
+    // carries its transparent input vector — arbitrary attacker-influenced
+    // bytes that would read as a "branch we do not implement" (crypto audit +
+    // security review, found independently; INC-007).
+    //
+    // That mattered because the txid then joins [`UnparseableTxids`]: an
+    // endpoint answering with any v4-shaped bytes could pick which of the
+    // wallet's memos went dark for the rest of the process, and could
+    // manufacture the "local staleness evidence" §4 relies on.
+    // So require a FULL header — version and version-group id TOGETHER, as one
+    // of the two known pairs. A v5 version under v6's group id (or the
+    // reverse) is not a header upstream would accept either: `TxVersion::read`
+    // matches the PAIR.
+    const OVERWINTERED: u32 = 0x8000_0000;
+    let header = u32::from_le_bytes(data.get(0..4)?.try_into().ok()?);
+    let group = u32::from_le_bytes(data.get(4..8)?.try_into().ok()?);
+    let known_pair = (header == OVERWINTERED | V5_TX_VERSION && group == V5_VERSION_GROUP_ID)
+        || (header == OVERWINTERED | V6_TX_VERSION && group == V6_VERSION_GROUP_ID);
+    if !known_pair {
+        return None;
+    }
+    Some(u32::from_le_bytes(data.get(8..12)?.try_into().ok()?))
+}
+
+/// Read the consensus branch id out of a v5 OR v6 transaction header (through
+/// [`header_branch`]) and keep it only when it names a branch THIS BUILD does not
 /// know — i.e. local evidence that the chain has moved past our
 /// consensus rules. `None` for a short reply, a legacy v3/v4 transaction, a
 /// mismatched version/group pair, or a branch we implement.
@@ -442,41 +480,25 @@ pub(crate) fn map_wire_height(height: u64) -> Option<BlockHeight> {
 /// newest format for no gain.
 ///
 /// Total and allocation-free: a fixed-offset read behind a length check, on
-/// bytes we already hold. A garbled reply can at worst make us log a wrong
-/// branch id — it can never grant permission to anything, since this feeds
-/// diagnostics only.
+/// bytes we already hold. Read here, it can grant permission to nothing: a
+/// garbled reply can at worst make us log a wrong branch id. The same header
+/// read also feeds the expiry kernel, where the failure direction is the other
+/// half of the rule: an unreadable header never shortens an expiry
+/// ([`header_branch`]).
 pub(crate) fn unknown_branch_evidence(data: &[u8]) -> Option<u32> {
-    use zcash_protocol::constants::{
-        V5_TX_VERSION, V5_VERSION_GROUP_ID, V6_TX_VERSION, V6_VERSION_GROUP_ID,
-    };
-
-    // Bytes 8..12 are the consensus branch id ONLY in a v5 or v6 header. The
-    // fOverwintered bit alone does not establish that: v3 (`0x8000_0003`) and
-    // v4 (`0x8000_0004`) set it too, and at that offset a v4 transaction
-    // carries its transparent input vector — arbitrary attacker-influenced
-    // bytes that would read as a "branch we do not implement" (crypto audit +
-    // security review, found independently; INC-007).
-    //
-    // That mattered because the txid then joins [`UnparseableTxids`]: an
-    // endpoint answering with any v4-shaped bytes could pick which of the
-    // wallet's memos went dark for the rest of the process, and could
-    // manufacture the "local staleness evidence" §4 relies on.
-    // So require a FULL header — version and version-group id TOGETHER, as one
-    // of the two known pairs. A v5 version under v6's group id (or the
-    // reverse) is not a header upstream would accept either: `TxVersion::read`
-    // matches the PAIR.
-    const OVERWINTERED: u32 = 0x8000_0000;
-    let header = u32::from_le_bytes(data.get(0..4)?.try_into().ok()?);
-    let group = u32::from_le_bytes(data.get(4..8)?.try_into().ok()?);
-    let known_pair = (header == OVERWINTERED | V5_TX_VERSION && group == V5_VERSION_GROUP_ID)
-        || (header == OVERWINTERED | V6_TX_VERSION && group == V6_VERSION_GROUP_ID);
-    if !known_pair {
-        return None;
-    }
-    let raw = u32::from_le_bytes(data.get(8..12)?.try_into().ok()?);
+    let raw = header_branch(data)?;
     BranchId::try_from(raw).err().map(|_| raw)
 }
 
+/// The §4.6 hostile-input boundary for an enhancement reply: re-parse the endpoint's bytes into
+/// a `Transaction` and verify its consensus txid EQUALS the requested one. Returns `Some(tx)`
+/// only when both hold; `None` rejects a garbled/truncated tx OR a WRONG transaction (a lying
+/// endpoint that answers a different tx — the M2 threat). The caller then skips it: nothing is
+/// decrypted or stored from an unvalidated reply.
+///
+/// `parse_height` selects the consensus branch for LEGACY (v4) transactions; modern v5 txs
+/// self-describe their branch (`Transaction::read_v5` ignores the passed branch), so this is
+/// only consulted for old transactions a deep restore might surface.
 pub(crate) fn parse_and_validate<P: Parameters>(
     params: &P,
     data: &[u8],
@@ -733,7 +755,14 @@ where
                                 known_tip,
                                 birthday,
                                 already_known,
-                                expiry: tx.expiry_height(),
+                                // `ft.data` is the transaction `parse_and_validate` just
+                                // matched to the requested txid, so its header is the
+                                // transaction's own.
+                                expiry: crate::expiry::effective_expiry(
+                                    params,
+                                    &ft.data,
+                                    u32::from(tx.expiry_height()),
+                                ),
                             },
                         ) else {
                             outcome.rejected += 1;
@@ -771,12 +800,79 @@ pub fn __fuzz_parse_and_validate(data: &[u8]) -> bool {
     id[..n].copy_from_slice(&data[..n]);
     let body = data.get(32..).unwrap_or(&[]);
     parse_and_validate(
-        &zcash_protocol::consensus::MainNetwork,
+        &crate::money::Network::Main.consensus(),
         body,
         TxId::from_bytes(id),
         BlockHeight::from_u32(2_000_000),
     )
     .is_some()
+}
+
+/// Fuzz hook (re-exported as `zec_wallet_core::__fuzz_header_branch`): drives the expiry kernel
+/// and the pair-checked header reader under it with ARBITRARY bytes through
+/// [`kernel_agrees_with_an_independent_header_reading`]. `false` is a counterexample.
+#[cfg(fuzzing)]
+#[doc(hidden)]
+pub fn __fuzz_header_branch(data: &[u8]) -> bool {
+    kernel_agrees_with_an_independent_header_reading(data)
+}
+
+/// The oracle behind [`__fuzz_header_branch`]: holds the expiry kernel
+/// ([`crate::expiry::effective_expiry`]) and the pair-checked header reader under it
+/// ([`header_branch`]) to a reading of the header that asks neither of them. Neither may panic
+/// on any input.
+///
+/// The first four bytes are the stored expiry, a prefix of their own; the rest is the header, so a
+/// whole header meets every stored expiry. The oracle reads the layout itself: `fOverwintered |
+/// version`, the version group id, the two together as one of the two known pairs (the crate's
+/// constants), then the branch id at bytes 8 to 12. No whole header, or a branch with no next
+/// activation: the kernel keeps the stored expiry (an unreadable header never shortens one). A
+/// branch that ends at `H`: the kernel answers `min(stored, H - 1)`, `H - 1` for a stored 0. On
+/// both real networks.
+///
+/// Also compiled under `cfg(test)`, where its proptest twin
+/// (`the_kernel_agrees_with_an_independent_reading_of_any_header_bytes`) drives it, so CI runs the
+/// property and not only the nightly fuzz lane.
+#[cfg(any(test, fuzzing))]
+pub(crate) fn kernel_agrees_with_an_independent_header_reading(data: &[u8]) -> bool {
+    use crate::expiry::EffectiveExpiry;
+    use zcash_protocol::constants::{
+        V5_TX_VERSION, V5_VERSION_GROUP_ID, V6_TX_VERSION, V6_VERSION_GROUP_ID,
+    };
+    const F_OVERWINTERED: u32 = 1 << 31;
+    let word = |bytes: &[u8], at: usize| -> Option<u32> {
+        Some(u32::from_le_bytes(bytes.get(at..at + 4)?.try_into().ok()?))
+    };
+    let stored = word(data, 0).unwrap_or(0);
+    let header = data.get(4..).unwrap_or(&[]);
+    let pairs = [
+        (F_OVERWINTERED | V5_TX_VERSION, V5_VERSION_GROUP_ID),
+        (F_OVERWINTERED | V6_TX_VERSION, V6_VERSION_GROUP_ID),
+    ];
+    let branch = match (word(header, 0), word(header, 4), word(header, 8)) {
+        (Some(version), Some(group), Some(branch)) if pairs.contains(&(version, group)) => {
+            Some(branch)
+        }
+        _ => None,
+    };
+    [crate::money::Network::Main, crate::money::Network::Test]
+        .into_iter()
+        .all(|network| {
+            let params = network.consensus();
+            let ends_at = branch
+                .and_then(|b| BranchId::try_from(b).ok())
+                .and_then(|b| b.height_bounds(&params))
+                .and_then(|(_, upper)| upper)
+                .map(u32::from);
+            let want = match ends_at {
+                None if stored == 0 => EffectiveExpiry::Never,
+                None => EffectiveExpiry::Through(stored),
+                Some(h) if h <= 1 => EffectiveExpiry::Nowhere,
+                Some(h) if stored == 0 => EffectiveExpiry::Through(h - 1),
+                Some(h) => EffectiveExpiry::Through(stored.min(h - 1)),
+            };
+            crate::expiry::effective_expiry(&params, header, stored) == want
+        })
 }
 
 #[cfg(test)]
@@ -1153,6 +1249,107 @@ mod tests {
         );
     }
 
+    /// ZIP 259's NU7 consensus branch id, the one public testnet has mined under
+    /// since its activation at 4,465,026 (2026-10-06).
+    const NU7: u32 = 0x7719_0AD9;
+
+    /// **NU7 wave step 3 (S-L4).** A WHOLE testnet transaction mined after the
+    /// NU7 activation (a v6 header naming `0x77190AD9`) is not staleness
+    /// evidence, it parses at the §4.6 boundary, and the enhancement pass reads
+    /// it like any other reply: enhanced, never counted as an unknown branch,
+    /// never suppressed for the rest of the process.
+    ///
+    /// Which mechanism would refuse it: `unknown_branch_evidence`'s known-branch
+    /// exclusion. If that exclusion stopped at `Nu6_3` (the mutant), every
+    /// post-activation testnet transaction would read as "this build is stale",
+    /// join [`UnparseableTxids`], and its memo would never be read; this row goes
+    /// red on the first assertion. The control below proves the reader still
+    /// reports a branch it does not know, so the row is not passing because the
+    /// reader answers `None` to everything.
+    ///
+    /// Its scope, stated (the contract's): on MAINNET under the pre-release the
+    /// same transaction WAS evidence that the build is stale, and a
+    /// known-or-unknown reader cannot see that; INC-015's "a branch our params
+    /// cannot produce at the mined height" can (`docs/plan/nu7-wave.md` §8). Step
+    /// 1 pinned the final crates, whose mainnet params carry the NU7 height, so
+    /// that case no longer arises on this tree.
+    #[tokio::test]
+    async fn a_testnet_nu7_transaction_is_not_staleness_evidence() {
+        use zcash_protocol::consensus::{NetworkUpgrade, Parameters};
+
+        let params = crate::money::Network::Test.consensus();
+        let nu7 = params
+            .activation_height(NetworkUpgrade::Nu7)
+            .expect("the pinned params carry the testnet NU7 activation");
+        let mined = nu7 + 100;
+        assert_eq!(
+            u32::from(BranchId::for_height(&params, mined)),
+            NU7,
+            "the fixture's premise: a testnet block past the activation is under NU7's branch"
+        );
+
+        // A whole, empty v6 transaction under NU7's branch, serialized by the
+        // audited writer: the bytes a testnet endpoint would serve.
+        let data: TransactionData<Authorized> =
+            TransactionData::from_parts_v6(BranchId::Nu7, 0, mined + 40, None, None, None, None);
+        let tx = data.freeze().expect("freeze a v6 NU7 tx");
+        let txid = tx.txid();
+        let mut bytes = Vec::new();
+        tx.write(&mut bytes).expect("serialize");
+        assert_eq!(
+            bytes[..12],
+            v6_header(NU7)[..12],
+            "the fixture's premise, read from the raw bytes: a v6 header naming NU7's branch"
+        );
+
+        // 1. Not evidence.
+        assert_eq!(
+            unknown_branch_evidence(&bytes),
+            None,
+            "a testnet transaction under NU7's branch is a branch this build implements, \
+             not evidence that it is stale"
+        );
+        // Control: the same v6 header naming a branch nobody implements still is.
+        assert_eq!(
+            unknown_branch_evidence(&v6_header(UNKNOWN_BRANCH)),
+            Some(UNKNOWN_BRANCH)
+        );
+
+        // 2. It parses at the §4.6 boundary, as the transaction asked for.
+        let parsed = parse_and_validate(&params, &bytes, txid, mined)
+            .expect("a whole v6 NU7 transaction parses on testnet");
+        assert_eq!(parsed.txid(), txid);
+        assert_eq!(parsed.version(), TxVersion::V6);
+        assert_eq!(parsed.consensus_branch_id(), BranchId::Nu7);
+
+        // 3. And the pass treats it as an ordinary reply: enhanced, not counted,
+        //    not suppressed.
+        let store = RecordingStore::with_backlog(&[txid], Some(mined + 10));
+        let mut fetcher = ScriptedFetcher::new(vec![(
+            txid,
+            Reply::Tx {
+                data: bytes,
+                height: u64::from(u32::from(mined)),
+            },
+        )]);
+        let unparseable = UnparseableTxids::default();
+        let out = run_enhancement_pass(&store, &mut fetcher, &params, 50, &|| {}, &unparseable)
+            .await
+            .expect("pass");
+        assert_eq!(out.enhanced, 1, "the NU7 transaction is enhanced");
+        assert_eq!(out.rejected, 0, "and not rejected");
+        assert_eq!(
+            out.unknown_branch, 0,
+            "and never counted as a branch this build lacks"
+        );
+        assert_eq!(unparseable.len(), 0, "and never suppressed for the process");
+        assert_eq!(
+            *store.stored.lock().expect("stored"),
+            vec![(txid, None)],
+            "the stored transaction is the one asked for"
+        );
+    }
+
     // ── the §3.3 drain LOOP runtime (GAP-3) ──────────────────────────────────────────────────
     //
     // These drive `run_enhancement_pass` over a RECORDING store + a SCRIPTED fetcher — no gRPC,
@@ -1345,10 +1542,15 @@ mod tests {
     /// what every other fixture here uses — which is exactly why this exists: with only the
     /// expiry-0 builder, `chain_status`'s expiry check had NO live coverage and flipping its
     /// `>` to `>=` left the whole suite green (found by the code reviewer pass).
+    ///
+    /// Signed under `Nu6_3`, the branch mainnet runs at the heights these rows claim
+    /// (from the Ironwood activation up to NU7's): `chain_status` reads the expiry kernel, and a
+    /// transaction of an older branch could not be mined at those heights at all, which
+    /// would refuse every claim before the check a row is about.
     fn tx_variant_expiring(seed: u32, expiry: u32) -> (Vec<u8>, TxId) {
         let data: TransactionData<Authorized> = TransactionData::from_parts(
             TxVersion::V5,
-            BranchId::Nu5,
+            BranchId::Nu6_3,
             seed,
             BlockHeight::from_u32(expiry),
             None,

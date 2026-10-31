@@ -3269,4 +3269,39 @@ class WalletLocalizationsNb extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'Dette forsøket utløp før nettverket bekreftet det. Lommeboken din sender betalingen på nytt av seg selv, så ikke send den på nytt selv.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'Kansellert av oppgradering';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'En nettverksoppgradering kansellerte denne betalingen før den ble bekreftet. Dette er ikke endelig ennå, så ikke send den på nytt.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'En nettverksoppgradering kansellerte denne betalingen. Lommeboken holder beløpet til betalingen utløper.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'En nettverksoppgradering kansellerte denne betalingen før den ble bekreftet. Beløpet er tilgjengelig igjen.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'En nettverksoppgradering kansellerte dette forsøket før det ble bekreftet. Lommeboken sender betalingen på nytt av seg selv, så ikke send den på nytt selv.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'Zcash-nettverket oppgraderes om omtrent $minutes minutter. Sending er satt på pause til da, så betalingen din ikke kan bli sittende fast.',
+      one:
+          'Zcash-nettverket oppgraderes om omtrent 1 minutt. Sending er satt på pause til da, så betalingen din ikke kan bli sittende fast.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'Skjerming er satt på pause';
 }

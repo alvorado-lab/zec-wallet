@@ -584,6 +584,23 @@ pub(crate) const ALLOWLIST: &[&str] = &[
     // `deferred` — `wallet.ephemeral_detect`'s debug twin: in-scope ephemerals
     // left for a later pass. A COUNT, like its allowlisted siblings.
     "deferred",
+    // The NU7 wave's step 4 (ADR-0579 Decision 4) — `wallet.history`'s debug line for
+    // a payment a network upgrade cancelled. BRANCHES AND HEIGHTS ONLY, and the row
+    // it describes is never named: `tx_branch` — the consensus branch id the
+    // transaction was signed under, `upgrade_branch` — the branch of the upgrade that
+    // ended it (both public protocol constants, rendered hex like `endpoint_branch`);
+    // `stopped_at` — the activation height, the height the network stopped accepting
+    // it at (a public height, the same for every transaction of that branch);
+    // `released_at` — its stored expiry, the height the engine frees its notes at (`0`
+    // for none); `phase` — one of three static variant names. The stored expiry is the
+    // one per-transaction value here: a public field of the signed transaction (and a
+    // crossing's is shared by design), loggable as heights are (S37); never a txid,
+    // an amount, an address or a memo.
+    "tx_branch",
+    "upgrade_branch",
+    "stopped_at",
+    "released_at",
+    "phase",
 ];
 
 /// Make every `zec_wallet_core` tracing callsite ENABLED for the whole test process,

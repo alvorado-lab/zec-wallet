@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The README's and the example's install snippets name `zec_wallet_ui` 0.0.4.
+
 ## 0.0.3
 
 - The README's install snippet names `zec_wallet_ui` 0.0.3. No change to the

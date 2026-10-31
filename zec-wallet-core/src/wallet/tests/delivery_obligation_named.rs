@@ -72,7 +72,10 @@ fn enumerated(conn: &rusqlite::Connection) -> Vec<[u8; 32]> {
     // rows. The implementer's spelling; every assertion in this file is the
     // author's.
     let tip = crate::history::scanned_tip(conn).expect("tip");
-    crate::delivery::enumerate(conn, tip)
+    // The harness network (upstream's default) has no activation after NU5, so the
+    // expiry kernel leaves every stored expiry standing here.
+    let params = zcash_client_backend::data_api::testing::TestBuilder::<(), ()>::DEFAULT_NETWORK;
+    crate::delivery::enumerate(conn, &params, tip)
         .expect("enumerate")
         .into_iter()
         .map(|o| o.txid)

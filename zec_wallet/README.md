@@ -1,5 +1,22 @@
 # zec_wallet
 
+**Upgrade to 0.0.5 before the NU7 network upgrade** activates on mainnet, at
+block 3,543,405 (about 2026-11-06 02:00 UTC): 0.0.4 and earlier cannot send
+after it. The working set, for the packages you use:
+
+```yaml
+dependencies:
+  zec_wallet: ^0.0.5
+  zec_wallet_ui: ^0.0.4
+  zec_wallet_ui_platform: ^0.0.3
+  zec_wallet_tor: ^0.0.4
+```
+
+`zec_wallet_ui_platform` and `zec_wallet_tor` did not change in this release,
+so their own pub.dev pages still show older `zec_wallet_ui` and `zec_wallet`
+lines: use the ones above. The [changelog](CHANGELOG.md) has the steps and the
+API changes.
+
 Add private Zcash (ZEC) payments to any Flutter app. `zec_wallet` creates or
 restores a shielded wallet, keeps it in sync with the network, and sends and
 receives ZEC, while the seed and spending keys stay in a Rust core your Dart
@@ -123,8 +140,10 @@ RustLib.init() →
   `syncFor` reports it: while `expiryHeight <= tip` the chain has already
   decided and a sync up to `expiryHeight` tells you which way; while
   `expiryHeight > tip` it is still open on chain, so wait for block
-  `expiryHeight`. Beside `delivery == retryPending` this is the whole answer
-  to "did it go, and when will I know".
+  `expiryHeight`, unless a network upgrade activates first: then a sync up to
+  the block before the activation shows it as `cancelledByUpgrade`, and its
+  `phase` says when the amount is back. Beside `delivery == retryPending` this
+  is the whole answer to "did it go, and when will I know".
 - **The BIP39 passphrase is normalized (NFKD) before it derives the seed.**
   A passphrase typed with a composed "é" and one typed with "e" plus a
   combining accent restore the same wallet, as BIP39 requires and as other

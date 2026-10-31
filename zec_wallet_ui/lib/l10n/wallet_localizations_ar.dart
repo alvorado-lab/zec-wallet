@@ -3245,4 +3245,45 @@ class WalletLocalizationsAr extends WalletLocalizations {
   @override
   String get walletTxExplainRetryingExpired =>
       'انتهت صلاحية هذه المحاولة قبل أن تؤكدها الشبكة. ستُعيد محفظتك إرسال الدفعة من تلقاء نفسها، لذا لا تُرسلها مرة أخرى بنفسك.';
+
+  @override
+  String get walletActivityCancelledByUpgrade => 'أُلغيت بسبب الترقية';
+
+  @override
+  String get walletTxExplainCancelledNotFinal =>
+      'ألغت ترقية الشبكة هذه الدفعة قبل تأكيدها. هذا ليس نهائيًا بعد، لذا لا ترسلها مرة أخرى.';
+
+  @override
+  String get walletTxExplainCancelledHeld =>
+      'ألغت ترقية الشبكة هذه الدفعة. تحتفظ محفظتك بالمبلغ حتى انتهاء صلاحية الدفعة.';
+
+  @override
+  String get walletTxExplainCancelledReleased =>
+      'ألغت ترقية الشبكة هذه الدفعة قبل تأكيدها. أصبح المبلغ متاحًا للإنفاق مرة أخرى.';
+
+  @override
+  String get walletTxExplainRetryingCancelled =>
+      'ألغت ترقية الشبكة هذه المحاولة قبل تأكيدها. ستعيد محفظتك إرسال الدفعة تلقائيًا، لذا لا ترسلها مرة أخرى بنفسك.';
+
+  @override
+  String walletSendFaultUpgradePaused(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other:
+          'ستتم ترقية شبكة Zcash خلال $minutes دقيقة تقريبًا. الإرسال متوقف مؤقتًا حتى ذلك الحين كي لا تعلق دفعتك.',
+      many:
+          'ستتم ترقية شبكة Zcash خلال $minutes دقيقة تقريبًا. الإرسال متوقف مؤقتًا حتى ذلك الحين كي لا تعلق دفعتك.',
+      few:
+          'ستتم ترقية شبكة Zcash خلال $minutes دقائق تقريبًا. الإرسال متوقف مؤقتًا حتى ذلك الحين كي لا تعلق دفعتك.',
+      two:
+          'ستتم ترقية شبكة Zcash خلال دقيقتين تقريبًا. الإرسال متوقف مؤقتًا حتى ذلك الحين كي لا تعلق دفعتك.',
+      one:
+          'ستتم ترقية شبكة Zcash خلال دقيقة واحدة تقريبًا. الإرسال متوقف مؤقتًا حتى ذلك الحين كي لا تعلق دفعتك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get walletShieldPausedTitle => 'الحماية متوقفة مؤقتًا';
 }

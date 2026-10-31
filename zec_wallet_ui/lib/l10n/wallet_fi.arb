@@ -951,5 +951,12 @@
   "walletShieldUnknownBody": "Emme voineet vahvistaa tätä suojausta. Tarkista Tapahtumat ennen kuin yrität uudelleen.",
   "walletMoveUnknownTitle": "Tarkista ennen kuin siirrät uudelleen",
   "walletMoveUnknownBody": "Emme voineet vahvistaa tätä siirtoa. Tarkista Tapahtumat ennen kuin yrität uudelleen.",
-  "walletTxExplainRetryingExpired": "Tämä yritys vanheni ennen kuin verkko vahvisti sen. Lompakkosi lähettää maksun uudelleen automaattisesti, joten älä lähetä sitä itse uudelleen."
+  "walletTxExplainRetryingExpired": "Tämä yritys vanheni ennen kuin verkko vahvisti sen. Lompakkosi lähettää maksun uudelleen automaattisesti, joten älä lähetä sitä itse uudelleen.",
+  "walletActivityCancelledByUpgrade": "Peruttu päivityksen vuoksi",
+  "walletTxExplainCancelledNotFinal": "Verkkopäivitys perui tämän maksun ennen kuin se vahvistettiin. Tämä ei ole vielä lopullista, joten älä lähetä sitä uudelleen.",
+  "walletTxExplainCancelledHeld": "Verkkopäivitys perui tämän maksun. Lompakko pitää summan varattuna maksun vanhenemiseen asti.",
+  "walletTxExplainCancelledReleased": "Verkkopäivitys perui tämän maksun ennen kuin se vahvistettiin. Summa on taas käytettävissäsi.",
+  "walletTxExplainRetryingCancelled": "Verkkopäivitys perui tämän yrityksen ennen kuin se vahvistettiin. Lompakkosi lähettää maksun uudelleen itsestään, joten älä lähetä sitä itse uudelleen.",
+  "walletSendFaultUpgradePaused": "{minutes, plural, =1{Zcash-verkko päivitetään noin 1 minuutin kuluttua. Lähettäminen on keskeytetty siihen asti, jotta maksusi ei voi juuttua.} other{Zcash-verkko päivitetään noin {minutes} minuutin kuluttua. Lähettäminen on keskeytetty siihen asti, jotta maksusi ei voi juuttua.}}",
+  "walletShieldPausedTitle": "Suojaus on keskeytetty"
 }

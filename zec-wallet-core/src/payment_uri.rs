@@ -170,11 +170,14 @@ mod tests {
     }
 
     fn encoded_unified(net: &NetworkType) -> String {
-        use zcash_address::unified::{Address as Ua, Encoding, Receiver};
-        Ua::try_from_items(vec![
-            Receiver::Orchard([0xEF; 43]),
-            Receiver::Sapling([0xAB; 43]),
-        ])
+        use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
+        Ua::try_from_items(
+            Revision::R0,
+            vec![
+                Uitem::Data(Receiver::Orchard([0xEF; 43])),
+                Uitem::Data(Receiver::Sapling([0xAB; 43])),
+            ],
+        )
         .expect("valid receiver set")
         .encode(net)
     }
@@ -544,10 +547,16 @@ mod tests {
                 zcash_address::ZcashAddress::from_transparent_p2pkh(NetworkType::Test, d).encode()
             }),
             (any::<[u8; 43]>(), any::<[u8; 43]>()).prop_map(|(o, s)| {
-                use zcash_address::unified::{Address as Ua, Encoding, Receiver};
-                Ua::try_from_items(vec![Receiver::Orchard(o), Receiver::Sapling(s)])
-                    .expect("valid receiver set")
-                    .encode(&NetworkType::Test)
+                use zcash_address::unified::{Address as Ua, Encoding, Receiver, Revision, Uitem};
+                Ua::try_from_items(
+                    Revision::R0,
+                    vec![
+                        Uitem::Data(Receiver::Orchard(o)),
+                        Uitem::Data(Receiver::Sapling(s)),
+                    ],
+                )
+                .expect("valid receiver set")
+                .encode(&NetworkType::Test)
             }),
         ]
         .prop_map(|s| Address::parse(&s, Network::Test).expect("self-encoded address parses"))

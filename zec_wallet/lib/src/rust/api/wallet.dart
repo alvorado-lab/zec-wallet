@@ -41,7 +41,10 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// only `signed` may be phrased as "sending now", and `stillQueued` is NOT a failure.
   /// §5.4: ids/timestamps only — no amount or address crosses. Throws
   /// [WalletErrorKind.invalidState] on a closed handle; a watch-only wallet throws
-  /// [WalletErrorKind.watchOnly] (structurally seedless — it can never sign).
+  /// [WalletErrorKind.watchOnly] (structurally seedless: it can never sign); in the last 20
+  /// blocks before a network upgrade it throws [WalletErrorKind.upgradeImminent] and the send
+  /// stays queued: authorize it again after the upgrade (a wallet that signs unattended also
+  /// sends it by itself then).
   Future<ParkedAuthorization> authorizeParkedSend({
     required PlatformInt64 id,
     required PlatformInt64 createdAt,
@@ -541,7 +544,12 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// [WalletErrorKind.sendAmountRequired]; not enough confirmed funds is
   /// [WalletErrorKind.insufficientFunds] (carrying available / required / pending-incoming,
   /// so the host can say "wait for confirmations" honestly); a not-yet-anchorable wallet is
-  /// [WalletErrorKind.proposalStale] (re-propose after sync). No amount or address is ever
+  /// [WalletErrorKind.proposalStale] (re-propose after sync). In the last 20 blocks before a
+  /// network upgrade it is [WalletErrorKind.upgradeImminent] (propose again after the upgrade).
+  /// From NU7, a payment that would exceed one block's ZIP 218 limits (330 Orchard actions, 330
+  /// Ironwood actions, 300 Sapling spends and outputs, 330 in all) is
+  /// [WalletErrorKind.proposeFailed], whose doc says what still goes through. No amount or
+  /// address is ever
   /// logged (§5.4); [WalletErrorKind.invalidState] on a closed handle.
   Future<SendProposal> propose({required String requestUri});
 
@@ -557,8 +565,9 @@ abstract class WalletHandle implements RustOpaqueInterface {
   ///   transparent funds) — the host hides the "shield now" action.
   ///
   /// DETERMINISTIC, like `propose`: no spending keys, no proofs, no network, no DB writes;
-  /// NOTHING is sent. No amount is ever logged (§5.4); [WalletErrorKind.invalidState] on a
-  /// closed handle, [WalletErrorKind.proposalStale] on a not-yet-anchorable wallet.
+  /// NOTHING is sent. No amount is ever logged (§5.4); [WalletErrorKind.invalidState] on a closed
+  /// handle, [WalletErrorKind.upgradeImminent] in the last 20 blocks before a network upgrade
+  /// (propose again after it), [WalletErrorKind.proposalStale] on a not-yet-anchorable wallet.
   Future<SendProposal?> proposeShield();
 
   /// Queue a send for OFFLINE-first delivery (inc-2d-ffi). Durably persists the send INTENT
@@ -589,7 +598,8 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// — it expires and frees the funds; try again). It unblocks the WINDOW only — it NEVER re-sends a
   /// paused/queued payment (no double-pay). Throws [WalletErrorKind.seedRequired] with no signing
   /// key, [WalletErrorKind.insufficientFunds] when the shielded balance can't fund the mint,
-  /// [WalletErrorKind.invalidState] on a closed handle. Live now that TEX two-step sends run in
+  /// [WalletErrorKind.upgradeImminent] in the last 20 blocks before a network upgrade (nothing is
+  /// minted; run it again after the upgrade), [WalletErrorKind.invalidState] on a closed handle. Live now that TEX two-step sends run in
   /// production (gate-removal, 2e-2b-v-5); a wallet that has made no TEX send has nothing to reclaim.
   ///
   /// ⚠ HOST GATING (money-relevant): surface this ONLY behind the #327 authorizer + the honest-cost
@@ -765,7 +775,9 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// the 2026-09-20 review's R02.) Read the live state per tx from [TxSummary.delivery] or
   /// [WalletHandle.deliveryState] — persisted / retryPending / accepted / confirmed. Throws
   /// [WalletErrorKind.proposalAlreadyUsed] on a re-send/double-tap (the token was consumed —
-  /// the notes are never broadcast twice, §6.3) or [WalletErrorKind.signFailed]. No txid/amount
+  /// the notes are never broadcast twice, §6.3) or [WalletErrorKind.signFailed]; it throws
+  /// [WalletErrorKind.upgradeImminent] when the last 20 blocks before a network upgrade began
+  /// after `propose` (nothing is signed; propose again after the upgrade). No txid/amount
   /// is ever logged (§5.4); [WalletErrorKind.invalidState] on a closed handle.
   ///
   /// ORDERING (the per-tx → leg contract): the list is in BROADCAST order, which is also mine
@@ -787,7 +799,9 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// [WalletHandle.listInFlightSends] cue owns the honest "don't re-send" through that window.
   /// Every non-accepted TWO-STEP tx stays persisted and re-broadcasts on the next sync (the
   /// send is enrolled durably before broadcast); a failed SINGLE-step send instead self-heals
-  /// by expiry (~40 blocks) freeing its notes for a fresh re-send. An ordinary
+  /// by expiry (about 50 minutes), freeing its notes for a fresh re-send. A payment of a round
+  /// amount (1, 2 or 5 × 10^k ZEC) sent from Orchard funds can be a ZIP 318 crossing, whose
+  /// expiry is 30 to 60 days, so do not offer it again before [TxSummary.expiryHeight]. An ordinary
   /// pool-crossing send's txs are INDEPENDENT — position is broadcast order only, no leg meaning.
   ///
   /// PROPOSAL FRESHNESS (the confirm-screen host contract): a [SendProposal] is a one-shot
@@ -936,7 +950,10 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// as for `swapQuote`; [SwapErrorKind.quoteExpired] past the deposit deadline AND for a quote
   /// this wallet did not issue or already executed (re-quote, never retry the same DTO);
   /// [SwapErrorKind.quoteTermsDiffer] when the DTO differs from the issued record (get a fresh
-  /// quote); [SwapErrorKind.depositSendFailed] if the deposit leg could not be queued (re-quote).
+  /// quote); [SwapErrorKind.depositSendFailed] if the deposit leg could not be queued (re-quote);
+  /// [SwapErrorKind.upgradeImminent] for an OutOfZec execute in the last 20 blocks before a
+  /// network upgrade, with the quote left unused (execute the same quote after the upgrade if it
+  /// has not expired; an IntoZec execute is never refused for it).
   Future<String> swapExecute({required SwapQuote quote});
 
   /// The dynamic source-asset list for the IntoZec picker (spec §3.3b D5/L6) — LAZY: the host
@@ -982,7 +999,10 @@ abstract class WalletHandle implements RustOpaqueInterface {
   /// double-spend). `failed > 0` ⇒ some funds stay on-chain + re-runnable (a flaky link, NOT a loss);
   /// `truncated > 0` ⇒ a heavy wallet hit the per-invocation cap — run it again. Throws
   /// [WalletErrorKind.seedRequired] when the wallet cannot sign (no seed/credential available),
-  /// [WalletErrorKind.invalidState] on a closed handle. Live now that TEX two-step sends run in
+  /// [WalletErrorKind.invalidState] on a closed handle, [WalletErrorKind.upgradeImminent] when
+  /// called in the last 20 blocks before a network upgrade (run it again after the upgrade). If
+  /// that window opens while it runs, it stops and returns what it swept: the address in progress
+  /// counts in `failed`, the rest in `truncated`. Live now that TEX two-step sends run in
   /// production (gate-removal, 2e-2b-v-5); on a wallet that has made no TEX send no one-time address is
   /// reserved ⇒ an empty no-op.
   Future<EphemeralSweepSummary> sweepEphemeralFunds();

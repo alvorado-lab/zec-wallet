@@ -992,6 +992,48 @@ void main() {
     await settleLocal();
     expect(second.proposeShieldCount, 0);
   });
+
+  /// ADR-0580: the pre-upgrade pause is a quiet DEFERRAL for the automatic
+  /// shield in BOTH phases, never the "didn't complete" cue: the SDK refused
+  /// before any seed was pulled, nothing moved, and the next snapshot edge
+  /// after the activation shields as usual. Unlike a send-phase busy (the row
+  /// above, which cues), a pause at sign is not a failure. Mutant: the pause
+  /// left out of the quiet set (only the busy and not-synced transients stay);
+  /// the send-phase assertion reds.
+  test('the_pre_upgrade_pause_defers_the_automatic_shield_quietly', () async {
+    const pause = WalletApiError(
+      code: 'RW-SEND-009',
+      message: 'static',
+      kind: WalletErrorKind.upgradeImminent(
+        activationHeight: 3543405,
+        blocksLeft: 12,
+      ),
+    );
+    final atPropose = fakeWithTransparent(200000)..proposeShieldThrows = pause;
+    final h = harness(session: atPropose);
+    await settle();
+    expect(
+      h.container.read(walletAutoShieldControllerProvider),
+      AutoShieldStatus.idle,
+      reason: 'a pause at propose is a deferral, not a failure cue',
+    );
+    expect(atPropose.sendCount, 0);
+
+    final atSend = fakeWithTransparent(200000)..sendThrows = pause;
+    final s = harness(session: atSend);
+    await settle();
+    expect(
+      s.container.read(walletAutoShieldControllerProvider),
+      AutoShieldStatus.idle,
+      reason: 'a pause at sign is a deferral too, never "didn\'t complete"',
+    );
+
+    // The next edge, past the activation, shields as usual.
+    atSend.sendThrows = null;
+    s.container.invalidate(walletSnapshotReadProvider);
+    await settle();
+    expect(atSend.sendCount, 2, reason: 'the next edge retried and completed');
+  });
 }
 
 /// A raw switched-session snapshot reader for view overrides — deliberately

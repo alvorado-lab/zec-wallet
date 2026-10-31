@@ -4907,6 +4907,18 @@ const SAP_INFLATED: u64 = 556_000;
 ///
 /// No `completing_block_hash`, so the C6 clause abstains — this row is about the
 /// height dimension and nothing else (IT-10).
+///
+/// **It is the FLAT chain's root, and only the flat chain's.** On the rising chain
+/// ([`bind1r_two_pass`]) no anchor frontier carries a level-16 ommer: the scanned
+/// leaves complete subtree 0 themselves, and their root is not the all-zero node.
+/// Since shardtree 0.8.0 the root stored for a shard is compared with the root of
+/// the leaves completed beneath it (`shardtree-0.8.0/src/prunable.rs:1069-1074`,
+/// the comparison at `:425-449`), so this value served on that chain is a root the
+/// chain refutes, and the pass ends `EndpointMisbehaving`
+/// ([`a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`]
+/// pins it). Every rising-chain serve that is about a HEIGHT serves
+/// [`rising_root`] instead. Under 0.7.1 the check did not exist, and the four
+/// BIND-1-R rows served this value on the rising chain without anything noticing.
 fn filler_root(height: u64) -> SubtreeRoot {
     SubtreeRoot {
         root_hash: vec![0u8; 32],
@@ -5122,7 +5134,7 @@ async fn an_inflated_completion_height_is_refuted_at_the_true_boundary() {
     );
 
     // (3) The lie is refused on re-serve; the truth is accepted.
-    let mut liar = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(IW_INFLATED)]);
+    let mut liar = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![rising_root(IW_INFLATED)]);
     let again = w.update_subtree_roots(&mut liar, tip(), None).await;
     assert_eq!(
         refusal_code(&again),
@@ -5134,7 +5146,7 @@ async fn an_inflated_completion_height_is_refuted_at_the_true_boundary() {
          would pass on that. Got {}",
         describe(&again)
     );
-    let mut honest = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(IW_CROSS)]);
+    let mut honest = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![rising_root(IW_CROSS)]);
     let r = w.update_subtree_roots(&mut honest, tip(), None).await;
     assert!(
         accepted(&r),
@@ -5247,10 +5259,17 @@ async fn a_scan_contradiction_on_a_required_pool_is_fatal_to_the_pass() {
 /// **B1-5 — DEFECT. A served root the scan contradicts is the ENDPOINT's fault,
 /// not our store's.**
 ///
-/// §4w (b)'s finding, driven. A served-root HASH that the wallet's own scanned
-/// leaves refute IS detected — `shardtree-0.7.1 prunable.rs` raises a `Conflict`
-/// when `update_tree` inserts the batch anchor's frontier over a shard whose root
-/// the endpoint already supplied — but it surfaces through
+/// §4w (b)'s finding, driven. A served-root HASH that the wallet's own scan
+/// refutes IS detected, as a shardtree `Conflict`. On THIS row's flat chain the
+/// refuting value is the batch anchor frontier's level-16 ommer, which
+/// `update_tree` inserts into the cap where the endpoint's root for subtree 0
+/// already sits: one address, two values (read from source, the leaf-on-leaf arm
+/// of `insert_subtree`, `shardtree-0.8.0/src/prunable.rs:985-1000`, which was
+/// `shardtree-0.7.1`'s `:946`). Since 0.8.0 there is a second site, a shard
+/// COMPLETING beneath the root stored for it (`prunable.rs:1069-1074`, the
+/// comparison at `:425-449`), the only one `rising_chain()`'s drive reaches:
+/// [`a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`].
+/// At the base (shardtree 0.7.1, so the first site only) the conflict surfaced through
 /// `PutBlocksError::ShardTreeForBlockRange` → `map_scan_err` →
 /// `classify_shard_fault`'s `_ => StoreCorrupt` arm. **So an endpoint lie caught at
 /// scan time reads as OUR corruption**, and `StoreCorrupt` is the class whose
@@ -5572,6 +5591,72 @@ const IW_MID: u64 = IW_CROSS - 20;
 /// only refuses a height ABOVE [`IW_SCAN_TIP`].
 const IW_REFUTED: u64 = IW_CROSS - 50;
 
+/// **The chain [`bind1r_two_pass`] runs on:** [`IW_BELOW_CROSS`] Ironwood leaves,
+/// stepping to `2^16` at [`IW_CROSS`], whose block carries that one commitment for
+/// real. Named once, so the drive and the root it serves ([`rising_root`]) cannot
+/// describe two different chains.
+fn rising_chain() -> ChainShape {
+    ChainShape::rising(
+        DeclaredTreeSizes::ironwood(IW_BELOW_CROSS),
+        Rise {
+            at: IW_CROSS,
+            commitments: 1,
+        },
+    )
+}
+
+/// **The rising chain's TRUE root of Ironwood subtree 0**, served at `height`.
+///
+/// [`filler_root`]'s all-zero node is the FLAT chain's root and not this one's.
+/// Here no anchor frontier carries a level-16 ommer: the scan completes subtree 0
+/// with the leaf at [`IW_CROSS`], and since shardtree 0.8.0 the root stored for a
+/// shard is compared with the root of the leaves completed beneath it
+/// (`shardtree-0.8.0/src/prunable.rs:1069-1074`, the comparison at `:425-449`). So
+/// a row on this chain that is about a HEIGHT serves this root, or the hash
+/// refusal answers before the height is ever judged.
+///
+/// Computed, not written down. The anchor `TreeState` this chain serves at
+/// [`IW_CROSS`], decoded by upstream's own reader (`TreeState::to_chain_state`, as
+/// a fetched batch anchor is), is the frontier of exactly `2^16` leaves, and its
+/// root at the shard level is the root of subtree 0. That frontier and the leaves
+/// the wallet folds are made of the same zero filler
+/// ([`sync::testing::frontier_hex`], and [`ironwood_only_tx`]'s cmx), so the two
+/// cannot disagree about a node value.
+///
+/// No `completing_block_hash`, as in [`filler_root`]: the C6 clause abstains, and
+/// the HEIGHT is the only thing a row varies.
+fn rising_root(height: u64) -> SubtreeRoot {
+    use incrementalmerkletree::Level;
+    use zcash_client_backend::data_api::IRONWOOD_SHARD_HEIGHT;
+
+    let state = rising_chain()
+        .tree_state(IW_CROSS, false)
+        .to_chain_state()
+        .expect("the rising chain's anchor treestate decodes");
+    let frontier = state.final_ironwood_tree();
+    assert_eq!(
+        frontier.tree_size(),
+        u64::from(SUBTREE_LEAVES),
+        "precondition: at {IW_CROSS} the frontier holds exactly one whole subtree, so its \
+         root at the shard level is subtree 0's root"
+    );
+    let root = frontier
+        .value()
+        .expect("a frontier of 2^16 leaves is not empty")
+        .root(Some(Level::from(IRONWOOD_SHARD_HEIGHT)))
+        .to_bytes();
+    assert_ne!(
+        root, [0u8; 32],
+        "precondition: the rising chain's root is not the all-zero node, or this serves \
+         what `filler_root` serves and the repair is empty"
+    );
+    SubtreeRoot {
+        root_hash: root.to_vec(),
+        completing_block_hash: Vec::new(),
+        completing_block_height: height,
+    }
+}
+
 /// **Upstream's OWN survivor-set query, run here rather than reasoned about.**
 ///
 /// The SELECT and the index-gap break below are
@@ -5645,6 +5730,12 @@ fn truncation_survivors(
 /// [`IW_CROSS`] − 1 and `2^16` from [`IW_CROSS`] on, with that one block carrying
 /// the one Ironwood commitment its declaration claims. The bracket the scan mints
 /// is `(IW_CROSS - 1, IW_CROSS]` and BOTH ends are blocks this wallet counted.
+///
+/// **The root it serves is the chain's own** ([`rising_root`]), so the HEIGHT is
+/// the only thing the endpoint lies about. These rows served [`filler_root`] until
+/// shardtree 0.8.0 refused it at the crossing; the refusal of a wrong root HASH on
+/// this chain is its own row,
+/// [`a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`].
 async fn bind1r_two_pass(
     dir: &Path,
     vault: &Arc<dyn KeychainPort>,
@@ -5657,13 +5748,47 @@ async fn bind1r_two_pass(
     Vec<(i64, i64)>,
     u64,
 ) {
-    let shape = ChainShape::rising(
-        DeclaredTreeSizes::ironwood(IW_BELOW_CROSS),
-        Rise {
-            at: IW_CROSS,
-            commitments: 1,
-        },
+    let (w, key, pass1, pass, before, truncation_at) =
+        bind1r_drive(dir, vault, rising_root(recorded_height)).await;
+    let pass = pass.expect(
+        "pass 2 completes: the served root is this chain's own, so the batch commits, and a \
+         refuted HEIGHT degrades Ironwood after that commit rather than ending the pass (a \
+         refuted root HASH is refused inside the commit and IS pass-fatal: \
+         `a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`)",
     );
+    let obs = observe(dir, &key);
+    assert_eq!(
+        scanned_span(&obs),
+        Some((IW_SCAN_ANCHOR + 1, IW_SCAN_TIP)),
+        "precondition: pass 2 carried the scan THROUGH the crossing at {IW_CROSS}"
+    );
+    drop(obs);
+    (w, key, pass1, pass, before, truncation_at)
+}
+
+/// **[`bind1r_two_pass`]'s drive, serving `served` for Ironwood index 0**, with
+/// pass 2's result handed back as it came. The rows built on the drive serve
+/// [`rising_root`] and need pass 2 to complete;
+/// [`a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault`]
+/// serves a root the chain refutes and needs to see pass 2 fail. One drive, so the
+/// two cannot run on different chains.
+///
+/// Returns the wallet, its key, pass 1, pass 2's result, and the survivor prefix
+/// and truncation height as they stood before pass 1.
+async fn bind1r_drive(
+    dir: &Path,
+    vault: &Arc<dyn KeychainPort>,
+    served: SubtreeRoot,
+) -> (
+    Wallet,
+    WalletDbKey,
+    sync::SyncPass,
+    Result<sync::SyncPass, WalletError>,
+    Vec<(i64, i64)>,
+    u64,
+) {
+    let recorded_height = served.completing_block_height;
+    let shape = rising_chain();
     let (w, key) = scanned_wallet_shaped(dir, vault, IW_SCAN_ANCHOR, &shape).await;
     let obs = observe(dir, &key);
     assert_eq!(
@@ -5673,7 +5798,7 @@ async fn bind1r_two_pass(
          the record lands on its own"
     );
 
-    let mut src = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(recorded_height)]);
+    let mut src = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![served]);
     let ingest = w.update_subtree_roots(&mut src, tip(), None).await;
     assert_eq!(
         src.streamed(ShieldedProtocol::Ironwood),
@@ -5748,19 +5873,7 @@ async fn bind1r_two_pass(
     .shaped(shape);
     let pass = w
         .sync_once(&mut chain2, &sync::CancelToken::new(), NOOP_PROGRESS)
-        .await
-        .expect(
-            "Ironwood DEGRADES on a scan-time refusal; the pass itself completes (the batch \
-             is already committed, and a pass-fatal answer here would block the scan that \
-             heals)",
-        );
-    let obs = observe(dir, &key);
-    assert_eq!(
-        scanned_span(&obs),
-        Some((IW_SCAN_ANCHOR + 1, IW_SCAN_TIP)),
-        "precondition: pass 2 carried the scan THROUGH the crossing at {IW_CROSS}"
-    );
-    drop(obs);
+        .await;
     (w, key, pass1, pass, before, truncation_at)
 }
 
@@ -6102,7 +6215,7 @@ async fn a_refuted_height_is_refused_when_the_endpoint_re_serves_it() {
     let (w, key, _pass, _before, _t) = refute_index_zero(dir.path(), &vault).await;
     let obs = observe(dir.path(), &key);
 
-    let mut again = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(IW_REFUTED)]);
+    let mut again = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![rising_root(IW_REFUTED)]);
     let r = w.update_subtree_roots(&mut again, tip(), None).await;
     assert_eq!(
         again.streamed(ShieldedProtocol::Ironwood),
@@ -6180,11 +6293,11 @@ async fn the_truth_is_still_accepted_after_a_refutation() {
 
     // Drive the whole sequence before asserting any of it, so every clause has a
     // value to report even when an earlier one is going to fail.
-    let mut lie1 = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(IW_REFUTED)]);
+    let mut lie1 = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![rising_root(IW_REFUTED)]);
     let r1 = w.update_subtree_roots(&mut lie1, tip(), None).await;
-    let mut lie2 = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(IW_REFUTED)]);
+    let mut lie2 = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![rising_root(IW_REFUTED)]);
     let r2 = w.update_subtree_roots(&mut lie2, tip(), None).await;
-    let mut truth = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![filler_root(IW_CROSS)]);
+    let mut truth = ScriptedEndpoint::new(Vec::new(), Vec::new(), vec![rising_root(IW_CROSS)]);
     let r3 = w.update_subtree_roots(&mut truth, tip(), None).await;
     let landed = heights(&obs, "ironwood");
     assert_eq!(
@@ -6249,6 +6362,138 @@ async fn the_truth_is_still_accepted_after_a_refutation() {
         describe(&r2)
     );
     w.close().await.expect("close");
+}
+
+/// **B1-5 on the RISING chain: a served root HASH the chain's own leaves refute
+/// ends the pass as the endpoint's fault, commits nothing, and the wallet still
+/// opens.** NU7 wave step 1s (`docs/plan/nu7-wave.md` §3).
+///
+/// Since shardtree 0.8.0 the root stored for a shard is compared with the root of
+/// the leaves completed beneath it (`shardtree-0.8.0/src/prunable.rs:1069-1074`,
+/// the comparison at `:425-449`). On this chain nothing else can see a wrong hash:
+/// no anchor frontier carries a level-16 ommer, so B1-5's flat-chain mechanism
+/// (that ommer against the cap) never runs, and under shardtree 0.7.1 the stored
+/// root was kept while the leaves said otherwise. The refusal is raised inside
+/// upstream's `put_blocks`, one transaction over all three pools, so the batch is
+/// rolled back whole. There is no committed batch for Ironwood to degrade over,
+/// and the disposition is B1-5's, `Sync { EndpointMisbehaving }`
+/// (`docs/plan/production-readiness-phase-1.md:5183`). "Ironwood degrades" is the
+/// disposition of a refuted HEIGHT (B1-3), not of a refuted hash.
+///
+/// # The discriminator is the root hash and nothing else
+///
+/// Both arms run [`bind1r_drive`] and serve index 0 at [`IW_CROSS`], the one
+/// height this chain admits, so no height oracle has anything to refuse:
+///
+/// * the CONTROL serves [`rising_root`], the chain's own root, and both passes
+///   complete;
+/// * the LIE serves [`filler_root`], the all-zero node: the FLAT chain's root, and
+///   one this chain refutes at the crossing.
+///
+/// # What must hold
+///
+/// 1. Pass 2 ends `Err(Sync { EndpointMisbehaving })`: the endpoint's fault, whose
+///    copy is "switch servers", never `StoreCorrupt` and never a degraded pass that
+///    reads as up to date.
+/// 2. Nothing of the refused batch is committed: the scanned span is still the
+///    one pass 1 left, `(IW_SCAN_ANCHOR + 1, IW_MID)`.
+/// 3. The record is untouched: index 0 still holds [`IW_CROSS`].
+/// 4. The wallet closes cleanly and opens again.
+///
+/// **Not claimed here, and recorded as a known limit instead (the wedge,
+/// `docs/plan/nu7-wave.md` step 1s):** the wrong root this wallet now holds for a
+/// shard it has not completed refuses every server after this, honest ones
+/// included. The exit is the rescan rebuild (`Wallet::rescan_from`), which the copy
+/// names, but an outbox send in flight fences it behind a clean pass none gives.
+#[tokio::test]
+async fn a_root_hash_the_rising_chain_refutes_ends_the_pass_as_the_endpoints_fault() {
+    // ── THE CONTROL, first, so a failure here is read as a fixture fault and not
+    // as the behaviour under test.
+    {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let vault = test_vault();
+        let (w, key, pass1, pass, _before, _t) =
+            bind1r_drive(dir.path(), &vault, rising_root(IW_CROSS)).await;
+        let obs = observe(dir.path(), &key);
+        assert!(
+            matches!(&pass, Ok(p) if pass_refusal_code(p).is_none())
+                && pass_refusal_code(&pass1).is_none(),
+            "THE CONTROL: with the chain's own root at the one height the chain admits, both \
+             passes complete and nothing is reported, so the refusal below belongs to the \
+             root hash, not to the chain or the height. Got pass1 root_outcomes={:?} / \
+             pass2 {}",
+            pass1.root_outcomes,
+            describe_pass(&pass)
+        );
+        assert_eq!(
+            scanned_span(&obs),
+            Some((IW_SCAN_ANCHOR + 1, IW_SCAN_TIP)),
+            "and the control really scanned through the crossing at {IW_CROSS}"
+        );
+        drop(obs);
+        w.close().await.expect("close");
+    }
+
+    // ── THE LIE: the same height, the all-zero root.
+    let dir = tempfile::tempdir().expect("tempdir");
+    let vault = test_vault();
+    let (w, key, pass1, pass, _before, _t) =
+        bind1r_drive(dir.path(), &vault, filler_root(IW_CROSS)).await;
+    assert_eq!(
+        pass_refusal_code(&pass1),
+        None,
+        "precondition: pass 1 stops below the crossing, so it completes no shard and \
+         nothing can refute the root yet. Got {:?}",
+        pass1.root_outcomes
+    );
+    let obs = observe(dir.path(), &key);
+
+    // (1) The class.
+    assert!(
+        matches!(
+            pass,
+            Err(WalletError::Sync {
+                stall: crate::state::StallReason::EndpointMisbehaving
+            })
+        ),
+        "B1-5 on the rising chain (1): a served root hash the wallet's own leaves refute \
+         when they complete the shard is the ENDPOINT's fault, and it ends the pass. \
+         `put_blocks` refused the whole batch, so a build that read this as a degraded \
+         Ironwood would report the pass complete while nothing at or above this batch is \
+         scanned in ANY pool, and one that read it as `StoreCorrupt` would send an intact \
+         wallet to a restore. Got {}",
+        describe_pass(&pass)
+    );
+
+    // (2) Nothing of the refused batch is committed.
+    assert_eq!(
+        scanned_span(&obs),
+        Some((IW_SCAN_ANCHOR + 1, IW_MID)),
+        "B1-5 on the rising chain (2): the refused batch is rolled back whole, so the \
+         scanned span is still the one pass 1 left"
+    );
+
+    // (3) The record is untouched.
+    assert_eq!(
+        heights(&obs, "ironwood"),
+        vec![Some(IW_CROSS as i64)],
+        "B1-5 on the rising chain (3): the height row is where the ingest put it; no \
+         reconcile ran, because no batch committed"
+    );
+    drop(obs);
+
+    // (4) The wallet closes, and opens again.
+    w.close()
+        .await
+        .expect("B1-5 on the rising chain (4): the wallet closes cleanly after the refusal");
+    match Wallet::open_with_vault(cfg(dir.path(), Network::Main), Arc::clone(&vault)).await {
+        Ok(reopened) => reopened.close().await.expect("close"),
+        Err(e) => panic!(
+            "B1-5 on the rising chain (4): the wallet must open again after the refusal; \
+             nothing on the device is wrong. Got {e:?} / code {}",
+            e.code()
+        ),
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════

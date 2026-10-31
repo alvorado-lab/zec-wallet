@@ -368,10 +368,14 @@ fn surface_secs(secs: u64) -> u32 {
 
 /// Every network upgrade THIS BUILD knows about, oldest first.
 ///
-/// Hand-maintained because upstream's own ordered list is private — and kept
-/// honest by `known_upgrades_is_really_complete`, which fails the moment the
-/// pinned crate learns an upgrade this list does not name. A list that goes
-/// quietly stale is the whole shape of the Ironwood outage.
+/// Hand-maintained ON PURPOSE, so the anchor ceiling (`newest_known_activation`)
+/// moves only by a deliberate edit here, never by a crate bump. Upstream's own
+/// ordered list is public since `zcash_protocol` 0.11.0 (`UPGRADES_IN_ORDER`),
+/// and the tests pin the two against each other: `known_upgrades_is_really_complete`
+/// fails the moment the pinned crate learns an upgrade this list does not name,
+/// and `the_anchor_ceiling_is_exactly_the_newest_activation_the_crate_knows_on_both_networks`
+/// reads upstream's list as the independent side. A list that goes quietly stale
+/// is the whole shape of the Ironwood outage.
 const KNOWN_UPGRADES: &[NetworkUpgrade] = &[
     NetworkUpgrade::Overwinter,
     NetworkUpgrade::Sapling,
@@ -383,23 +387,45 @@ const KNOWN_UPGRADES: &[NetworkUpgrade] = &[
     NetworkUpgrade::Nu6_1,
     NetworkUpgrade::Nu6_2,
     // NU6.3 / Ironwood — added with the crate wave that gave this build the rules
-    // to model it (`ironwood-phase-b.md` §1 step 6). Adding it does TWO things at
+    // to model it (`ironwood-phase-b.md` §1 step 6). Adding it did TWO things at
     // once, and the second is the money-relevant one:
-    //   1. `evaluate_consensus` stops calling a post-3,428,143 chain `Unsupported`,
-    //      which is what restores signing — the outage itself.
-    //   2. It RAISES THE ANCHOR CEILING from Nu6_2's 3,364,600 to Nu6_3's
-    //      3,428,143. Measured effect, because the obvious guess is wrong: this
-    //      does NOT make the 13 bundled rows above the Ironwood activation
-    //      anchorable — `bundled_treestate` picks the newest row strictly below
-    //      `ceiling + 1` and the first of those rows is 3,429,810, still above it.
-    //      The ceiling stays conservative on purpose: past the newest activation we
-    //      know, an upgrade we do NOT know may be live, which is as true of NU7
-    //      today as it was of NU6.3 yesterday. What actually moves is the newest
+    //   1. `evaluate_consensus` stopped calling a post-3,428,143 chain
+    //      `Unsupported`, which is what restored signing — the outage itself.
+    //   2. It RAISED THE ANCHOR CEILING from Nu6_2's 3,364,600 to Nu6_3's
+    //      3,428,143. Measured effect, because the obvious guess was wrong: it did
+    //      NOT make the 13 bundled rows above the Ironwood activation anchorable —
+    //      `bundled_treestate` picks the newest row strictly below `ceiling + 1`
+    //      and the first of those rows is 3,429,810, still above it. The ceiling
+    //      stayed conservative on purpose: past the newest activation we know, an
+    //      upgrade we do NOT know may be live, which was true of NU7 until the
+    //      entry below, as it had been of NU6.3. What moved was the newest
     //      anchorable row, 3,362,500 -> 3,427,310 — 26 further rows and ~64,810
     //      fewer blocks of first scan — and every one of them is BELOW the
-    //      activation, so an empty Ironwood frontier is correct there. Pinned by
-    //      `the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model`.
+    //      activation, so an empty Ironwood frontier is correct there.
     NetworkUpgrade::Nu6_3,
+    // NU7 — added with the crate wave that carries both of its heights
+    // (`zcash_protocol` 0.11.0: mainnet 3,543,405, testnet 4,465,026; branch
+    // `0x77190AD9`, ZIP 259; `docs/plan/nu7-wave.md` step 3). This list's one
+    // reader is `newest_known_activation`, so what this line moves is the ANCHOR
+    // CEILING, on both networks: mainnet from Nu6_3's 3,428,143 to 3,543,405,
+    // testnet from 4,134,000 to 4,465,026. The signing verdict did not wait for it:
+    // `consensus_compatibility` asks the crate's `BranchId::for_height`, which has
+    // known NU7 since the pin.
+    //
+    // Measured effect: both NU7 activations sit above the bundle's newest row
+    // (mainnet 3,459,780, testnet 4,301,840), so the ceiling no longer excludes
+    // any bundled row. The 13 mainnet and 25 testnet rows above the Ironwood
+    // activation become anchorable, which is the raise the Nu6_3 note above was
+    // kept conservative for, and every one of them carries an Ironwood frontier
+    // (`checkpoints::tests::treestate_bundle_carries_an_ironwood_frontier_after_activation`).
+    // NU7 adds no shielded pool, so no row lacks a frontier for a pool the chain
+    // has. The newest anchorable row moves to the bundle's tail, 3,427,310 ->
+    // 3,459,780 on mainnet and 4,125,170 -> 4,301,840 on testnet: a request above
+    // the tail now resolves to the tail row, and only `bundled_treestate`'s
+    // strict-below rule keeps a request AT a row off that row. Pinned by
+    // `the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model` and
+    // `known_upgrades_is_really_complete`.
+    NetworkUpgrade::Nu7,
 ];
 
 /// The activation height of the newest upgrade this build knows — the highest
@@ -408,18 +434,23 @@ const KNOWN_UPGRADES: &[NetworkUpgrade] = &[
 /// **This is the ceiling for a bundled birthday anchor** (spec §1.5 / §9.2).
 /// Above it, an upgrade we have never heard of may have activated, and the
 /// chain state at such a height can contain a value pool we cannot represent.
-/// Anchoring there bakes an implicitly-empty tree for that pool into the
-/// wallet — persisted, immutable after first import, and NOT OBVIOUSLY repairable
-/// in place
-/// once a later build learns the pool. That is exactly what the 13 bundled
-/// mainnet rows above the Ironwood activation would have done.
+/// A birthday built there carries an implicitly-empty tree for that pool, a
+/// value the chain contradicts. It does not seed the wallet's trees (the first
+/// sync pass's live `GetTreeState` does; `provision`'s module doc states that
+/// limit), so the ceiling keeps the birthday's own value, and the height a
+/// wallet is born at, inside the rules this build models. Without it, the 13
+/// bundled mainnet rows above the Ironwood activation would have given every
+/// wallet created on a pre-Ironwood build an `AccountBirthday` with no Ironwood
+/// frontier.
 ///
 /// The ceiling is derived from what the compiled params know, not a literal —
 /// but it does **NOT** raise itself at a crate bump, and an earlier version of
 /// this very comment said it did (the claim spread from here into four
 /// documents). `KNOWN_UPGRADES` above is HAND-MAINTAINED: the NU6.3 crate wave
 /// landing did nothing to the ceiling on its own; adding the `Nu6_3` variant to
-/// that list is what moved it, in the same commit, deliberately. The list is
+/// that list is what moved it, in the same commit, deliberately. The NU7 wave
+/// repeated it: the pin to the crates that carry NU7's heights left the ceiling
+/// at Nu6_3's height until `Nu7` was listed, one step later. The list is
 /// kept honest by `known_upgrades_is_really_complete`, which fails the moment
 /// the pinned crate learns an upgrade the list does not name — that test is the
 /// forcing function, not the bump.
@@ -1461,6 +1492,13 @@ mod tests {
     /// inputs alone. That is why §4 promotes the local unforgeable evidence —
     /// a mined transaction naming a branch we do not implement
     /// (`enhance::unknown_branch_evidence`) — to a staleness input.
+    ///
+    /// NU7 wave step 3: refixtured against "the newest branch this build
+    /// knows" and run on BOTH networks, through the params the wallet itself is
+    /// built over. Mutant (R-4): pin the endpoint's branch to the literal
+    /// `Nu6_3`; both arms red, because the crate's branch far past every
+    /// activation is `Nu7` on both networks. Removing `Nu7` from
+    /// `KNOWN_UPGRADES` reds it the same way.
     #[test]
     fn a_lying_endpoint_can_hide_our_own_staleness_from_this_predicate() {
         // Phase B step 7. The limit is real and unchanged; only the fixture moved,
@@ -1471,17 +1509,60 @@ mod tests {
         // `Current` for it would have been asserting the outage.
         //
         // The limit needs a chain that has moved PAST what this build models — so
-        // it is expressed at a height beyond every activation we know, where the
-        // endpoint reports the newest branch we DO know. A future upgrade could be
-        // live there and this predicate cannot tell.
-        let far_future = ironwood_mainnet() + 5_000_000;
-        let v = verdict(far_future, far_future, Some(nu6_3_branch()), None);
-        assert_eq!(
-            v,
-            ConsensusCompatibility::Current,
-            "documented limit: the branch check alone cannot catch a server that \
-             lies in the direction of our staleness"
-        );
+        // it is expressed at a height beyond every activation the pinned crate
+        // knows, where the endpoint reports the newest branch this build DOES
+        // know. A future upgrade could be live there and this predicate cannot
+        // tell.
+        //
+        // NU7 wave: the fixture used to name `nu6_3_branch()`, which was "the
+        // newest branch we know" only until the crate learned NU7. Read from
+        // `KNOWN_UPGRADES` instead, so the next upgrade cannot invert it. The
+        // testnet arm, which this wave adds, runs first.
+        for net in [crate::money::Network::Test, crate::money::Network::Main] {
+            let params = net.consensus();
+            let far_future = u32::from(crate_newest_activation(&params)) + 5_000_000;
+            let newest = newest_known_branch(&params);
+            let v = consensus_compatibility(
+                &params,
+                BlockHeight::new(far_future),
+                BlockHeight::new(far_future),
+                &endpoint(Some(newest)),
+                None,
+                GraceClock::NONE,
+            );
+            assert_eq!(
+                v,
+                ConsensusCompatibility::Current,
+                "{net:?}: documented limit: the branch check alone cannot catch a server \
+                 that lies in the direction of our staleness (endpoint branch {newest:#010x}, \
+                 the newest this build knows)"
+            );
+            // Anti-vacuity: the predicate is not answering `Current` to everything
+            // out there. The branch one epoch before the newest one we know is
+            // refused at the same height, so the row above is about the newest
+            // branch and nothing else.
+            let one_back = u32::from(BranchId::for_height(
+                &params,
+                newest_known_activation(&params).expect("a newest activation") - 1,
+            ));
+            assert_ne!(
+                one_back, newest,
+                "{net:?}: the fixture must straddle an upgrade"
+            );
+            let older = consensus_compatibility(
+                &params,
+                BlockHeight::new(far_future),
+                BlockHeight::new(far_future),
+                &endpoint(Some(one_back)),
+                None,
+                GraceClock::NONE,
+            );
+            assert!(
+                matches!(older, ConsensusCompatibility::Unsupported { .. }),
+                "{net:?}: the branch one epoch back ({one_back:#010x}) must be refused far \
+                 past every activation, got {older:?}"
+            );
+        }
         // And the reason it is a LIMIT rather than a hole: the local unforgeable
         // evidence in §4 (`enhance::unknown_branch_evidence`) is the input that
         // closes it — a mined transaction naming a branch we do not implement.
@@ -1592,20 +1673,90 @@ mod tests {
         assert_eq!(parse_branch_id("5437f330"), Some(previous_branch()));
     }
 
+    /// The newest activation the PINNED CRATE knows on `params`, read from the
+    /// crate's own ordered list (`UPGRADES_IN_ORDER`, public from
+    /// `zcash_protocol 0.11.0`) and never from `KNOWN_UPGRADES`. It is the
+    /// independent side of the rows below: a check that read `KNOWN_UPGRADES` on
+    /// both sides would compare the list with itself.
+    fn crate_newest_activation<P: Parameters>(params: &P) -> ConsensusHeight {
+        zcash_protocol::consensus::UPGRADES_IN_ORDER
+            .iter()
+            .rev()
+            .find_map(|nu| params.activation_height(*nu))
+            .expect("the pinned crate knows at least one activation on every network")
+    }
+
+    /// The branch of the newest upgrade THIS BUILD knows (`KNOWN_UPGRADES`), on
+    /// `params`. What an honest endpoint far past every activation we model
+    /// reports, and the fixture the lying-endpoint limit is written against.
+    fn newest_known_branch<P: Parameters>(params: &P) -> u32 {
+        u32::from(BranchId::for_height(
+            params,
+            newest_known_activation(params).expect("a newest known activation"),
+        ))
+    }
+
     /// The anti-staleness guard on `KNOWN_UPGRADES`: if the pinned crate learns
     /// an upgrade our list does not name, the branch it computes far past every
     /// activation stops matching the branch of our newest known upgrade — and
     /// the anchor ceiling would silently sit one upgrade too low. Fails LOUDLY
     /// on the next crate bump, which is the point.
+    ///
+    /// NU7 wave step 3: a TESTNET arm beside the mainnet one, both through the
+    /// params the wallet is built over (`money::Network::consensus`). Public
+    /// testnet activated NU7 at 4,465,026 (2026-10-06), so a list that stops at
+    /// `Nu6_3` is stale there as much as on mainnet. The testnet arm runs first,
+    /// so its red is the one a stale list reports. Mutant after the fix: remove
+    /// `Nu7` from `KNOWN_UPGRADES`; both arms red.
     #[test]
     fn known_upgrades_is_really_complete() {
-        let newest = newest_known_activation(&MAIN_NETWORK).expect("mainnet has activations");
-        assert_eq!(
-            BranchId::for_height(&MAIN_NETWORK, ConsensusHeight::from_u32(u32::MAX)),
-            BranchId::for_height(&MAIN_NETWORK, newest),
-            "zcash_protocol knows an upgrade KNOWN_UPGRADES does not list — add it, \
-             and re-check the bundled-anchor ceiling it moves"
-        );
+        for net in [crate::money::Network::Test, crate::money::Network::Main] {
+            let params = net.consensus();
+            let newest = newest_known_activation(&params).expect("every network has activations");
+            assert_eq!(
+                BranchId::for_height(&params, ConsensusHeight::from_u32(u32::MAX)),
+                BranchId::for_height(&params, newest),
+                "{net:?}: zcash_protocol knows an upgrade KNOWN_UPGRADES does not list — add \
+                 it, and re-check the bundled-anchor ceiling it moves"
+            );
+        }
+    }
+
+    /// UNLISTED CASE (NU7 wave step 3, not in the contract's list). The anchor
+    /// ceiling is EXACTLY the newest activation the pinned crate knows, on both
+    /// networks: not below it (a stale `KNOWN_UPGRADES`, which the row above
+    /// also sees), and not above it.
+    ///
+    /// The "not above" half is asserted here and in one other place,
+    /// `checkpoints::tests::bundled_treestate_never_anchors_an_empty_ironwood_frontier_above_activation`,
+    /// whose ceiling-explanation assertion holds the ceiling to the crate's newest
+    /// activation + 1. The row above compares branches, and the branch at any
+    /// height past the newest activation is the newest branch, so a ceiling
+    /// raised past the activation passes it. The bundle rows cannot see such a raise either: with `Nu7`
+    /// listed, every bundled row on both networks sits below the NU7 activation
+    /// (mainnet tail 3,459,780 < 3,543,405; testnet tail 4,301,840 < 4,465,026),
+    /// so `bundled_treestate` picks the same rows under a raised ceiling. This row
+    /// and that assertion are where a raise inside `newest_known_activation` goes
+    /// red until a bundle refresh carries a row past NU7.
+    ///
+    /// Mutants: remove `Nu7` from `KNOWN_UPGRADES` (both arms red, below the
+    /// crate's newest); `newest_known_activation` returns its height plus one
+    /// (both arms red, above it).
+    #[test]
+    fn the_anchor_ceiling_is_exactly_the_newest_activation_the_crate_knows_on_both_networks() {
+        for net in [crate::money::Network::Main, crate::money::Network::Test] {
+            let params = net.consensus();
+            let ceiling = newest_known_activation(&params).expect("a ceiling");
+            let crate_newest = crate_newest_activation(&params);
+            assert_eq!(
+                ceiling, crate_newest,
+                "{net:?}: the anchor ceiling ({ceiling}) is not the newest activation the \
+                 pinned zcash_protocol knows ({crate_newest}). Below it, KNOWN_UPGRADES is \
+                 stale and fresh wallets anchor lower than this build can model; above it, \
+                 a bundled row past an activation this build has not modelled would become \
+                 an anchor"
+            );
+        }
     }
 
     /// The ceiling is the thing the bundled anchor rests on. **REWRITTEN in Phase
@@ -1618,81 +1769,155 @@ mod tests {
     /// The property that survives every upgrade: the ceiling is exactly the newest
     /// activation this build can model, so a bundled row is selectable if and only
     /// if this build knows the rules in force there.
+    ///
+    /// **REWRITTEN again in the NU7 wave (step 3, carrying step 7's mainnet
+    /// assertion, due now because step 1 pinned the final crates).** It ran on
+    /// mainnet only (D-L5); it now runs on BOTH networks, through the params the
+    /// wallet is built over. And its last assertion is the one its own message
+    /// said would have to be rewritten deliberately: with `Nu7` listed, the
+    /// ceiling on both networks is the NU7 activation (mainnet 3,543,405,
+    /// testnet 4,465,026), above the whole bundle, so the rows above the Ironwood
+    /// activation (13 mainnet, 25 testnet) come into reach, and the frontier loop
+    /// is the live guard instead of an implication kept for later.
+    ///
+    /// Mutant: remove `Nu7` from `KNOWN_UPGRADES`; the testnet ceiling falls to
+    /// 4,134,000 and the mainnet one to 3,428,143; red (assertions 1 and 4). The
+    /// testnet arm, the one this wave adds, runs first.
     #[test]
     fn the_anchor_ceiling_is_the_newest_upgrade_this_build_can_model() {
-        let ceiling = u32::from(newest_known_activation(&MAIN_NETWORK).expect("a ceiling"));
+        for net in [crate::money::Network::Test, crate::money::Network::Main] {
+            let params = net.consensus();
+            let ceiling = u32::from(newest_known_activation(&params).expect("a ceiling"));
+            let ironwood = u32::from(
+                params
+                    .activation_height(NetworkUpgrade::Nu6_3)
+                    .expect("the pinned params know Nu6_3 on both networks"),
+            );
 
-        // 1. Structural, not a literal: the branch far past every activation is the
-        //    branch at the ceiling. If the crate knew an upgrade above it, these
-        //    would differ — the same invariant `known_upgrades_is_really_complete`
-        //    states from the other side.
-        assert_eq!(
-            BranchId::for_height(&MAIN_NETWORK, ConsensusHeight::from_u32(u32::MAX)),
-            BranchId::for_height(&MAIN_NETWORK, ConsensusHeight::from_u32(ceiling)),
-            "the ceiling is not the newest modellable height"
-        );
+            // 1. Structural, not a literal: the branch far past every activation is
+            //    the branch at the ceiling. If the crate knew an upgrade above it,
+            //    these would differ — the same invariant
+            //    `known_upgrades_is_really_complete` states from the other side.
+            assert_eq!(
+                BranchId::for_height(&params, ConsensusHeight::from_u32(u32::MAX)),
+                BranchId::for_height(&params, ConsensusHeight::from_u32(ceiling)),
+                "{net:?}: the ceiling ({ceiling}) is not the newest modellable height"
+            );
 
-        // 2. It MOVED, and moving it is the point of step 6. Before this commit it
-        //    was Nu6_2's 3,364,600 and the 13 bundled mainnet rows above the
-        //    Ironwood activation were unreachable as anchors. Asserting it is now
-        //    at/above the activation is the direction check: the ceiling may only
-        //    ever rise as this build learns MORE, never fall.
-        assert!(
-            ceiling >= ironwood_mainnet(),
-            "the ceiling ({ceiling}) fell below the Ironwood activation ({}) — a \
-             build that models NU6.3 must be able to anchor there",
-            ironwood_mainnet()
-        );
+            // 2. The direction check: the ceiling may only ever rise as this build
+            //    learns MORE, never fall below an activation it models.
+            assert!(
+                ceiling >= ironwood,
+                "{net:?}: the ceiling ({ceiling}) fell below the Ironwood activation \
+                 ({ironwood}) — a build that models NU6.3 must be able to anchor there"
+            );
 
-        // 3. THE SAFETY PROPERTY, and it is not the one I first assumed. Raising
-        //    the ceiling to the Ironwood activation does NOT make the 13 bundled
-        //    rows ABOVE that activation anchorable — `bundled_treestate` selects
-        //    the newest row strictly below `ceiling + 1`, and the first of those
-        //    rows is 3,429,810. The ceiling stays deliberately conservative: above
-        //    the newest activation we know, an upgrade we do NOT know may be live,
-        //    and that is true of NU7 today exactly as it was of NU6.3 yesterday.
-        //
-        //    What it does move — measured, not assumed — is the newest anchorable
-        //    row from 3,362,500 to 3,427,310, i.e. 26 further rows and about 64,810
-        //    fewer blocks of first scan. EVERY one of them is below the activation,
-        //    so an empty Ironwood frontier is CORRECT there, which is what makes
-        //    the raise safe. Assert exactly that, since it is the property a future
-        //    ceiling change could break.
-        let table = crate::checkpoints::treestate_table(crate::money::Network::Main);
-        let selectable: Vec<u32> = table
-            .iter()
-            .map(|&(h, ..)| h)
-            .filter(|&h| h < ceiling.saturating_add(1))
-            .collect();
-        assert!(
-            !selectable.is_empty(),
-            "no bundled row is selectable at all — the ceiling has excluded the whole bundle"
-        );
-        let newest_selectable = *selectable.last().expect("non-empty");
-        for &(h, _hash, _sap, _orch, ironwood) in table {
-            if h < ceiling.saturating_add(1) && h >= ironwood_mainnet() {
-                assert_ne!(
-                    ironwood, "",
-                    "row {h} is SELECTABLE as a birthday anchor and sits at/above the \
-                     Ironwood activation with no Ironwood frontier — anchoring there \
-                     bakes an empty third pool into every wallet born at that height"
-                );
+            // 3. THE SAFETY PROPERTY: every row the ceiling admits at/above the
+            //    Ironwood activation carries an Ironwood frontier. A birthday built
+            //    on one that does not carries an empty third frontier the chain
+            //    contradicts (the birthday's value, not the trees, which are seeded
+            //    live: `provision`'s module doc). (History: at Phase B step 6 the
+            //    ceiling was the Ironwood activation itself and no row satisfied
+            //    this antecedent; that is what the NU7 wave ends.)
+            let table = crate::checkpoints::treestate_table(net);
+            let selectable: Vec<u32> = table
+                .iter()
+                .map(|&(h, ..)| h)
+                .filter(|&h| h < ceiling.saturating_add(1))
+                .collect();
+            assert!(
+                !selectable.is_empty(),
+                "{net:?}: no bundled row is selectable at all — the ceiling has excluded \
+                 the whole bundle"
+            );
+            let newest_selectable = *selectable.last().expect("non-empty");
+            let mut live = 0usize;
+            for &(h, _hash, _sap, _orch, ironwood_frontier) in table {
+                if h < ceiling.saturating_add(1) && h >= ironwood {
+                    live += 1;
+                    assert_ne!(
+                        ironwood_frontier, "",
+                        "{net:?}: row {h} is SELECTABLE as a birthday anchor and sits \
+                         at/above the Ironwood activation with no Ironwood frontier: every \
+                         wallet born there gets an AccountBirthday whose third frontier the \
+                         chain contradicts"
+                    );
+                }
             }
+
+            // 4. The boundary, rewritten deliberately as the Phase B message asked:
+            //    the newest selectable anchor now sits at/above the Ironwood
+            //    activation, so the loop above is live and not an implication.
+            //    Under a stale list (no `Nu7`) the ceiling is the Ironwood
+            //    activation again and the newest selectable row falls below it
+            //    (3,427,310 mainnet, 4,125,170 testnet): red.
+            assert!(
+                newest_selectable >= ironwood,
+                "{net:?}: the newest selectable anchor ({newest_selectable}) is below the \
+                 Ironwood activation ({ironwood}) under a ceiling of {ceiling}: the rows \
+                 this build models past the activation are out of reach"
+            );
+            assert!(
+                live > 0,
+                "{net:?}: no selectable row sits at/above the Ironwood activation, so the \
+                 frontier loop above asserted nothing"
+            );
         }
-        // Non-vacuity for the loop above is honest rather than asserted: NO row
-        // satisfies its antecedent today, because the ceiling sits below the first
-        // row above the activation. It is an implication kept live for the next
-        // ceiling raise, and the row-carries-a-frontier property IS asserted
-        // non-vacuously by
-        // `checkpoints::treestate_bundle_carries_an_ironwood_frontier_after_activation`.
-        // What this test asserts non-vacuously is the boundary itself:
-        assert!(
-            newest_selectable < ironwood_mainnet(),
-            "the newest selectable anchor ({newest_selectable}) is at/above the Ironwood \
-             activation ({}) — if that is intended, the loop above becomes the live \
-             guard and this assertion is what must be rewritten, deliberately",
-            ironwood_mainnet()
+    }
+
+    /// NU7 wave step 3 (new, the sibling of
+    /// `checkpoint_activation_heights_match_zcash_protocol`): the NU7 numbers
+    /// this codebase states, checked against the crate ONCE, here.
+    ///
+    /// Testnet's height and the branch id are ZIP 259's; mainnet's is
+    /// `zcash_protocol 0.11.0`'s (`consensus.rs:567`, its `CHANGELOG.md`), the
+    /// number ADR-0579 and the plan use. The contract wrote the mainnet arm as
+    /// `None` with "do step 7" in its message; step 1 pinned the final crates,
+    /// so step 7's form applies now and the arm asserts the crate's number.
+    ///
+    /// Mutants: `nu7_activation` reads `Nu6_3` (every height assertion red); a
+    /// stale expected mainnet value, the R-12 row (red).
+    #[test]
+    fn nu7_heights_and_branch_match_zcash_protocol() {
+        /// The NU7 activation on `params`, read from the crate.
+        fn nu7_activation<P: Parameters>(params: &P) -> Option<u32> {
+            params.activation_height(NetworkUpgrade::Nu7).map(u32::from)
+        }
+        const ZIP_259_NU7_BRANCH: u32 = 0x7719_0AD9;
+        const ZIP_259_TESTNET_NU7: u32 = 4_465_026;
+        const MAINNET_NU7: u32 = 3_543_405;
+
+        assert_eq!(
+            BranchId::try_from(ZIP_259_NU7_BRANCH),
+            Ok(BranchId::Nu7),
+            "the pinned zcash_protocol must name ZIP 259's NU7 branch id"
         );
+        for (net, expected) in [
+            (crate::money::Network::Test, ZIP_259_TESTNET_NU7),
+            (crate::money::Network::Main, MAINNET_NU7),
+        ] {
+            let params = net.consensus();
+            let nu7 = nu7_activation(&params).unwrap_or_else(|| {
+                panic!("{net:?}: the pinned crate carries no NU7 activation height")
+            });
+            assert_eq!(nu7, expected, "{net:?}: NU7 activation height");
+            assert_eq!(
+                u32::from(BranchId::for_height(
+                    &params,
+                    ConsensusHeight::from_u32(nu7)
+                )),
+                ZIP_259_NU7_BRANCH,
+                "{net:?}: at the NU7 activation the branch IS NU7's"
+            );
+            // The boundary, one block each side: the block before the activation
+            // is still under Ironwood's rules, so the change happens exactly where
+            // every other file says it does.
+            assert_eq!(
+                BranchId::for_height(&params, ConsensusHeight::from_u32(nu7 - 1)),
+                BranchId::Nu6_3,
+                "{net:?}: one block below the NU7 activation the branch is still Nu6_3"
+            );
+        }
     }
 
     /// The inverse of the row this replaces. It used to assert the pinned params
