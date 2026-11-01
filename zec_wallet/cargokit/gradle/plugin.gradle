@@ -1,8 +1,12 @@
 /// This is copied from Cargokit (which is the official way to use it currently)
 /// Details: https://fzyzcjy.github.io/flutter_rust_bridge/manual/integrate/builtin
+/// Changed from upstream: the build task runs its commands through an injected
+/// ExecOperations, because Gradle 9 removed Project.exec.
 
 import java.nio.file.Paths
+import javax.inject.Inject
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
 
 CargoKitPlugin.file = buildscript.sourceFile
 
@@ -42,6 +46,10 @@ abstract class CargoKitBuildTask extends DefaultTask {
     @Input
     List<String> targetPlatforms
 
+    // Available since Gradle 6, so the same task runs on Gradle 8 and 9.
+    @Inject
+    abstract ExecOperations getExecOperations()
+
     @TaskAction
     def build() {
         if (project.cargokit.manifestDir == null) {
@@ -60,12 +68,12 @@ abstract class CargoKitBuildTask extends DefaultTask {
         def rootProjectDir = project.rootProject.projectDir
 
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-            project.exec {
+            execOperations.exec {
                 commandLine 'chmod', '+x', path
             }
         }
 
-        project.exec {
+        execOperations.exec {
             executable path
             args "build-gradle"
             environment "CARGOKIT_ROOT_PROJECT_DIR", rootProjectDir

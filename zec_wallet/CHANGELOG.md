@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.0.6
+
+**Android builds work with Gradle 9.** Apps created with current Flutter could
+not build 0.0.5 or earlier for Android. Flutter 3.44 sets new apps up with
+Gradle 9.1, and Gradle 9 removed a call the package's
+`cargokit/gradle/plugin.gradle` made, so the build stopped with "Could not find
+method exec()". 0.0.6 builds on Gradle 8 and 9. The API, the database and the
+wallet's behaviour do not change.
+
+### Upgrading
+
+From 0.0.5, run `flutter pub upgrade zec_wallet zec_wallet_ui zec_wallet_tor`.
+Your current lines already accept the new versions, because pub reads `^0.0.5`
+as at least 0.0.5 and below 0.1.0.
+
+From 0.0.4 or earlier, follow "Upgrading from 0.0.4" under 0.0.5 below
+instead: 0.0.5 changed the API and migrates the wallet's database one way.
+The `zec_wallet: ^0.0.5` line those steps give then resolves to 0.0.6.
+
+For a new app, the working set is:
+
+```yaml
+dependencies:
+  zec_wallet: ^0.0.6
+  zec_wallet_ui: ^0.0.4
+  zec_wallet_ui_platform: ^0.0.3
+  zec_wallet_tor: ^0.0.5
+```
+
+`zec_wallet_ui` and `zec_wallet_ui_platform` did not change in this release.
+`zec_wallet_tor` 0.0.5 carries the same Gradle fix.
+
+**A correction to the 0.0.5 notes.** They said `flutter pub upgrade` stays on
+0.0.4 because `^0.0.4` accepts only 0.0.4. That was wrong: `^0.0.4` also
+accepts 0.0.5 and 0.0.6, so `flutter pub upgrade` can take an app on 0.0.4
+past the 0.0.5 changes. If that app still has `zec_wallet_ui` 0.0.3, its build
+stops with "The type 'TxStatus' is not exhaustively matched", because
+`zec_wallet_ui` 0.0.3 does not build with `zec_wallet` 0.0.5 or later. The
+0.0.5 steps move both packages together.
+
 ## 0.0.5
 
 **Upgrade before the NU7 network upgrade activates on mainnet, at block
@@ -10,7 +50,6 @@ follows, they sign payments the network rejects.
 
 ### Upgrading from 0.0.4
 
-`flutter pub upgrade` stays on 0.0.4, because `^0.0.4` accepts only 0.0.4.
 Change these lines in your `pubspec.yaml`, for the packages you use. Together
 they are the working set for this release:
 
@@ -211,9 +250,9 @@ the TLS stack fixed here.
   known-limitation note names no version. Version 0.0.3 was prepared with
   these changes and never published.
 - Released together with `zec_wallet_ui` 0.0.3, `zec_wallet_ui_platform`
-  0.0.3, `zec_wallet_tor` 0.0.3 and `dialer-tor` 0.1.3. `zec_wallet_ui` pins
-  `zec_wallet` exactly (`^0.0.x` accepts only that 0.0.x), so use the
-  versions from one release together.
+  0.0.3, `zec_wallet_tor` 0.0.3 and `dialer-tor` 0.1.3. Each `zec_wallet_ui`
+  release is built against one `zec_wallet` release, so use the versions from
+  one release together.
 
 ## 0.0.2
 

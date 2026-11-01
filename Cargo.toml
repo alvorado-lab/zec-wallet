@@ -23,7 +23,7 @@ exclude = ["dialer-tor", "zec_wallet_tor/rust"]
 [workspace.package]
 # The published version: `sdkVersion()` reports it, so it equals the
 # `zec_wallet` pubspec's (`api::meta` tests hold the two together).
-version = "0.0.5"
+version = "0.0.6"
 edition = "2024"
 rust-version = "1.96"
 # MIT only: the packages ship one LICENSE (MIT), and the crates travel inside

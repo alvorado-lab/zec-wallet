@@ -1,8 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.0.5
 
-- The README's install snippet names `zec_wallet` 0.0.5.
+**Android builds work with Gradle 9.** Apps created with current Flutter could
+not build 0.0.4 or earlier for Android. Flutter 3.44 sets new apps up with
+Gradle 9.1, and Gradle 9 removed a call the plugin's
+`cargokit/gradle/plugin.gradle` made, so the build stopped with "Could not find
+method exec()". 0.0.5 builds on Gradle 8 and 9; the plugin's API and behaviour
+do not change. `flutter pub upgrade zec_wallet_tor` takes it, since `^0.0.4`
+also accepts 0.0.5. The README's install snippet now names `zec_wallet` 0.0.6.
 
 ## 0.0.4
 

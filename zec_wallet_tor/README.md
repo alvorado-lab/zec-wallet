@@ -29,8 +29,8 @@ Unaudited. See [SECURITY.md](SECURITY.md).
 
 ```yaml
 dependencies:
-  zec_wallet: ^0.0.5
-  zec_wallet_tor: ^0.0.4
+  zec_wallet: ^0.0.6
+  zec_wallet_tor: ^0.0.5
 ```
 
 The order at boot matters:

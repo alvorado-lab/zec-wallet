@@ -1,21 +1,22 @@
 # zec_wallet
 
-**Upgrade to 0.0.5 before the NU7 network upgrade** activates on mainnet, at
-block 3,543,405 (about 2026-11-06 02:00 UTC): 0.0.4 and earlier cannot send
-after it. The working set, for the packages you use:
+**Upgrade to 0.0.5 or later before the NU7 network upgrade** activates on
+mainnet, at block 3,543,405 (about 2026-11-06 02:00 UTC): 0.0.4 and earlier
+cannot send after it. 0.0.6 also builds for Android on Gradle 9. The working
+set, for the packages you use:
 
 ```yaml
 dependencies:
-  zec_wallet: ^0.0.5
+  zec_wallet: ^0.0.6
   zec_wallet_ui: ^0.0.4
   zec_wallet_ui_platform: ^0.0.3
-  zec_wallet_tor: ^0.0.4
+  zec_wallet_tor: ^0.0.5
 ```
 
-`zec_wallet_ui_platform` and `zec_wallet_tor` did not change in this release,
-so their own pub.dev pages still show older `zec_wallet_ui` and `zec_wallet`
-lines: use the ones above. The [changelog](CHANGELOG.md) has the steps and the
-API changes.
+`zec_wallet_ui` and `zec_wallet_ui_platform` did not change in this release,
+so their own pub.dev pages still show older lines: use the ones above. The
+[changelog](CHANGELOG.md) has the steps. From 0.0.4 or earlier, follow its
+0.0.5 steps: that release changed the API and migrates the database one way.
 
 Add private Zcash (ZEC) payments to any Flutter app. `zec_wallet` creates or
 restores a shielded wallet, keeps it in sync with the network, and sends and
