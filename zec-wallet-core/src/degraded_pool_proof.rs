@@ -1120,9 +1120,9 @@ impl TransactionFetcher for ProofEndpoint {
         &mut self,
         _txid: zcash_protocol::TxId,
     ) -> Result<Option<FetchedTransaction>, GrpcError> {
-        // Abstains: the endpoint has no such transaction. Not reached on a
-        // wallet that has scanned nothing (an empty enhancement backlog makes
-        // no RPC).
+        // Abstains: an empty body, which the pass counts and writes nothing for
+        // (ADR-0584). Not reached on a wallet that has scanned nothing (an
+        // empty enhancement backlog makes no RPC).
         Ok(None)
     }
 }

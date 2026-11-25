@@ -234,11 +234,13 @@ no fields: `info` when it stopped, `warn` when it overran.
 ## Supply chain
 
 `deny.toml` in this directory is the policy over this crate's lock: ring-only
-TLS (`aws-lc-*` banned), the rustls advisory floor, the LGPL bans, and three
-named advisory ignores with their arguments and expiry conditions (`rsa`
-0.9.10's Marvin attack, since no RSA private-key operation is reachable from
-a Tor client; two unmaintained transitive helpers). `cargo audit --ignore
-RUSTSEC-2023-0071` and `cargo deny check` run over it in CI.
+TLS (`aws-lc-*` banned), the rustls advisory floor, the LGPL bans, and five
+named advisory ignores, each with its argument and expiry condition. They are
+`rsa` 0.9.10's Marvin attack, since no RSA private-key operation is reachable
+from a Tor client; SQLite's crafted `-wal` file in arti's directory cache, a
+local attack whose fix waits on an arti release; and three unmaintained
+transitive helpers. CI runs `cargo deny check` and `cargo audit` over it, and
+the CI file gives the reason for each id the audit ignores.
 
 ## Licence
 

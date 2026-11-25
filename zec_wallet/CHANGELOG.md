@@ -1,5 +1,79 @@
 # Changelog
 
+## 0.0.7
+
+**A queued send your app cancelled could still be paid. Update.** In 0.0.6
+and earlier, the wallet read its queued sends once and then signed them one
+after another. If your app cancelled the newest queued send and queued another
+in that time, the new send took the cancelled one's id: the wallet signed and
+broadcast the cancelled payment and marked the new one sent, so the new one
+never went out. A swap deposit signed at execute had the same gap, and a
+deposit whose quote had lapsed could delete another send's record.
+
+0.0.7 signs a queued send only while its row is still the exact one the wallet
+read: the same id, creation time and request, and still queued. Otherwise it
+signs nothing, and a send queued in its place goes out on a later
+pass. `authorizeParkedSend` answers `notFound` for a send cancelled or
+replaced in the meantime, an answer it already had. Two cases remain, both for
+a queued send cancelled and replaced within the second it was created. A
+`cancelParkedSend` that names it removes the replacement and returns `true`, so
+the replacement has to be queued again. An `authorizeParkedSend` that names it
+sends the replacement, a payment your app queued, on that payment's own terms.
+
+**Memos and payment status no longer go missing when the light server has no
+answer.** To read memos and to confirm the second step of a payment to a TEX
+address, the wallet asks its light server for whole transactions. Four of the
+answers were handled wrongly:
+
+- An empty answer deleted the request, so the memo stayed missing until its
+  block was scanned again. No server we measured sends one, and a NotFound
+  already kept the request, so this is a safeguard. An absent answer of any
+  kind now changes nothing, and the wallet asks again on a later sync.
+- An "unmined" answer after the transaction's expiry deleted the question that
+  confirms a TEX payment's second step. For a transaction with a stored expiry,
+  that answer is now refused.
+- Every sync asked about the same first 50 requests, so 50 that the server
+  never answers held back every request behind them for good. Each sync now
+  starts after the last request it asked, so every request gets its turn.
+- A reply naming a network branch the wallet does not know stopped the status
+  checks for that transaction until the next launch. Now only its memo read
+  waits.
+
+The cost: a transaction that will never be mined, such as an expired send that
+never went out, keeps its status question for the life of the wallet. The
+wallet asks the server about it again in its turn, at most 50 requests per
+sync, and each request names the transaction's id to the server.
+
+**Dependencies.** The lock moves `rustix` to 1.1.6 for RUSTSEC-2026-0486 (its
+extended-attribute functions could mark unwritten bytes as initialized). The
+wallet calls rustix only for a file lock, so it never reached them.
+RUSTSEC-2026-0459 (SQLite before 3.54.0 can return uninitialized memory when
+it opens a database beside a crafted `-wal` file) has no fixed SQLCipher build
+yet, so the lock keeps SQLite 3.46.1 inside SQLCipher. The attack needs a
+crafted file placed beside the wallet's database on the device.
+
+### Upgrading
+
+From 0.0.5 or 0.0.6, run `flutter pub upgrade zec_wallet zec_wallet_tor`.
+Your current lines already accept the new versions, and so does the
+`zec_wallet: ^0.0.5` inside `zec_wallet_ui` 0.0.4: pub reads `^0.0.5` as at
+least 0.0.5 and below 0.1.0. The API and the database do not change.
+
+From 0.0.4 or earlier, follow "Upgrading from 0.0.4" under 0.0.5 below.
+
+For a new app, the working set is:
+
+```yaml
+dependencies:
+  zec_wallet: ^0.0.7
+  zec_wallet_ui: ^0.0.4
+  zec_wallet_ui_platform: ^0.0.3
+  zec_wallet_tor: ^0.0.6
+```
+
+`zec_wallet_ui` and `zec_wallet_ui_platform` did not change in this release.
+`zec_wallet_tor` 0.0.6 moves its lock to `url` 2.5.9.
+
 ## 0.0.6
 
 **Android builds work with Gradle 9.** Apps created with current Flutter could

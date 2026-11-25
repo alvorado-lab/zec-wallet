@@ -123,8 +123,9 @@ async fn the_arrival_transaction_carries_a_real_ironwood_bundle() {
     )
     .expect("connect builds lazily");
 
-    // THE NETWORK REFUSAL, first: a testnet endpoint would answer a 64-hex txid
-    // with `None` and the row would read as "the chain does not hold it" — a
+    // THE NETWORK REFUSAL, first: a testnet endpoint would answer a mainnet txid
+    // with a gRPC status (NotFound), the `expect` below would panic on it, and the
+    // run would read as "the chain does not hold it": a
     // false negative about the wrong chain. Name the network before asking it
     // anything.
     let info = client
@@ -134,11 +135,13 @@ async fn the_arrival_transaction_carries_a_real_ironwood_bundle() {
     assert_eq!(
         info.chain_name, "main",
         "REFUSING TO READ: {url} serves {:?}, not mainnet. The T0-2 arrival is a MAINNET \
-         payment; a testnet endpoint would answer 'no such transaction' and that absence \
+         payment; a testnet endpoint would answer NotFound, and that absence \
          would say nothing about the arrival. Point ZEC_WALLET_LWD at a mainnet lightwalletd",
         info.chain_name
     );
 
+    // An unknown txid is a gRPC status, so it panics in the `expect`; the arm after it
+    // is an EMPTY body, which no server measured sends. Neither proves absence.
     let fetched = client
         .get_transaction(txid)
         .await

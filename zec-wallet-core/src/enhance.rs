@@ -16,6 +16,15 @@
 //! (`sync::LightwalletdClient`), and the db-bound store adapter + engine wiring
 //! (`wallet::WalletDbEnhancementStore` / `Wallet::enhance_transactions`, hooked into `run_pass`).
 //! No key material here; no custom crypto — Rule Zero, we call the audited fn whole.
+//!
+//! Two rules decide what an answer may do (ADR-0584). An ABSENT answer is never evidence: an empty
+//! body, a gRPC status, a transport failure, a timeout and a reply refused at the §4.6 boundary
+//! each write nothing, and the request stays pending. And no answer may end a money question: an
+//! unmined answer past a transaction's expiry is refused too, since the engine would drop the
+//! request with it. What keeps a request nobody serves from holding back the others is the
+//! rotation ([`EnhancementCursor`]), never a write.
+
+use std::collections::BTreeMap;
 
 use async_trait::async_trait;
 use zcash_client_backend::data_api::{TransactionDataRequest, TransactionStatus};
@@ -45,7 +54,9 @@ pub(crate) struct FetchedTransaction {
 #[async_trait]
 pub(crate) trait TransactionFetcher {
     /// The full consensus-encoded tx + the endpoint's mined-height CLAIM for `txid`.
-    /// `Ok(None)` ⇒ the endpoint has no such tx (→ `TxidNotRecognized`). RAW bytes from an
+    /// `Ok(None)` ⇒ the endpoint sent an EMPTY body. That is not evidence that the transaction
+    /// does not exist, and neither is any `Err`: the caller writes nothing for either and the
+    /// request stays pending (ADR-0584). RAW bytes from an
     /// UNTRUSTED endpoint — the caller re-parses + matches the txid ([`parse_and_validate`])
     /// before anything is decrypted/stored.
     async fn fetch_transaction(
@@ -57,8 +68,8 @@ pub(crate) trait TransactionFetcher {
 /// §5.4-clean tally of ONE enhancement pass — counts only, never a txid/memo/address.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct EnhancementOutcome {
-    /// Txids attempted this pass — the BOUNDED batch (`enhanced + not_found + rejected`), not
-    /// the full backlog (which may exceed the per-pass cap and drain over later passes).
+    /// Txids attempted this pass (`enhanced + status_set + not_found + rejected`): the BOUNDED
+    /// batch, not the full backlog (which can exceed the per-pass cap and drain over later passes).
     pub(crate) requested: usize,
     /// Fetched + validated + handed to the audited decryptor (memo recovered if ours).
     /// `Enhancement` requests ONLY — a `GetStatus` reply is counted in [`Self::status_set`].
@@ -69,17 +80,24 @@ pub(crate) struct EnhancementOutcome {
     /// transaction DATA, this writes the MINED HEIGHT (or its absence). A pass that only sets
     /// statuses stores nothing new to decrypt, but it does change how existing rows RENDER.
     pub(crate) status_set: usize,
-    /// The endpoint had no such tx (recorded as `TxidNotRecognized`, which clears the request).
+    /// Replies with an EMPTY body, for either kind. Nothing is written and the request stays
+    /// pending (ADR-0584). This is not where an honest server's "no such transaction" lands:
+    /// every server measured answers that with a gRPC status, which is a fetch fault and counts
+    /// in [`Self::rejected`].
     pub(crate) not_found: usize,
-    /// A reply REJECTED at the §4.6 boundary (wrong/garbled/oversized tx) OR a per-tx fetch
-    /// fault — skipped, never stored; the request persists and is retried next pass. Bundling
-    /// both under one count keeps the §5.4 surface to "how many didn't land," never WHY-by-txid.
+    /// A reply REJECTED at the §4.6 boundary (wrong/garbled/oversized tx), a per-tx fetch
+    /// fault (a gRPC status of any number included) OR a status answer [`chain_status`] refused:
+    /// skipped, never stored; the request persists and is asked again in its turn. Bundling
+    /// them under one count keeps the §5.4 surface to "how many didn't land," never WHY-by-txid.
     pub(crate) rejected: usize,
-    /// Of the `rejected`, replies this build could not parse because they name a
+    /// Of the `rejected`, replies to an `Enhancement` request that this build could
+    /// not parse because they name a
     /// consensus branch it does not implement (`ironwood-nu63-support.md` §0 /
     /// §4). Counted distinctly because the cause is entirely different from a
     /// garbled reply: the endpoint is honest, the transaction is real, and WE
-    /// are the stale party.
+    /// are the stale party. A `GetStatus` reply is never counted here (ADR-0584): that
+    /// question is asked only about a transaction this build already built or parsed,
+    /// whose txid commits to its branch (ZIP-244), so such a header is not its own.
     ///
     /// **What this evidence is, and is NOT — corrected by the review (both
     /// angles, independently).** An endpoint cannot SUPPRESS it without refusing
@@ -88,10 +106,12 @@ pub(crate) struct EnhancementOutcome {
     /// chain is on one we do not. It CAN forge it. These twelve bytes are read
     /// from the raw reply AFTER [`parse_and_validate`] — the one call that binds
     /// a reply to the requested txid — has already failed, so nothing binds them
-    /// to anything: a hostile endpoint answers any `GetTransaction` with a
+    /// to anything: a hostile endpoint answers any `GetTransaction` sent for an
+    /// `Enhancement` with a
     /// well-formed v5/v6 header naming an id this build lacks, and gets both a
     /// false "this build is stale" warn and a `UnparseableTxids` entry for a
-    /// txid of its choosing.
+    /// txid of its choosing. What that entry hides is a memo until the next launch,
+    /// never a status: the entry and the skip are for enhancements only.
     ///
     /// This doc used to call it *"the one piece of staleness evidence an
     /// endpoint cannot forge or suppress"*. The forge half was never true — the
@@ -133,6 +153,11 @@ impl EnhancementOutcome {
 /// which is also the soonest an update can take effect — and it costs no schema,
 /// no migration, and no risk of a stale row suppressing a txid forever.
 ///
+/// **Enhancements only (ADR-0584).** A txid joins on an `Enhancement` reply alone, and the
+/// set is asked about `Enhancement` requests alone, so nothing an endpoint puts in it can hide
+/// a `GetStatus` request: the one question that can teach the wallet a two-step payment's
+/// second leg was mined.
+///
 /// **What it does and does not fix.** It stops the wallet re-downloading the
 /// same unparseable transactions on every sync pass, forever, on a link that may
 /// be metered or Tor. It does NOT recover the memo: that needs the crate upgrade
@@ -168,6 +193,56 @@ impl UnparseableTxids {
     }
 }
 
+/// Where the enhancement passes are in their rotation: the last txid ASKED (ADR-0584).
+///
+/// [`select_enhancement_targets`] orders the pending requests by txid and starts strictly after
+/// this one, so over the passes that run to their end every request is asked at least once in
+/// every `ceil(n / max)` of them, whatever the endpoint answers. Nothing is skipped, waited for
+/// or counted: a request nobody serves is asked in its turn, and holds no other one back.
+///
+/// **Recorded before each fetch is awaited, not after the batch.** A pass dropped in the middle of
+/// a fetch (a stop, the watchdog, a bounded run's deadline) and a pass a store fault ends have both
+/// already moved past the txid they were on, so the next pass does not ask that one first again.
+///
+/// **Born at a random txid.** A host that runs one pass per wake-up, in a new process each time,
+/// would otherwise ask the same first batch for good.
+///
+/// **In memory, and one `Inner`'s.** A process restart, a server switch and a rescan each start
+/// over at a fresh random txid: a rotation position is worth nothing on disk, and a new server has
+/// not been asked anything.
+///
+/// No `Debug`, on purpose (§5.4): what it holds is one of the wallet's own txids.
+pub(crate) struct EnhancementCursor {
+    last_asked: std::sync::Mutex<Option<TxId>>,
+}
+
+impl EnhancementCursor {
+    /// A cursor at a random txid, from the operating system's generator.
+    pub(crate) fn new() -> Self {
+        let mut birth = [0u8; 32];
+        rand_core::RngCore::fill_bytes(&mut rand_core::OsRng, &mut birth);
+        Self {
+            last_asked: std::sync::Mutex::new(Some(TxId::from_bytes(birth))),
+        }
+    }
+
+    /// The txid the next batch starts strictly after.
+    pub(crate) fn get(&self) -> Option<TxId> {
+        *self
+            .last_asked
+            .lock()
+            .expect("enhancement cursor mutex poisoned")
+    }
+
+    /// `txid` is about to be asked.
+    pub(crate) fn record(&self, txid: TxId) {
+        *self
+            .last_asked
+            .lock()
+            .expect("enhancement cursor mutex poisoned") = Some(txid);
+    }
+}
+
 /// WHICH question the backend asked about a txid. The two txid-keyed
 /// [`TransactionDataRequest`] variants are DIFFERENT questions with different answers, and
 /// folding them cost the wallet six weeks of mis-rendered sends (INC-009): upstream
@@ -195,58 +270,68 @@ pub(crate) enum RequestKind {
 
 /// Select the requests to answer THIS pass from the wallet's pending data requests, BOUNDED at
 /// `max` DISTINCT txids. Keeps the txid-keyed `Enhancement`/`GetStatus` variants WITH THE KIND
-/// INTACT (in upstream's returned order) and DEFERS the transparent
+/// INTACT and DEFERS the transparent
 /// `TransactionsInvolvingAddress` variant — Recv-2b
 /// `refresh_transparent_utxos` already covers transparent receive, and "satisfying" it without a
 /// real check would mean calling `notify_address_checked`, falsely marking the address clear and
 /// HIDING txs (money-visibility). `max` caps the burst so a freshly-restored wallet's thousands
 /// of historic receives converge over a handful of passes instead of one giant download.
+///
+/// # The order is a ROTATION (ADR-0584)
+///
+/// The eligible requests are ordered by txid and the batch starts strictly after `after`
+/// ([`EnhancementCursor`]), wrapping at the end. The order the backend lists them in is never used:
+/// it carries no `ORDER BY` but comes out the same on every pass, and taking its first `max` let
+/// `max` requests nobody serves hold back every later one for good. Status requests get no place
+/// ahead of enhancements: more than `max` of them would starve every memo the same way.
 pub(crate) fn select_enhancement_targets(
     requests: Vec<TransactionDataRequest>,
     max: usize,
     skip: &UnparseableTxids,
+    after: Option<TxId>,
 ) -> Vec<(TxId, RequestKind)> {
-    let mut selected: Vec<(TxId, RequestKind)> = Vec::new();
+    // Keyed by txid, so it is in txid order and holds each txid once.
+    let mut eligible: BTreeMap<TxId, RequestKind> = BTreeMap::new();
     for request in requests {
-        let (txid, kind) = match request {
-            TransactionDataRequest::Enhancement(t) => (t, RequestKind::Enhancement),
-            TransactionDataRequest::GetStatus(t) => (t, RequestKind::Status),
-            // The transparent variant (and any future non-txid request) is deferred, not failed.
-            _ => continue,
-        };
-        // §9.1 step 7: drop the txids THIS PROCESS has already proved it cannot
-        // parse. Filtered BEFORE the `max` cap on purpose — otherwise a backlog of
-        // unparseable transactions would fill every batch and starve the ones we
-        // CAN still enhance, turning a memo gap into a total enhancement stall.
-        if skip.contains(&txid) {
-            continue;
-        }
-        // Upstream: "A `TransactionDataRequest::Enhancement` request subsumes any previously
-        // existing `TransactionDataRequest::GetStatus` request." So a txid is fetched at most
-        // ONCE per pass and the stronger question wins — whichever order the backend listed
-        // the two rows in, which is why the scan continues past the `max` cap rather than
-        // breaking out of it: a late `Enhancement` must still be able to upgrade a txid
-        // already selected as `Status`.
-        //
-        // NOTE on ORDER, corrected in review: `transaction_data_requests` carries NO
-        // `ORDER BY` and its two arms are combined with `UNION`, so the order is stable-ish but
-        // ARBITRARY — emphatically not oldest-first, as an earlier version of this comment
-        // claimed. Nothing here depends on age; what the order does mean is that a persistently
-        // failing txid in the first `max` can starve the rest across passes, which is the
-        // documented follow-up (a rejection backoff/rotation), not a property to rely on.
-        if let Some(existing) = selected.iter_mut().find(|(t, _)| *t == txid) {
-            if kind == RequestKind::Enhancement {
-                existing.1 = RequestKind::Enhancement;
+        match request {
+            TransactionDataRequest::Enhancement(txid) => {
+                // §9.1 step 7: drop the txids THIS PROCESS has already proved it cannot
+                // parse. Filtered BEFORE the `max` cap on purpose: otherwise a backlog of
+                // unparseable transactions would fill every batch and starve the ones we
+                // CAN still enhance, turning a memo gap into a total enhancement stall. And
+                // filtered BEFORE the merge below, on this arm alone: a `GetStatus` row for
+                // the same txid survives it and is asked as the status question it is.
+                if skip.contains(&txid) {
+                    continue;
+                }
+                // Upstream: "A `TransactionDataRequest::Enhancement` request subsumes any
+                // previously existing `TransactionDataRequest::GetStatus` request." So a txid is
+                // fetched at most ONCE per pass and the stronger question wins, whichever order
+                // the backend listed the two rows in.
+                eligible.insert(txid, RequestKind::Enhancement);
             }
-        } else if selected.len() < max {
-            selected.push((txid, kind));
+            TransactionDataRequest::GetStatus(txid) => {
+                eligible.entry(txid).or_insert(RequestKind::Status);
+            }
+            // The transparent variant (and any future non-txid request) is deferred, not failed.
+            _ => {}
         }
     }
-    selected
+    let mut targets: Vec<(TxId, RequestKind)> = eligible.into_iter().collect();
+    if let Some(last_asked) = after {
+        // The first txid strictly after the cursor leads; the ones up to and including it follow
+        // the last, so the txid asked last is the last to come round again. A cursor past every
+        // txid rotates by the whole length, which is the wrap.
+        let start = targets.partition_point(|(txid, _)| *txid <= last_asked);
+        targets.rotate_left(start);
+    }
+    targets.truncate(max);
+    targets
 }
 
 /// The chain's view of a `GetStatus` txid, derived from a §4.6-VALIDATED reply — or `None` when
-/// the endpoint's height claim cannot be believed and no status may be written this pass.
+/// no status may be written this pass: the endpoint's height claim cannot be believed, or it
+/// answers "not mined" about a transaction past its expiry (below, "The unmined arm").
 ///
 /// `claimed` is [`map_wire_height`] applied to the endpoint's `RawTransaction.height`, so both
 /// wire sentinels (0 = mempool, `u64::MAX` = not on the main chain) have already collapsed to
@@ -254,13 +339,13 @@ pub(crate) fn select_enhancement_targets(
 ///
 /// # Why `Mined` is the dangerous arm and `NotInMainChain` is not
 ///
-/// The two arms of `zcash_client_sqlite-0.21.0`'s `set_transaction_status` are NOT symmetric, and
+/// The two arms of `zcash_client_sqlite-0.23.0`'s `set_transaction_status` are NOT symmetric, and
 /// the asymmetry runs the wrong way: `TxidNotRecognized | NotInMainChain` writes
 /// `confirmed_unmined_at_height` under `WHERE txid = :txid AND mined_height IS NULL`, so it
-/// **cannot overwrite a height the wallet already established**. `Mined(height)` three lines below
+/// **cannot overwrite a height the wallet already established**. `Mined(height)` further down
 /// carries **no such guard** — it overwrites `mined_height` unconditionally, re-joins `blocks`,
 /// ratchets `min_observed_height` and the transparent `exposed_at_height` DOWNWARD via `MIN(…)`,
-/// and then deletes the retrieval-queue row so nothing ever re-asks. `truncate_to_height` un-mines
+/// and leaves the `Status` request dormant while that height stands. `truncate_to_height` un-mines
 /// only `WHERE mined_height > :height`, so a BACKDATED lie survives every reorg. Nothing short of
 /// a full rescan undoes it.
 ///
@@ -323,15 +408,42 @@ pub(crate) fn select_enhancement_targets(
 /// INC-019's symptom on shipped code, from an honest endpoint correcting INC-009's stale
 /// "expired" as much as from a lying one — which of the two the device saw is not
 /// knowable from its log, and the registry row says so.
+///
+/// # The unmined arm: an answer may not end the question (ADR-0584)
+///
+/// "Not mined" cannot un-mine anything, as above, but it can stop the wallet asking. With the
+/// known tip at or past the stored expiry, `zcash_client_sqlite-0.23.0`'s arm for it deletes the
+/// `Status` row for good (`src/wallet.rs:4055-4085`), and that row is the only thing that can
+/// teach the wallet a two-step (TEX) payment's second leg was mined: one such reply, honest or
+/// not, and a delivered leg reads `Stranded` once both legs' expiries are buried, so the user may
+/// pay again. So past the EFFECTIVE expiry the arm writes nothing and the request stands. The
+/// effective expiry is never above the stored one, so for an un-mined row WITH a stored expiry
+/// this covers every tip at which the engine would delete the row. A TEX leg is built by this
+/// wallet and always stores its expiry, so the purpose holds. A stated limit: a row whose stored
+/// expiry is NULL is judged by `min_observed_height` instead (`src/wallet.rs:4072`), so one
+/// unmined write past that bound can still delete its `Status` row.
+///
+/// The tip judged here is read once per batch, and the engine reads its own at the write. Nothing
+/// moves it in between: only the scan phase of the same pass records a tip
+/// (`sync::record_chain_tip`, from `Wallet::sync_once_body` directly and through
+/// `sync::scan_batch`), that phase ends before this one starts in `run_pass`, and the sync
+/// controller's single-writer guard serializes passes. A stated limit: a pass dropped mid-write
+/// leaves its blocking write detached, and it can land after the next pass records a tip.
+///
+/// Nothing reads the height the write would have left for money or for a rendering: the engine
+/// reads `confirmed_unmined_at_height` in the request filter and in that delete alone, and
+/// "expired" renders from the expiry itself.
 pub(crate) fn chain_status(
     claimed: Option<BlockHeight>,
     evidence: &StatusEvidence,
 ) -> Option<CheckedStatus> {
     let Some(h) = claimed else {
-        // Not mined, per the endpoint. Safe to forward unconditionally: upstream's arm for this
-        // status refuses to overwrite an established `mined_height`, so even a lie here cannot
-        // un-mine what the wallet already knows — it can only delay, and the row keeps being
-        // re-queried until the tip passes its expiry.
+        // Not mined, per the endpoint. Upstream's arm for this status refuses to overwrite an
+        // established `mined_height`, so even a lie here cannot un-mine what the wallet already
+        // knows; past the expiry it would delete the question, so there it is not written.
+        if evidence.expiry.is_past(u32::from(evidence.known_tip)) {
+            return None;
+        }
         return Some(CheckedStatus(TransactionStatus::NotInMainChain));
     };
     // THE check. Everything below is defence in depth; this one closes the CRITICAL.
@@ -365,8 +477,10 @@ pub(crate) struct StatusEvidence {
     pub(crate) already_known: Option<BlockHeight>,
     /// The expiry kernel's answer for the transaction ([`crate::expiry::effective_expiry`]), from
     /// the §4.6-validated bytes: its stored ZIP-203 expiry, shortened to the block before the
-    /// activation that ended its branch. [`EffectiveExpiry::Never`] (a stored 0 and no next
-    /// activation) disables this check. The ONLY check here not derived from endpoint data.
+    /// activation that ended its branch. Read by both arms: a claimed height above it is refused,
+    /// and so is "not mined" once `known_tip` is past it. [`EffectiveExpiry::Never`] (a stored 0
+    /// and no next activation) disables both. The ONLY evidence here not derived from endpoint
+    /// data.
     pub(crate) expiry: EffectiveExpiry,
 }
 
@@ -377,17 +491,13 @@ pub(crate) struct StatusEvidence {
 /// fix: the bound was a free function beside a port that took a raw `TransactionStatus`, so any
 /// future call site in this crate could write an unbounded `Mined(h)` and the compiler would say
 /// nothing. The field is private to this module, so it cannot be constructed elsewhere — a caller
-/// that wants to set a status has to go through the checks, or edit this file.
+/// that wants to set a status has to go through the checks, or edit this file. [`chain_status`] is
+/// its one constructor, and it never builds `TxidNotRecognized`: no endpoint answer says that a
+/// transaction does not exist, so nothing in this crate can write it (ADR-0584).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct CheckedStatus(TransactionStatus);
 
 impl CheckedStatus {
-    /// The endpoint has no such transaction. Carries no endpoint-supplied data, so there is
-    /// nothing to bound — and upstream's arm for it cannot overwrite an established height.
-    pub(crate) fn not_recognized() -> Self {
-        Self(TransactionStatus::TxidNotRecognized)
-    }
-
     /// Unwrap for the adapter, which forwards it verbatim to `WalletWrite::set_transaction_status`.
     pub(crate) fn get(self) -> TransactionStatus {
         self.0
@@ -589,14 +699,24 @@ pub(crate) trait EnhancementStore {
 /// Lifted out of `Wallet::enhance_transactions` (GAP-3) so the engine method is a thin adapter
 /// and the policy below is unit-testable against a fake — no gRPC, no device.
 ///
-/// Sequence (the spec order): select the bounded txid-keyed batch ([`select_enhancement_targets`]
-/// — transparent variants deferred, capped at `max`) → for each, fetch LOCK-FREE with per-tx
+/// Sequence (the spec order): select the bounded txid-keyed batch ([`select_enhancement_targets`]:
+/// transparent variants deferred, capped at `max`, rotated from the cursor) → for each, record
+/// it in the [`EnhancementCursor`] and fetch LOCK-FREE with per-tx
 /// fault ISOLATION (a fetch error is counted `rejected` and skipped, never aborting the rest of
-/// the batch, so one poison txid can't starve the pass) → `Ok(None)` ⇒ set `TxidNotRecognized`
-/// (`not_found`) → `Ok(Some)` ⇒ re-parse + verify the txid at the §4.6 boundary
+/// the batch, so one poison txid can't starve the pass) → `Ok(None)` ⇒ counted `not_found`,
+/// nothing written → `Ok(Some)` ⇒ re-parse + verify the txid at the §4.6 boundary
 /// ([`parse_and_validate`] — a wrong/garbled/oversized reply is `rejected`, nothing stored) →
 /// answer THE QUESTION THAT WAS ASKED. A DB-write fault PROPAGATES (the caller swallows + logs
 /// it — best-effort, the chain is the source of truth).
+///
+/// **An absent answer writes nothing (ADR-0584).** For a request of either kind an empty body, a
+/// gRPC status, a transport failure, a timeout and a reply refused at the §4.6 boundary all leave
+/// the store alone and the request pending: no reply a server sends proves the transaction does
+/// not exist, since an outage behind the server reads the same. Recording one as
+/// `TxidNotRecognized` would delete the `Enhancement` request, and the memo with it until the
+/// block is scanned again. There are two writes here and both come after [`parse_and_validate`]:
+/// `store_decrypted` with no height, and `set_status` of a [`chain_status`] answer. The limit,
+/// stated: a request nobody ever serves is asked for the wallet's life, in its turn.
 ///
 /// **Answering the question that was asked (INC-009).** The two txid-keyed request kinds are
 /// answered differently, and the difference is the whole defect this loop was rewritten for:
@@ -633,13 +753,17 @@ pub(crate) async fn run_enhancement_pass<S, C, P>(
     // wallet handle owns it; a new process starts empty, which is exactly when
     // an app update can have changed the answer).
     unparseable: &UnparseableTxids,
+    // ADR-0584: where the rotation stands. The wallet handle owns it too, and one
+    // cursor has to see every pass: a fresh one per pass is no rotation.
+    cursor: &EnhancementCursor,
 ) -> Result<EnhancementOutcome, WalletError>
 where
     S: EnhancementStore + ?Sized,
     C: TransactionFetcher + ?Sized,
     P: Parameters,
 {
-    let targets = select_enhancement_targets(store.pending_requests().await?, max, unparseable);
+    let requests = store.pending_requests().await?;
+    let targets = select_enhancement_targets(requests, max, unparseable, cursor.get());
     let mut outcome = EnhancementOutcome {
         requested: targets.len(),
         ..Default::default()
@@ -677,8 +801,13 @@ where
         // the silent gap between ticks is ≤ one fetch — a long but progressing drain re-arms it
         // every tx instead of going dark for the whole pass and tripping a false `Stalled`.
         tick();
+        // The rotation moves past this txid BEFORE its fetch is awaited (ADR-0584): this future
+        // can be dropped while the fetch hangs, and a store fault below ends the pass, and
+        // neither may leave the next pass asking this txid first again.
+        cursor.record(txid);
         // Lock-free network fetch. A per-tx fault is ISOLATED: counted `rejected` + skipped,
-        // never propagated, so one poison txid cannot block the rest of this pass's batch.
+        // never propagated, so one poison txid cannot block the rest of this pass's batch. A
+        // gRPC status is such a fault whatever its number, NotFound included.
         let fetched = match client.fetch_transaction(txid).await {
             Ok(f) => f,
             Err(_e) => {
@@ -687,12 +816,9 @@ where
             }
         };
         match fetched {
-            None => {
-                store
-                    .set_status(txid, CheckedStatus::not_recognized())
-                    .await?;
-                outcome.not_found += 1;
-            }
+            // An empty body, for either kind: counted, and nothing else. It is not evidence that
+            // the transaction does not exist, so the request stays pending (ADR-0584).
+            None => outcome.not_found += 1,
             Some(ft) => {
                 let claimed = map_wire_height(ft.height);
                 let parse_height = claimed.unwrap_or(fallback);
@@ -701,8 +827,13 @@ where
                     outcome.rejected += 1;
                     // ...but distinguish the ONE rejection cause that is about
                     // us rather than the reply. Never logs the txid (§5.4); the
-                    // branch id is a public protocol constant.
-                    if let Some(branch) = unknown_branch_evidence(&ft.data) {
+                    // branch id is a public protocol constant. For an `Enhancement`
+                    // only (ADR-0584): a `GetStatus` row exists only for a transaction
+                    // this build already built or parsed, so there such a header is a
+                    // refused reply like any other, and it may hide nothing.
+                    if kind == RequestKind::Enhancement
+                        && let Some(branch) = unknown_branch_evidence(&ft.data)
+                    {
                         outcome.unknown_branch += 1;
                         // Stop re-fetching THIS txid for the rest of the
                         // process: we have proved we cannot read it, and the
@@ -768,11 +899,16 @@ where
                             outcome.rejected += 1;
                             // §5.4: no txid, no heights, no user data — a refusal says only that
                             // one happened. The counter is the signal; the causes are in code.
-                            tracing::warn!(
-                                target: "wallet.enhance",
-                                "an endpoint's mined-height claim contradicts what this wallet \
-                                 already knows — status refused, the request stands and retries"
-                            );
+                            // A refused HEIGHT only: an unmined answer past the expiry
+                            // contradicts nothing and can repeat every pass, so it is counted
+                            // without a line (ADR-0584).
+                            if claimed.is_some() {
+                                tracing::warn!(
+                                    target: "wallet.enhance",
+                                    "an endpoint's mined-height claim contradicts what this wallet \
+                                     already knows — status refused, the request stands and retries"
+                                );
+                            }
                             continue;
                         };
                         store.set_status(txid, status).await?;
@@ -888,7 +1024,7 @@ mod tests {
         use zcash_transparent::address::TransparentAddress;
         let t = |b: u8| TxId::from_bytes([b; 32]);
         // A transparent request is interleaved — it must be DEFERRED (dropped from the batch),
-        // while the txid-keyed Enhancement/GetStatus are kept IN ORDER (oldest-first).
+        // while the txid-keyed Enhancement/GetStatus are kept, in TXID order.
         let transparent = TransactionDataRequest::transactions_involving_address(
             TransparentAddress::PublicKeyHash([0u8; 20]),
             BlockHeight::from_u32(1),
@@ -898,19 +1034,19 @@ mod tests {
             OutputStatusFilter::Unspent,
         );
         let reqs = vec![
-            TransactionDataRequest::Enhancement(t(1)),
+            TransactionDataRequest::Enhancement(t(3)),
             transparent,
             TransactionDataRequest::GetStatus(t(2)),
-            TransactionDataRequest::Enhancement(t(3)),
+            TransactionDataRequest::Enhancement(t(1)),
         ];
         assert_eq!(
-            select_enhancement_targets(reqs, 10, &UnparseableTxids::default()),
+            select_enhancement_targets(reqs, 10, &UnparseableTxids::default(), None),
             vec![
                 (t(1), RequestKind::Enhancement),
                 (t(2), RequestKind::Status),
                 (t(3), RequestKind::Enhancement),
             ],
-            "txid-keyed kept in order AND WITH THE KIND INTACT (INC-009: folding GetStatus \
+            "txid-keyed kept in txid order AND WITH THE KIND INTACT (INC-009: folding GetStatus \
              into Enhancement is what left mined sends rendering as expired); the transparent \
              variant is deferred, not failed",
         );
@@ -935,15 +1071,15 @@ mod tests {
             ),
         ] {
             assert_eq!(
-                select_enhancement_targets(reqs, 10, &UnparseableTxids::default()),
+                select_enhancement_targets(reqs, 10, &UnparseableTxids::default(), None),
                 vec![(t(9), RequestKind::Enhancement)],
                 "{label}: one fetch for the txid, and Enhancement subsumes GetStatus",
             );
         }
 
-        // The subsumption must survive the per-pass cap: a txid already selected as `Status`
-        // is upgraded by a LATER `Enhancement` even though the batch is full, because the scan
-        // does not stop at `max` — only the pushing does.
+        // The subsumption must survive the per-pass cap: a `Status` is upgraded by a LATER
+        // `Enhancement` for the same txid however full the batch is, because the cap is taken
+        // after every request has been read.
         assert_eq!(
             select_enhancement_targets(
                 vec![
@@ -953,6 +1089,7 @@ mod tests {
                 ],
                 2,
                 &UnparseableTxids::default(),
+                None,
             ),
             vec![
                 (t(1), RequestKind::Enhancement),
@@ -969,7 +1106,8 @@ mod tests {
             select_enhancement_targets(
                 many,
                 MAX_ENHANCEMENTS_PER_PASS,
-                &UnparseableTxids::default()
+                &UnparseableTxids::default(),
+                None,
             )
             .len(),
             MAX_ENHANCEMENTS_PER_PASS,
@@ -1333,9 +1471,17 @@ mod tests {
             },
         )]);
         let unparseable = UnparseableTxids::default();
-        let out = run_enhancement_pass(&store, &mut fetcher, &params, 50, &|| {}, &unparseable)
-            .await
-            .expect("pass");
+        let out = run_enhancement_pass(
+            &store,
+            &mut fetcher,
+            &params,
+            50,
+            &|| {},
+            &unparseable,
+            &EnhancementCursor::new(),
+        )
+        .await
+        .expect("pass");
         assert_eq!(out.enhanced, 1, "the NU7 transaction is enhanced");
         assert_eq!(out.rejected, 0, "and not rejected");
         assert_eq!(
@@ -1356,31 +1502,88 @@ mod tests {
     // no `WalletDb`, no device. That is the correct boundary: the loop is OUR code (selection,
     // per-tx fault isolation, the not-found / reject tallies, and the `mined_height = None`
     // decision); the audited `decrypt_and_store_transaction`'s own height resolution is upstream's
-    // contract, tested there. The not-found path's effect on the REAL `v_transactions` view is
-    // separately proven by `history::real_view::a_not_found_reply_never_unscans_a_received_note`.
+    // contract, tested there. What the engine would do with a `TxidNotRecognized` write on the REAL
+    // `v_transactions` view, a write nothing here makes any more (ADR-0584), stays pinned by
+    // `history::real_view::a_not_found_reply_never_unscans_a_received_note`.
+
+    /// gRPC `NotFound`: what every server measured for the absent-answer contract sends for a
+    /// txid it does not know (`docs/plan/wl1-absent-answers.md` (a)).
+    const GRPC_NOT_FOUND: i32 = 5;
 
     /// A canned reply for one txid. `Tx` carries consensus bytes (whose txid may or may not match
     /// the request — the §4.6 boundary decides) + the endpoint's mined-height CLAIM.
     #[derive(Clone)]
     enum Reply {
-        Tx { data: Vec<u8>, height: u64 },
+        Tx {
+            data: Vec<u8>,
+            height: u64,
+        },
+        /// The seam's `Ok(None)`: an EMPTY BODY. gRPC `NotFound` is a status, and it is
+        /// [`Reply::Error`] (or `Status(GRPC_NOT_FOUND)`).
         NotFound,
+        /// A reachable endpoint that answers with a non-OK status, as measured: `NotFound`.
         Error,
+        /// A non-OK gRPC status carrying this code.
+        Status(i32),
+        /// The link failed (a dial, TLS or mid-call transport failure).
+        Transport,
+        /// The unary call timed out.
+        Timeout,
+        /// The call never answers: it wakes [`ScriptedFetcher::hanging`], then pends for good.
+        Hang,
     }
 
-    /// A `TransactionFetcher` with per-txid scripted replies — an unscripted txid defaults to
-    /// `NotFound`. Records every call (in order) so per-tx isolation is observable.
+    /// A `TransactionFetcher` with per-txid scripted replies: an unscripted txid gets
+    /// `unscripted`, `NotFound` unless a test says otherwise. Records every call (in order) so
+    /// per-tx isolation is observable.
     struct ScriptedFetcher {
         replies: Vec<(TxId, Reply)>,
+        /// Replies for successive calls about ONE txid, taken from the front; a txid whose script
+        /// is spent falls back to `replies`, then to `unscripted`.
+        scripts: Vec<(TxId, std::collections::VecDeque<Reply>)>,
+        unscripted: Reply,
         calls: Vec<TxId>,
+        /// Woken when a [`Reply::Hang`] call starts to pend, so a test can drop the pass at
+        /// exactly that point without a clock.
+        hanging: std::sync::Arc<tokio::sync::Notify>,
     }
 
     impl ScriptedFetcher {
         fn new(replies: Vec<(TxId, Reply)>) -> Self {
             Self {
                 replies,
+                scripts: Vec::new(),
+                unscripted: Reply::NotFound,
                 calls: Vec::new(),
+                hanging: std::sync::Arc::new(tokio::sync::Notify::new()),
             }
+        }
+
+        /// Answer the successive calls about `txid` with `replies`, one each.
+        fn scripting(mut self, txid: TxId, replies: Vec<Reply>) -> Self {
+            self.scripts.push((txid, replies.into()));
+            self
+        }
+
+        /// What every txid with no script of its own is answered.
+        fn answering_the_rest(mut self, reply: Reply) -> Self {
+            self.unscripted = reply;
+            self
+        }
+
+        fn next_reply(&mut self, txid: TxId) -> Reply {
+            let scripted = self
+                .scripts
+                .iter_mut()
+                .find(|(t, _)| *t == txid)
+                .and_then(|(_, script)| script.pop_front());
+            if let Some(reply) = scripted {
+                return reply;
+            }
+            self.replies
+                .iter()
+                .find(|(t, _)| *t == txid)
+                .map_or_else(|| self.unscripted.clone(), |(_, r)| r.clone())
         }
     }
 
@@ -1390,20 +1593,28 @@ mod tests {
             &mut self,
             txid: TxId,
         ) -> Result<Option<FetchedTransaction>, GrpcError> {
+            use crate::state::StallReason;
             self.calls.push(txid);
-            let reply = self
-                .replies
-                .iter()
-                .find(|(t, _)| *t == txid)
-                .map(|(_, r)| r.clone())
-                .unwrap_or(Reply::NotFound);
-            match reply {
+            match self.next_reply(txid) {
                 Reply::Tx { data, height } => Ok(Some(FetchedTransaction { data, height })),
                 Reply::NotFound => Ok(None),
-                // A reachable-but-faulting endpoint (non-OK status) — the per-tx isolation case.
-                // 14 = gRPC UNAVAILABLE; any non-OK code drives the same `Err` arm (the loop is
-                // error-variant-agnostic), so the specific value is illustrative only.
-                Reply::Error => Err(GrpcError::Status { code: 14 }),
+                // A reachable-but-faulting endpoint (non-OK status): the per-tx isolation case,
+                // at the code the servers were measured to send. Any non-OK code drives the same
+                // `Err` arm: nothing keys on the number (`net::grpc`).
+                Reply::Error => Err(GrpcError::Status {
+                    code: GRPC_NOT_FOUND,
+                }),
+                Reply::Status(code) => Err(GrpcError::Status { code }),
+                Reply::Transport => Err(GrpcError::Transport {
+                    stall: StallReason::EndpointUnreachable,
+                }),
+                Reply::Timeout => Err(GrpcError::Timeout {
+                    stall: StallReason::EndpointUnreachable,
+                }),
+                Reply::Hang => {
+                    self.hanging.notify_one();
+                    std::future::pending().await
+                }
             }
         }
     }
@@ -1413,15 +1624,26 @@ mod tests {
     /// exact `TransactionStatus` it derived) without any real DB. `std::sync::Mutex` for interior
     /// mutability behind the `&self` methods; no guard is held across an `.await` (the methods
     /// are synchronous), so the futures are `Send`.
+    ///
+    /// Its queue is the engine's in the one way a row over several passes needs: reading it
+    /// takes nothing out, and only an ANSWER does (`set_transaction_status` in
+    /// `zcash_client_sqlite-0.23.0`, `store_decrypted_tx` in `zcash_client_backend-0.25.0`).
+    /// A decrypted transaction answers its `Enhancement`. `Mined` answers both kinds (the engine
+    /// keeps the `Status` row, dormant). Either unmined status deletes the `Enhancement` row for
+    /// good: that is the loss the absent-answer contract ends, and this double loses the row
+    /// too, so a pass that writes one cannot look harmless here.
     struct RecordingStore {
         backlog: std::sync::Mutex<Vec<TransactionDataRequest>>,
-        tip: Option<BlockHeight>,
+        tip: std::sync::Mutex<Option<BlockHeight>>,
         tip_reads: std::sync::Mutex<usize>,
         statuses: std::sync::Mutex<Vec<(TxId, TransactionStatus)>>,
         stored: std::sync::Mutex<Vec<(TxId, Option<BlockHeight>)>>,
         /// If set to N, the Nth `store_decrypted` call (1-based) returns `Err(StoreCorrupt)`
         /// WITHOUT recording — simulates a DB-write fault to test the loop's `?`-propagation.
         fail_store_on_call: Option<usize>,
+        /// Every write about this txid, of either kind, faults with `StoreCorrupt` and records
+        /// nothing, on every call: the row a corrupt page belongs to.
+        faulting: Option<TxId>,
         /// Heights the wallet ALREADY holds, by txid — the evidence `chain_status` weighs against
         /// an endpoint's claim. Empty by default (the "we know nothing" case); a test that models
         /// an already-scanned transaction seeds it via `knowing_height`.
@@ -1449,14 +1671,47 @@ mod tests {
         fn with_requests(requests: Vec<TransactionDataRequest>, tip: Option<BlockHeight>) -> Self {
             Self {
                 backlog: std::sync::Mutex::new(requests),
-                tip,
+                tip: std::sync::Mutex::new(tip),
                 tip_reads: std::sync::Mutex::new(0),
                 statuses: std::sync::Mutex::new(Vec::new()),
                 stored: std::sync::Mutex::new(Vec::new()),
                 fail_store_on_call: None,
+                faulting: None,
                 known_heights: std::sync::Mutex::new(Vec::new()),
                 birthday: Some(BlockHeight::from_u32(1)),
             }
+        }
+
+        /// Make every write about `txid` fault.
+        fn faulting_on(mut self, txid: TxId) -> Self {
+            self.faulting = Some(txid);
+            self
+        }
+
+        /// Move the known chain tip between two passes.
+        fn set_tip(&self, tip: BlockHeight) {
+            *self.tip.lock().expect("tip mutex") = Some(tip);
+        }
+
+        /// Raise one more request between two passes.
+        fn add_request(&self, request: TransactionDataRequest) {
+            self.backlog.lock().expect("backlog mutex").push(request);
+        }
+
+        /// Whether `request` still waits for an answer.
+        fn still_pending(&self, request: &TransactionDataRequest) -> bool {
+            self.backlog
+                .lock()
+                .expect("backlog mutex")
+                .contains(request)
+        }
+
+        /// Take `answered` out of the queue, as the engine does when a write answers it.
+        fn answer(&self, answered: &[TransactionDataRequest]) {
+            self.backlog
+                .lock()
+                .expect("backlog mutex")
+                .retain(|r| !answered.contains(r));
         }
 
         /// Make the `n`-th (1-based) `store_decrypted` call fault, like a corrupt DB write.
@@ -1486,21 +1741,31 @@ mod tests {
     #[async_trait]
     impl EnhancementStore for RecordingStore {
         async fn pending_requests(&self) -> Result<Vec<TransactionDataRequest>, WalletError> {
-            Ok(std::mem::take(
-                &mut *self.backlog.lock().expect("backlog mutex"),
-            ))
+            Ok(self.backlog.lock().expect("backlog mutex").clone())
         }
         async fn chain_tip(&self) -> Result<Option<BlockHeight>, WalletError> {
             *self.tip_reads.lock().expect("tip_reads mutex") += 1;
-            Ok(self.tip)
+            Ok(*self.tip.lock().expect("tip mutex"))
         }
         async fn set_status(&self, txid: TxId, status: CheckedStatus) -> Result<(), WalletError> {
+            if self.faulting == Some(txid) {
+                return Err(WalletError::StoreCorrupt);
+            }
             // Recorded UNWRAPPED so assertions read as the exact upstream status that would
             // reach the db — the newtype constrains the CALLER, not what a test can inspect.
             self.statuses
                 .lock()
                 .expect("statuses mutex")
                 .push((txid, status.get()));
+            match status.get() {
+                TransactionStatus::Mined(_) => self.answer(&[
+                    TransactionDataRequest::Enhancement(txid),
+                    TransactionDataRequest::GetStatus(txid),
+                ]),
+                TransactionStatus::TxidNotRecognized | TransactionStatus::NotInMainChain => {
+                    self.answer(&[TransactionDataRequest::Enhancement(txid)]);
+                }
+            }
             Ok(())
         }
         async fn mined_height_of(&self, txid: TxId) -> Result<Option<BlockHeight>, WalletError> {
@@ -1520,6 +1785,9 @@ mod tests {
             tx: Transaction,
             mined_height: Option<BlockHeight>,
         ) -> Result<(), WalletError> {
+            if self.faulting == Some(tx.txid()) {
+                return Err(WalletError::StoreCorrupt);
+            }
             let mut stored = self.stored.lock().expect("stored mutex");
             // The loop aborts on the first store fault, so no prior store was skipped ⇒ the
             // current call number is `stored.len() + 1`. Fault here BEFORE recording (a real
@@ -1528,6 +1796,7 @@ mod tests {
                 return Err(WalletError::StoreCorrupt);
             }
             stored.push((tx.txid(), mined_height));
+            self.answer(&[TransactionDataRequest::Enhancement(tx.txid())]);
             Ok(())
         }
     }
@@ -1606,10 +1875,17 @@ mod tests {
         // Pass 1: fetched, rejected, and RECOGNISED as a staleness case.
         let store = RecordingStore::with_backlog(&[stale], Some(BlockHeight::from_u32(3_473_803)));
         let mut fetcher = reply();
-        let out =
-            run_enhancement_pass(&store, &mut fetcher, &MainNetwork, 50, &|| {}, &unparseable)
-                .await
-                .expect("pass 1");
+        let out = run_enhancement_pass(
+            &store,
+            &mut fetcher,
+            &MainNetwork,
+            50,
+            &|| {},
+            &unparseable,
+            &EnhancementCursor::new(),
+        )
+        .await
+        .expect("pass 1");
         assert_eq!(out.rejected, 1, "it cannot be parsed");
         assert_eq!(out.unknown_branch, 1, "and we know WHY it cannot");
         assert_eq!(fetcher.calls.len(), 1, "pass 1 fetches it");
@@ -1630,6 +1906,7 @@ mod tests {
             50,
             &|| {},
             &unparseable,
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass 2");
@@ -1650,6 +1927,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass 3");
@@ -1700,6 +1978,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -1779,6 +2058,7 @@ mod tests {
                 *ticks.lock().expect("ticks") += 1;
             },
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -1791,23 +2071,30 @@ mod tests {
              drain re-arms the watchdog every tx instead of going silent",
         );
         assert_eq!(out.enhanced, 1, "only the matching reply decrypts + stores");
-        assert_eq!(out.not_found, 1, "the empty reply ⇒ TxidNotRecognized");
+        assert_eq!(out.not_found, 1, "the empty body is tallied as not found");
         assert_eq!(
             out.rejected, 3,
             "fetch error + garbage + txid-mismatch all rejected, none stored",
         );
 
-        // Per-tx ISOLATION: every txid was attempted, IN ORDER, despite the mid-batch faults.
+        // Per-tx ISOLATION: every txid was attempted once, in ascending TXID order from the point
+        // the pass started at, wrapping (C4), despite the mid-batch faults.
+        let mut by_txid = backlog.to_vec();
+        by_txid.sort();
+        let start = by_txid
+            .iter()
+            .position(|t| Some(t) == fetcher.calls.first())
+            .expect("the first txid asked is one of the backlog's");
+        by_txid.rotate_left(start);
         assert_eq!(
-            fetcher.calls,
-            backlog.to_vec(),
-            "all 5 attempted in order; no early abort"
+            fetcher.calls, by_txid,
+            "all 5 attempted in txid order; no early abort"
         );
-        // The not-found request was cleared; only the good tx was stored.
+        // C1: an absent answer writes nothing, whatever its shape. Only the good tx was stored.
         assert_eq!(
             *store.statuses.lock().expect("statuses"),
-            vec![(notfound, TransactionStatus::TxidNotRecognized)],
-            "only the empty reply produced a status write, and it is the not-recognized one",
+            Vec::<(TxId, TransactionStatus)>::new(),
+            "no reply of this batch is evidence of a status: none of them may write one",
         );
         let stored = store.stored.lock().expect("stored");
         assert_eq!(stored.len(), 1);
@@ -1837,6 +2124,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -1866,6 +2154,7 @@ mod tests {
                 *ticks.lock().expect("ticks") += 1;
             },
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -1907,6 +2196,7 @@ mod tests {
                 *ticks.lock().expect("ticks") += 1;
             },
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -1960,6 +2250,7 @@ mod tests {
                 *ticks.lock().expect("ticks") += 1;
             },
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect_err("a store-write fault propagates");
@@ -2015,6 +2306,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -2073,6 +2365,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -2144,6 +2437,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -2176,6 +2470,7 @@ mod tests {
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         )
         .await
         .expect("pass");
@@ -2225,6 +2520,7 @@ mod tests {
                     50,
                     &|| {},
                     &UnparseableTxids::default(),
+                    &EnhancementCursor::new(),
                 )
                 .await
                 .expect("pass");
@@ -2292,6 +2588,7 @@ mod tests {
                 50,
                 &|| {},
                 &UnparseableTxids::default(),
+                &EnhancementCursor::new(),
             )
             .await
             .expect("pass");
@@ -2372,6 +2669,7 @@ mod tests {
                     50,
                     &|| {},
                     &UnparseableTxids::default(),
+                    &EnhancementCursor::new(),
                 )
                 .await
                 .expect("pass");
@@ -2410,11 +2708,13 @@ mod tests {
 
     /// The mempool / not-on-main-chain sentinels are a STATUS too, not silence.
     ///
-    /// A wallet's own broadcast send sits in the mempool until it is mined, and the status
-    /// request is regenerated each pass until the tip passes its expiry height. Answering
-    /// `NotInMainChain` is what lets upstream record `confirmed_unmined_at_height` and
-    /// eventually render the send as expired — HONESTLY, rather than by the request simply
-    /// never being answered.
+    /// Before the transaction's expiry only. There the engine records the height it was seen
+    /// unmined at (`confirmed_unmined_at_height`, which its own request filter and queue delete
+    /// read and nothing else does) and keeps the `Status` row, so the question is asked again.
+    /// Past the expiry the same answer would delete that row for good, so it is refused
+    /// (`chain_status`, "The unmined arm"; ADR-0584). Whether the send renders as expired comes
+    /// from the expiry itself, never from this answer. The tip below is under the fixture's expiry:
+    /// a `Nu6_3` transaction with no stored expiry, so the block before the NU7 activation.
     #[tokio::test]
     async fn a_mempool_reply_to_a_status_request_is_answered_not_in_main_chain() {
         for (label, wire) in [("mempool", 0u64), ("not on the main chain", u64::MAX)] {
@@ -2422,6 +2722,11 @@ mod tests {
             let store = RecordingStore::with_requests(
                 vec![TransactionDataRequest::GetStatus(txid)],
                 Some(BlockHeight::from_u32(3_473_803)),
+            );
+            assert!(
+                !crate::expiry::effective_expiry(&MainNetwork, &bytes, 0).is_past(3_473_803),
+                "{label}: the premise (C3): the tip is below the transaction's effective expiry. \
+                 From the expiry on, the same answer is refused"
             );
             let mut fetcher = ScriptedFetcher::new(vec![(
                 txid,
@@ -2438,6 +2743,7 @@ mod tests {
                 50,
                 &|| {},
                 &UnparseableTxids::default(),
+                &EnhancementCursor::new(),
             )
             .await
             .expect("pass");
@@ -2454,4 +2760,9 @@ mod tests {
             );
         }
     }
+
+    // The absent-answer contract's rows over these doubles and over a real engine database
+    // (`docs/plan/wl1-absent-answers.md` (d)), in a file of their own.
+    #[cfg(test)]
+    mod absent_answers;
 }

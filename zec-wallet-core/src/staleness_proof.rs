@@ -321,6 +321,8 @@ async fn capture_the_mainnet_v6_transaction() {
             Err(_) => continue,
         };
         let txid = TxId::from_bytes(raw);
+        // A txid the server does not hold is a gRPC status, so it panics in the
+        // `expect`; the `else` is an EMPTY body, which no server measured sends.
         let Some(fetched) = client.get_transaction(txid).await.expect("get_transaction") else {
             continue;
         };

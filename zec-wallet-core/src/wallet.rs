@@ -161,7 +161,9 @@ impl core::fmt::Debug for SwitchRefused {
 /// attached), and the per-wallet transport and enhancement latches. NOT
 /// carried, on purpose: the `SyncController` (the rewinding streak is a
 /// judgement about ONE server), `hash_convention_reversed` (the latch clear
-/// §4s consequence 3 asks for), `root_ingest` (S15-F1: a switch inherits no
+/// §4s consequence 3 asks for), `enhancement_cursor` (ADR-0584: the rotation
+/// starts over at a fresh random txid, since the new server has not been asked
+/// anything), `root_ingest` (S15-F1: a switch inherits no
 /// verified subtree roots — the new server's first pass is full), the swap service (re-initialised — the rescan
 /// precedent; the host re-enables it on the session swap).
 /// [`Carried::fresh`] is what every other constructor gets — a RESCAN
@@ -540,8 +542,17 @@ pub(crate) struct Inner {
     /// build fetches them once per launch instead of once per sync pass, on a
     /// link that may be metered or Tor. Deliberately NOT durable: the condition
     /// belongs to the binary, so the set should expire exactly when the binary
-    /// can change, which is the next launch.
+    /// can change, which is the next launch. For `Enhancement` requests only: it
+    /// hides no status request (ADR-0584).
     unparseable_txids: crate::enhance::UnparseableTxids,
+    /// ADR-0584: where the enhancement passes are in their rotation, the last txid
+    /// asked ([`crate::enhance::EnhancementCursor`]). Every pass over this handle reads
+    /// and moves this ONE cursor. NOT carried (`Carried`): open, a server switch and a
+    /// rescan each build a new `Inner`, so each starts over at a fresh random txid, and a
+    /// same-server choice keeps this one. In memory only. A LEAF mutex, taken and dropped
+    /// inside its own two methods: never held across an `.await`, never with `db` or
+    /// `aux_db`.
+    enhancement_cursor: crate::enhance::EnhancementCursor,
     /// The §5.3 broadcast-timing jitter policy (decorrelates the send action from the
     /// endpoint-observable broadcast). Retained from `WalletConfig` (the "retained by the
     /// send path then" note, now consumed at inc-2d-3-a). Immutable after open; the send
@@ -637,8 +648,9 @@ pub(crate) struct Inner {
 /// the single load site so no caller can skip it (FR-23-a vs FR-23-b, spec §1.9.1).
 #[derive(Clone, Copy, Debug)]
 enum SignGuard {
-    /// FR-23-a sign-at-execute: the caller JUST enqueued this exact id inside the same call, so
-    /// there is nothing to pin against — and the row is a deposit by construction.
+    /// FR-23-a sign-at-execute: the caller JUST enqueued this exact id inside the same call, so it
+    /// is read by id alone, and the row is a deposit by construction. The read is still only a
+    /// snapshot: the aux lock is free until the claim, so the claim re-reads it (WL-4).
     #[cfg_attr(not(feature = "swap"), allow(dead_code))]
     Deposit,
     /// FR-23-b parked authorization: the id came from a `list_parked_sends` row the USER acted on,
@@ -3377,8 +3389,9 @@ impl Wallet {
     /// The sign reuses the SAME durable core the drain uses ([`send::prepare_queued`] → the §6.3
     /// double-send guard: `mark_submitting` claims BEFORE create, `mark_sent_multi` records BEFORE
     /// broadcast); only the SIGN's TIMING moves from a later drain to execute. Concurrency-safe
-    /// against a racing background drain: `mark_submitting` is an atomic conditional claim, so at
-    /// most one driver ever signs a given intent (the loser gets `Prepared::Retry`). A non-`Broadcast`
+    /// against a racing background drain: the claim is taken under the aux lock right after
+    /// `prepare_queued`'s first statement (WL-4's `still_queued`), so at most one driver ever signs
+    /// a given intent (the loser's row is no longer `Queued`: `Prepared::RowGone`). A non-`Broadcast`
     /// outcome leaves the intent DURABLE (`Queued` — no note spent) or terminal (`DepositExpired` —
     /// deleted); a `Broadcast` outcome leaves a durable `Sent` tx that the detached kick sends now
     /// and the drain's `ReBroadcast` arm re-sends as needed (a host-custody re-sign, if ever
@@ -3635,10 +3648,10 @@ impl Wallet {
     ///    authorization of a parked row, which additionally PINS `(id, created_at)` and refuses
     ///    deposit rows.
     ///
-    /// The `guard` is applied at the ONE load site, so no caller can skip it and no
-    /// load→check→sign TOCTOU window exists (the row that is checked is the row whose fields
-    /// drive the sign; the `mark_submitting` claim inside `prepare_queued` remains the atomic
-    /// authority on who actually signs it).
+    /// The `guard` is applied at the ONE load site, so no caller can skip it, and the row it
+    /// returned is re-read under the claim's lock (`prepare_queued`'s first statement, WL-4): the
+    /// row whose fields drive the sign is the row that is claimed. The `mark_submitting` claim
+    /// remains the atomic authority on who actually signs it.
     async fn try_sign_queued_intent(
         &self,
         id: QueuedSendId,
@@ -3687,7 +3700,6 @@ impl Wallet {
             .and_then(|pr| crate::payment_uri::to_transaction_request(&pr))
             .map_err(|_| WalletError::StoreCorrupt)?;
         let deposit_deadline = intent.deposit_deadline;
-        let repropose_attempts = intent.repropose_attempts;
         // FR-17: the row's spend binding (copied from the issued quote at enqueue),
         // presented on the sign pull so a bound host can verify it is signing THE
         // deposit it authorized — not a racing drain row.
@@ -3728,24 +3740,12 @@ impl Wallet {
                 let account_id =
                     account::primary_account_id(&db_guard.db)?.ok_or(WalletError::ProposeFailed)?;
                 let mut aux_guard = inner.aux_db.lock().expect("aux db mutex poisoned");
-                // FR-23-b RE-CHECK UNDER THE CLAIM'S OWN LOCK (crypto audit H1). The guard
-                // above ran on a snapshot whose aux lock was RELEASED, and the window between it
-                // and here spans the host's credential prompt — human latency. `mark_submitting`
-                // (inside `prepare_queued`) pins only `id + state`, so a delete + rowid-reusing
-                // re-enqueue in that window would let THIS call sign the snapshot's request under
-                // a DIFFERENT row's id: money moves on a cancelled payment and the new row is
-                // stamped `Sent` without ever going out. Re-running the SAME guarded query while
-                // holding `aux_db` — which `prepare_queued` keeps held through its claim — makes
-                // the guard atomic with the claim. Cheap (one indexed read), and a miss is the
-                // same idempotent `NotFound` the first read produces.
-                if let SignGuard::Parked { created_at } = guard
-                    && crate::intent_store::load_parked(&aux_guard, id, created_at)?.is_none()
-                {
-                    // `None` ⇒ the guarded row vanished under us ⇒ the honest `NotFound`
-                    // ("that payment isn't waiting anymore"), NEVER `StillQueued` — the row is
-                    // gone, so "saved and unchanged" would be a false money statement.
-                    return Ok(None);
-                }
+                // THE ROW IS RE-READ UNDER THE CLAIM'S OWN LOCK (crypto audit H1, WL-4), by
+                // `prepare_queued`'s first statement and for BOTH guards: the read above ran on
+                // a lock that was RELEASED, and the window since spans the host's credential
+                // prompt (human latency). A delete + rowid-reusing re-enqueue in it would sign
+                // this read's request under a DIFFERENT row's id: money moves on a cancelled
+                // payment and the new row is stamped `Sent` without ever going out.
                 send::prepare_queued(
                     &mut db_guard.db,
                     &network.consensus(),
@@ -3755,18 +3755,12 @@ impl Wallet {
                     usk,
                     prover,
                     prover,
-                    id,
-                    deposit_deadline,
-                    repropose_attempts,
+                    &intent,
                     now_unix,
                     permit,
                 )
-                .map(Some)
             })
             .await?
-        };
-        let Some(outcome) = outcome else {
-            return Ok(SignQueuedOutcome::NotFound);
         };
         // The BROADCAST stays OFF this future — FR-23-a moves ONLY the seed-needing SIGN to
         // execute. On `Prepared::Broadcast` the deposit is now a durable `Sent` tx (txid
@@ -3795,9 +3789,14 @@ impl Wallet {
             // rather than feed a dead quote (§4.4). Distinct from `StillQueued` because the
             // row is gone; a parked surface must not offer to authorize it again.
             send::Prepared::DepositExpired => SignQueuedOutcome::Expired,
+            // WL-4: the row this call read is gone or is another send's now: "that payment isn't
+            // waiting anymore", NEVER `StillQueued`: "saved and unchanged" would be a false
+            // money statement. (A racing drain that claimed this row reads the same.)
+            send::Prepared::RowGone => SignQueuedOutcome::NotFound,
             // Money-safe NON-events, every one of them leaving the row durably `Queued` with
-            // nothing signed, nothing reserved, nothing on-chain: `Retry` (a racing drain won
-            // the atomic `mark_submitting` claim, or the crash-recovery read says wait),
+            // nothing signed, nothing reserved, nothing on-chain: `Retry` (not synced far
+            // enough, a create fault that spent nothing, or the crash-recovery read says wait;
+            // a racing drain reads as `RowGone` above since WL-4),
             // `Stale`/`Ceiling` (insufficient funds / gap-limit at this moment),
             // `CappedParked` (the TEX attempt budget is spent — `retry_parked_send` re-arms it),
             // `Unsupported` (a shape this build will not drive). The caller phrases them as
@@ -4475,9 +4474,7 @@ impl Wallet {
                     }
                 };
                 let inner = Arc::clone(&self.inner);
-                let id = intent.id;
                 let deposit_deadline = intent.deposit_deadline;
-                let repropose_attempts = intent.repropose_attempts;
                 // FR-17: THIS row's binding rides the pull — a host re-stage recorded
                 // for row X can never be consumed signing row Y in the same drain pass
                 // (the multi-row drain race the binding exists to kill). Legacy
@@ -4515,9 +4512,9 @@ impl Wallet {
                         usk,
                         prover,
                         prover,
-                        id,
-                        deposit_deadline,
-                        repropose_attempts,
+                        // WL-4: the row as THIS pass listed it. The rows ahead of it were proved
+                        // since, with the aux lock free between them.
+                        &intent,
                         now_unix,
                         permit,
                     )
@@ -4532,7 +4529,9 @@ impl Wallet {
                         outbound.push(OutboundGroup::starting(raws, deposit_deadline))
                     }
                     Ok(send::Prepared::Stale) => summary.stale += 1,
-                    Ok(send::Prepared::Retry) => summary.retried += 1,
+                    // `RowGone` (WL-4) with it: the row was cancelled or replaced since the pass
+                    // listed it, and the next pass lists whatever holds the id now as itself.
+                    Ok(send::Prepared::Retry | send::Prepared::RowGone) => summary.retried += 1,
                     // Round-2 #7: a queued TEX hit the ZIP-320 ephemeral gap-limit ceiling at create
                     // (the window is full of other unmined tx0s) — claim released, row left Queued,
                     // counted distinctly so a transient (or stranding-induced) availability ceiling
@@ -7102,10 +7101,14 @@ impl Wallet {
     /// critical section and broadcasts only AFTER releasing it, so cancel is excluded from the WHOLE drain
     /// (not merely the `mark_submitting` txn) and exactly one wins — cancel can never delete a send whose tx
     /// might exist, it loses that race to a `false` no-op. (A future narrowing of that aux-lock hold would
-    /// weaken this to the SQLite-`RESERVED` level.) The `created_at` identity pin closes the
-    /// non-AUTOINCREMENT rowid-reuse hole. §5.4: the FFI carries only ids/timestamps — no amount, no
-    /// address, no URI crosses or logs. Requires the wallet OPEN; read+deleted under the aux lock (one
-    /// IMMEDIATE txn).
+    /// weaken this to the SQLite-`RESERVED` level.) A cancel that WINS while a pass holds the row it listed
+    /// frees the id; the drain re-reads the row it listed under that same lock before it claims
+    /// (`intent_store::still_queued`, WL-4), so it never signs the cancelled payment under a send that took
+    /// the id. On this side the `created_at` identity pin closes the rowid-reuse hole but for one second:
+    /// a cancel of a row replaced within its own second deletes the replacement and answers `true`
+    /// ([`intent_store::cancel_queued`](crate::intent_store::cancel_queued)). §5.4: the FFI carries only
+    /// ids and timestamps; no amount, address or URI crosses or logs. Requires the wallet OPEN; read and
+    /// deleted under the aux lock (one IMMEDIATE txn).
     pub async fn cancel_parked_send(&self, id: i64, created_at: i64) -> Result<bool, WalletError> {
         self.inner.lifecycle.require_open()?;
         let inner = Arc::clone(&self.inner);
@@ -7185,9 +7188,9 @@ impl Wallet {
     /// racing background drain and this call can never BOTH sign one intent — and on THIS origin
     /// the loser reads `NotFound`, not `StillQueued` (#401 R7a, which corrected this line):
     /// `load_parked`'s WHERE pins `state = Queued`, so once the drain has claimed the row the
-    /// guarded read misses and the verb answers before `mark_submitting` is reached. The
-    /// `StillQueued` shape belongs to the FR-23-a DEPOSIT origin, whose `intent_store::load` has
-    /// no state guard and so falls through to `Prepared::Retry`;
+    /// guarded read misses and the verb answers before `mark_submitting` is reached. Since WL-4
+    /// the FR-23-a DEPOSIT origin reads the same: the re-read under the claim's lock
+    /// (`intent_store::still_queued`) pins the state too, so a claimed row is `NotFound` there;
     /// `ensure_seed_controls_account` (B1) still rejects a wrong host-supplied
     /// seed before any tx exists; a watch-only wallet refuses at the seed chokepoint
     /// (`WalletError::WatchOnly`, §3.7 D3 — no branch needed here). The signed group is NOT
@@ -7953,14 +7956,15 @@ impl Wallet {
     /// fetch the full tx, RE-VALIDATE its txid at the §4.6 boundary
     /// ([`crate::enhance::parse_and_validate`] — a wrong/garbled reply is rejected, never
     /// stored), then hand the validated tx to the audited `decrypt_and_store_transaction` (the
-    /// memo is recovered with the wallet's OWN keys, Rust-side). An empty reply ⇒
-    /// `TxidNotRecognized` (clears the request). A per-tx FETCH fault is ISOLATED WITHIN a pass
-    /// (counted + skipped, never propagated) so a poison txid can't block the REST of this
-    /// pass's batch. (Across passes a persistently-rejected txid in the oldest `MAX` is
-    /// re-selected each pass and can starve later memos — bounded to ≤1 wasted RPC PER POISON
-    /// txid, so up to `MAX_ENHANCEMENTS_PER_PASS` wasted fetches/pass if the whole head is
-    /// poisoned, and memo-only: the funds are detected by scan regardless, and a lying endpoint
-    /// is already the data source. A rejection backoff/rotation is a documented follow-up.) A
+    /// memo is recovered with the wallet's OWN keys, Rust-side). An ABSENT answer (an empty body,
+    /// a gRPC status, a transport failure, a timeout, a refused reply) writes nothing for either
+    /// kind of request and leaves it pending (ADR-0584). A per-tx FETCH fault is ISOLATED WITHIN a
+    /// pass (counted + skipped, never propagated) so a poison txid can't block the REST of this
+    /// pass's batch, and ACROSS passes the batch ROTATES (`Inner::enhancement_cursor`): each one
+    /// starts after the last txid asked, so a list of `n` is asked whole in every
+    /// `ceil(n / MAX_ENHANCEMENTS_PER_PASS)` passes that run to their end, and a request nobody
+    /// serves holds back no other one. What it costs: one RPC per such request in its turn, each
+    /// pass while the list fits one batch, for the wallet's life. A
     /// DB-write fault propagates
     /// (the caller swallows + logs it — best-effort, the chain is the source of truth). The
     /// transparent `TransactionsInvolvingAddress` variant is DEFERRED: Recv-2b
@@ -7997,6 +8001,7 @@ impl Wallet {
             MAX_ENHANCEMENTS_PER_PASS,
             tick,
             &self.inner.unparseable_txids,
+            &self.inner.enhancement_cursor,
         )
         .await
     }
@@ -10299,6 +10304,9 @@ impl Wallet {
                 dial_counters,
                 tor_state_tx,
                 unparseable_txids,
+                // Born at a random txid in EVERY session, a switch and a rescan
+                // included (ADR-0584, and the field doc).
+                enhancement_cursor: crate::enhance::EnhancementCursor::new(),
                 reclaim_in_flight,
                 broadcast_jitter,
                 ephemeral_backoff,
@@ -39833,6 +39841,10 @@ mod tests {
     // harness; and every signing entry of a live handle, before any seed is pulled.
     #[cfg(test)]
     mod upgrade_pause;
+    // WL-4: a queued send is signed only as the row that was read, through the pass, the
+    // deposit sign at execute and the parked "Send now".
+    #[cfg(test)]
+    mod queued_identity;
 
     /// S7 C2: the two ALLOCATION paths burn the default UA's diversifier index. Seed
     /// `[0x00; 32]` has `d0 = 1` (pinned by `account::tests::a_swap_destination_never_
@@ -39934,4 +39946,9 @@ mod tests {
     // `s9_bound` shape).
     #[cfg(test)]
     mod generator_seam_named;
+
+    // The absent-answer contract (`docs/plan/wl1-absent-answers.md`): the test
+    // author's rows through a real `Wallet`, appended at the END like the others.
+    #[cfg(test)]
+    mod absent_answers;
 }

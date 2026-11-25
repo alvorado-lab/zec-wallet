@@ -827,10 +827,13 @@ impl LightwalletdClient {
 
     /// Fetch the FULL consensus-encoded transaction for `txid` (the §3.3 tx-enhancement /
     /// memo-recovery path — compact blocks omit memo bytes, so the scanner flags these txids
-    /// for download). `Ok(None)` ⇒ the endpoint returned an EMPTY body: it has no such tx, and
-    /// the caller records `TxidNotRecognized` to clear the request. `TxFilter.hash` is INTERNAL
-    /// byte order (`TxId::as_ref()`), the order the wire stores; `block`/`index` are unused for
-    /// a hash lookup. The reply size is already bounded by the channel's
+    /// for download). `Ok(None)` ⇒ the endpoint returned an EMPTY body, which no server measured
+    /// sends: an unknown txid comes back as a gRPC status, `NotFound`, and by lightwalletd's source
+    /// a backend outage can come back as the same one. That status stays an `Err` like any other
+    /// and no code keys on its number: mapped to `Ok(None)` it would put an outage behind a type
+    /// that reads as an answer. The caller writes nothing for either (ADR-0584). `TxFilter.hash`
+    /// is INTERNAL byte order (`TxId::as_ref()`), the order the wire stores; `block`/`index` are
+    /// unused for a hash lookup. The reply size is already bounded by the channel's
     /// `max_decoding_message_size` (`GRPC_MAX_MESSAGE_BYTES`) — every gRPC byte is hostile (§4.6).
     ///
     /// RAW bytes from an UNTRUSTED endpoint — this seam only authenticates the transport. The
@@ -851,8 +854,9 @@ impl LightwalletdClient {
             hash: txid.as_ref().to_vec(),
         });
         map_unary(stall, witness.as_ref(), timeout(call).await).map(|raw| {
-            // An empty body is lightwalletd's "no such tx" answer (not an error). Flatten the
-            // proto into the domain DTO so the wire type never leaves this module.
+            // An empty body carries no transaction and no error; it is not evidence that the
+            // transaction does not exist (the doc above). Flatten the proto into the domain DTO
+            // so the wire type never leaves this module.
             if raw.data.is_empty() {
                 None
             } else {

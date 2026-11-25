@@ -1087,14 +1087,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.6"
+    version: "0.0.7"
   zec_wallet_tor:
     dependency: "direct main"
     description:
       path: "../../zec_wallet_tor"
       relative: true
     source: path
-    version: "0.0.5"
+    version: "0.0.6"
   zec_wallet_ui:
     dependency: "direct main"
     description:

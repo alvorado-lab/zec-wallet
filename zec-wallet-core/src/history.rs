@@ -2483,6 +2483,7 @@ mod tests {
                 reqs,
                 MAX_ENHANCEMENTS_PER_PASS,
                 &Default::default(),
+                None,
             );
             assert!(
                 targets.contains(&(a, crate::enhance::RequestKind::Enhancement)),
@@ -2494,11 +2495,11 @@ mod tests {
 
         #[test]
         fn a_not_found_reply_never_unscans_a_received_note() {
-            // The §3.3 enhancement loop records `TxidNotRecognized` when the endpoint returns an
-            // empty body for a request. A LYING endpoint could answer "not found" for a tx we
-            // ALREADY scanned (a real receive). That must NOT un-detect the note / hide the
+            // An ENGINE pin: nothing in this crate writes `TxidNotRecognized` any more (ADR-0584),
+            // so this write is the test's own. A LYING endpoint that answers "not found" for a tx
+            // we ALREADY scanned (a real receive) must NOT un-detect the note / hide the
             // money — the chain scan is the source of truth, enhancement only ADDS the memo.
-            // Pins the upstream behavior the loop relies on (matches the reorg finding:
+            // Were the write ever made, upstream would hold that (matches the reorg finding:
             // set_transaction_status does not override scanned block linkage).
             let mut h = HistoryHarness::new();
             let a = h.mine_received(456_000);
@@ -2565,7 +2566,9 @@ mod tests {
         ///    and a rewind that drops blocks back below the expiry reads `Pending`
         ///    again until the frontier returns (the security pass's row 8);
         /// 4. a SECOND `NotInMainChain` write on the already-expired row (the
-        ///    pass's shape, if that is what it wrote) changes nothing: still `Expired`,
+        ///    pass's shape then, if that is what it wrote; since ADR-0584 the pass writes
+        ///    nothing past the expiry, so here the write is the test's own) leaves the
+        ///    history row as it was: still `Expired`,
         ///    still on the first page, still found by txid, exactly once in the walk;
         /// 5. a `Mined(h)` write on the expired send (the -accepted arm, `h` inside
         ///    the accepted window): the row is STILL in the walk exactly once, reads

@@ -8,6 +8,18 @@
   lock now uses, `zstd` 0.14.3, `zstd-safe` 8.2.0 and `zstd-sys` 2.1.2, run
   `cargo update -p zstd -p zstd-safe -p zstd-sys`. `deny.toml` gains matching
   floors.
+- RUSTSEC-2026-0592 needs no new version either: in this crate's graph only
+  arti's `tor-chanmgr` uses `url`, and it never calls `Url::origin()`. If your
+  lock holds `url` 2.5.8 or older, `cargo update -p url` takes 2.5.9, the
+  version this repository's lock now uses.
+- RUSTSEC-2026-0486 needs no new version either: nothing in this crate's graph
+  calls `rustix`'s extended-attribute functions. If your lock holds `rustix`
+  1.1.5 or older, `cargo update -p rustix` takes 1.1.6, the version this
+  repository's lock now uses.
+- `deny.toml` ignores two more advisories, each with its reason:
+  RUSTSEC-2026-0459 (SQLite before 3.54.0 and a crafted `-wal` file, in arti's
+  directory cache; the fix waits on an arti release) and RUSTSEC-2026-0542
+  (`humantime` is unmaintained).
 
 ## 0.1.3
 

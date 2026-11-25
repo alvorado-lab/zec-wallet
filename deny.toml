@@ -28,9 +28,37 @@
 [advisories]
 version = 2
 yanked = "deny"   # a yanked pre-release on the funds path MUST fail loudly
-# No ignores: the libcrux dev-dep advisories the root file carries are NOT in
-# this graph (they live in the MLS/identity crates, which the SDK never depends
-# on — ADR-0013 extraction invariant).
+# The libcrux dev-dep advisories the root file carries are NOT in this graph
+# (they live in the MLS/identity crates, which the SDK never depends on —
+# ADR-0013 extraction invariant). Any ignore needs an inline reason and an
+# expiry condition, and `just sdk-audit` passes the same id to cargo-audit,
+# which does not read this file.
+ignore = [
+  # RUSTSEC-2026-0459 (2026-10-30, CVE-2026-119375): SQLite before 3.54.0 can
+  # return uninitialized page-cache memory when it opens a database together
+  # with a crafted `-wal` whose page size differs. `libsqlite3-sys 0.35.0`
+  # builds SQLCipher here (`bundled-sqlcipher-vendored-openssl`) from its own
+  # vendored amalgamation, SQLite 3.46.1. There is no fixed SQLCipher build
+  # yet: the advisory's "patched >= 0.39.0" holds for plain SQLite only. Only
+  # 0.39.x takes SQLCipher from `sqlcipher-src`, and 0.39.1, the newest, pins
+  # `=419.0.6` (SQLite 3.53.4); `sqlcipher-src 420` (SQLite 3.54.1) exists, but
+  # no libsqlite3-sys release uses it yet, and the exact pin rules out a patch.
+  # The attack is local: someone must place a crafted `-wal` beside a database
+  # the process opens. The wallet opens databases only inside the host's
+  # `db_dir`, files the SDK itself wrote, and only after it has unsealed their
+  # key from the platform keystore (`store.rs`); no API takes a database file
+  # from elsewhere, and nothing from the network becomes a file there. What
+  # stops a planted `-wal` is SQLCipher: every page goes through its codec,
+  # whose HMAC covers the whole page buffer, so a short WAL frame fails the
+  # HMAC and the page comes back zeroed with an error, not stale memory. That
+  # was read in the vendored SQLCipher 4.6.1 source; whether the upstream fix
+  # also closes a path before the codec was not checked. The two fuzz workspaces
+  # resolve the same 0.35.0 and get the same `--ignore`. EXPIRES WHEN a
+  # libsqlite3-sys release bundles sqlcipher-src 420 or later and the wallet's
+  # rusqlite (pinned through zcash_client_sqlite) can take it: re-check on every
+  # libsqlite3-sys release and every rusqlite or zcash_client_sqlite bump.
+  { id = "RUSTSEC-2026-0459", reason = "SQLite before 3.54.0 (here inside SQLCipher) returns uninitialized page-cache memory for a crafted -wal with a mismatched page size; no fixed SQLCipher build exists (libsqlite3-sys 0.39.1 still pins sqlcipher-src =419.0.6, SQLite 3.53.4). Local attack only: the wallet opens databases only in the host's db_dir, files the SDK wrote, after unsealing their key, and SQLCipher's page HMAC (over the whole page) turns a short WAL frame into a zeroed page and an error, not stale memory. EXPIRES when a libsqlite3-sys release bundles sqlcipher-src >= 420 and the wallet's rusqlite can take it" },
+]
 
 [licenses]
 version = 2

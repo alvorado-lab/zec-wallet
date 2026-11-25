@@ -326,6 +326,30 @@ impl HistoryHarness {
         res.txids()[0]
     }
 
+    /// Mine `tx`, a REAL transaction (another wallet's, say), as the only transaction of a new
+    /// block. NOT yet scanned: call [`Self::scan`].
+    pub(crate) fn mine_transaction(&mut self, tx: &zcash_primitives::transaction::Transaction) {
+        // Index 1: index 0 is the coinbase's.
+        let (_h, res) = self.state.generate_next_block_from_tx(1, tx);
+        self.note_block();
+        assert_eq!(
+            res.txids(),
+            &[tx.txid()],
+            "the block holds exactly that transaction"
+        );
+    }
+
+    /// This account's own external Sapling address, as a payment request spells it.
+    pub(crate) fn own_sapling_address(&self) -> zcash_address::ZcashAddress {
+        use zcash_address::ToAddress;
+        use zcash_protocol::consensus::Parameters;
+        let dfvk = self.state.test_account_sapling().expect("sapling dfvk");
+        zcash_address::ZcashAddress::from_sapling(
+            self.state.network().network_type(),
+            dfvk.default_address().1.to_bytes(),
+        )
+    }
+
     /// Mine `n` empty blocks to bury prior notes deeper (raise their confirmation depth).
     pub(crate) fn mine_empty(&mut self, n: usize) {
         for _ in 0..n {
@@ -411,15 +435,44 @@ impl HistoryHarness {
         recipient: zcash_address::ZcashAddress,
         amount: u64,
     ) -> (TxId, Vec<crate::intent_store::NoteClaim>) {
+        self.create_payment(zip321::Payment::without_memo(
+            recipient,
+            ProtoZat::const_from_u64(amount),
+        ))
+    }
+
+    /// [`Self::create_send`] carrying `memo` to `recipient`, a shielded address: what a compact
+    /// block leaves out and only the full transaction gives back.
+    pub(crate) fn create_send_with_memo(
+        &mut self,
+        recipient: zcash_address::ZcashAddress,
+        amount: u64,
+        memo: &str,
+    ) -> TxId {
+        let memo = zcash_protocol::memo::MemoBytes::from_bytes(memo.as_bytes())
+            .expect("a text memo fits its field");
+        let payment = zip321::Payment::new(
+            recipient,
+            Some(ProtoZat::const_from_u64(amount)),
+            Some(memo),
+            None,
+            None,
+            Vec::new(),
+        )
+        .expect("a shielded recipient takes a memo");
+        self.create_payment(payment).0
+    }
+
+    /// Propose, create and sign the single-step transfer `payment` asks for.
+    fn create_payment(
+        &mut self,
+        payment: zip321::Payment,
+    ) -> (TxId, Vec<crate::intent_store::NoteClaim>) {
         use zcash_client_backend::data_api::Account;
 
         let network = *self.state.network();
         let aid = self.state.test_account().expect("account").id();
-        let request = zip321::TransactionRequest::new(vec![zip321::Payment::without_memo(
-            recipient,
-            ProtoZat::const_from_u64(amount),
-        )])
-        .expect("valid request");
+        let request = zip321::TransactionRequest::new(vec![payment]).expect("valid request");
         let proposal = crate::send::propose_core(self.state.wallet_mut(), &network, aid, request)
             .expect("propose");
         let claims = crate::send::claim_from_proposal(&proposal).expect("claims");
@@ -493,10 +546,11 @@ impl HistoryHarness {
         self.scan();
     }
 
-    /// Drive `set_transaction_status(TxidNotRecognized)` for `txid` — the exact `GetStatus`
-    /// "endpoint has no such tx" path the §3.3 enhancement loop takes on an empty reply. Used to
-    /// prove a (possibly LYING) not-found reply for a tx we already SCANNED cannot un-detect the
-    /// received note (money-visibility). `txid` is the upstream INTERNAL-order txid.
+    /// Drive `set_transaction_status(TxidNotRecognized)` for `txid`: the engine's own "no such
+    /// transaction" write, which NO production code makes (ADR-0584: an absent answer is never
+    /// evidence). Used to pin that the engine would not un-detect the received note of a tx we
+    /// already SCANNED if it were made (money-visibility). `txid` is the upstream INTERNAL-order
+    /// txid.
     pub(crate) fn mark_not_recognized(&mut self, txid: TxId) {
         use zcash_client_backend::data_api::{TransactionStatus, WalletWrite};
         self.state
@@ -506,11 +560,13 @@ impl HistoryHarness {
     }
 
     /// Drive `set_transaction_status(NotInMainChain)` for `txid` — the arm the §3.3
-    /// enhancement pass writes for a `GetStatus` answer that names no mined height
-    /// (`enhance::chain_status` maps a mempool / not-on-chain reply to exactly this; INC-019's
-    /// `status_set=5` were five of these). Upstream writes `confirmed_unmined_at_height` under
-    /// `mined_height IS NULL` and prunes the retrieval queue; it deletes no row. `txid` is
-    /// the upstream INTERNAL-order txid.
+    /// enhancement pass writes for a `GetStatus` answer that names no mined height, up to the
+    /// transaction's effective expiry and not past it (`enhance::chain_status` maps a mempool /
+    /// not-on-chain reply to exactly this, and refuses it there; INC-019's
+    /// `status_set=5` were five of these, from before that refusal). Upstream writes
+    /// `confirmed_unmined_at_height` under `mined_height IS NULL` and deletes the txid's
+    /// `Enhancement` row, and its `Status` row too once the tip is at or past the stored expiry;
+    /// it deletes no `transactions` row. `txid` is the upstream INTERNAL-order txid.
     pub(crate) fn mark_not_in_main_chain(&mut self, txid: TxId) {
         use zcash_client_backend::data_api::{TransactionStatus, WalletWrite};
         self.state

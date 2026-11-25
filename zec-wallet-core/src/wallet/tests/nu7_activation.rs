@@ -39,7 +39,8 @@ use zcash_protocol::value::Zatoshis as ProtoZat;
 
 use crate::delivery;
 use crate::enhance::{
-    CheckedStatus, EnhancementStore, FetchedTransaction, TransactionFetcher, UnparseableTxids,
+    CheckedStatus, EnhancementCursor, EnhancementStore, FetchedTransaction, TransactionFetcher,
+    UnparseableTxids,
 };
 use crate::error::WalletError;
 use crate::intent_store::{self, NoteClaim};
@@ -395,6 +396,7 @@ pub(super) fn chain_status_writes(
             50,
             &|| {},
             &UnparseableTxids::default(),
+            &EnhancementCursor::new(),
         ))
         .expect("the pass runs");
     assert_eq!(
@@ -1070,6 +1072,7 @@ fn a_requeued_crossing_with_reserved_notes_is_stale_until_its_release() {
         )])
         .expect("a valid request");
         let prover = crate::prover::tx_prover();
+        let row = intent_store::load(conn, id).expect("load").expect("queued");
         crate::send::prepare_queued(
             st.wallet_mut(),
             &network,
@@ -1079,9 +1082,7 @@ fn a_requeued_crossing_with_reserved_notes_is_stale_until_its_release() {
             usk,
             prover,
             prover,
-            id,
-            None,
-            0,
+            &row,
             now,
             SigningPermit::assume_current_for_test(),
         )

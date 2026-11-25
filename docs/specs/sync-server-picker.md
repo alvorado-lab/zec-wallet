@@ -139,7 +139,9 @@ the OLD session's word while the new session fell back — the assembler
 re-publishes the rebuilt session's truth into it), `created_at`,
 `freshly_generated`, `seed`,
 `seed_port`, `clock`, `db`, `aux_db`, `cache`, `lock`. NOT carried: `sync`,
-`hash_convention_reversed`, and the swap `OnceLock` (re-initialised, the
+`hash_convention_reversed`, `enhancement_cursor` (ADR-0584: the rotation starts
+over at a fresh random txid, and the new server has not been asked anything),
+and the swap `OnceLock` (re-initialised, the
 rescan precedent — the reference host's swap activation re-fires on the
 session swap; a direct-handle host calls `enableNearSwap` again, which its
 doc will say).

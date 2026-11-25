@@ -410,13 +410,13 @@ pub(crate) fn open_keyed_cache_connection(
     // FULL fsync policy, not a maybe-NORMAL compile default.
     ensure_synchronous_full(&conn)?;
     ensure_rollback_journal(&conn)?;
-    // Stray WAL sidecars beside an ALREADY-rollback cache are dead bytes (a
-    // kill inside a prior flip's window, a hand-copied dir): in rollback mode
-    // SQLite never reads them, but they pin disk and carry stale encrypted
-    // frames — unlink them (W-swap-4-a-6 defense-in-depth; the flip arm's own
-    // checkpoint unlinks its pair, so this is usually a no-op). Absence and
-    // planted directories tolerated ([`remove_path_if_present`]); honest IO
-    // faults propagate and the caller self-heals (validated-or-deleted).
+    // Stray WAL sidecars beside an ALREADY-rollback cache (a kill inside a
+    // prior flip's window, a hand-copied dir): the open and probe above have
+    // already read a present `-wal`, and SQLCipher's page HMAC is what refuses
+    // frames not written under this key. They pin disk, so unlink them
+    // (W-swap-4-a-6 defense-in-depth; the flip arm's own checkpoint unlinks its
+    // pair, so this is usually a no-op). Absence and planted directories are
+    // tolerated ([`remove_path_if_present`]); IO faults propagate, caller heals.
     for suffix in ["-wal", "-shm"] {
         remove_path_if_present(&with_suffix(path, suffix))?;
     }

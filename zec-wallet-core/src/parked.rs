@@ -83,8 +83,8 @@ pub enum ParkedAuthorization {
     /// rather than fed to a dead quote (§4.4). Unreachable from the parked surface, which excludes
     /// deposit rows — present for exhaustiveness at the core seam.
     Expired,
-    /// No row matched the `(id, created_at)` pin: already sent / cancelled / drained, the rowid was
-    /// reused, or it is a deposit row (excluded here exactly as in
+    /// No row matched the `(id, created_at)` pin: already sent / cancelled / drained, replaced by
+    /// another send under a reused rowid, or a deposit row (excluded here exactly as in
     /// [`cancel_parked_send`](crate::Wallet::cancel_parked_send)). Idempotent, never an error —
     /// re-read [`list_parked_sends`](crate::Wallet::list_parked_sends). MUST NOT be presented as
     /// "cancelled" nor invite a re-send: a row that began sending has left this surface, so the
@@ -452,6 +452,7 @@ mod tests {
             deposit_deadline,
             repropose_attempts: 0,
             binding: None,
+            binding_blob: crate::intent_store::BindingBlob::default(),
         }
     }
 

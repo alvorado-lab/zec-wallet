@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.0.6
+
+A security release. Update: the plugin's lock moves `url` to 2.5.9 and
+`form_urlencoded` to 1.2.3, which fixes RUSTSEC-2026-0592 (a URL with many
+nested `blob:` prefixes overflows the stack in `Url::origin()`). The plugin
+never reached it: in its graph only arti's `tor-chanmgr` uses `url`, to parse
+proxy URLs it builds itself, and it never calls `origin()`. RUSTSEC-2026-0459
+(SQLite before 3.54.0 and a crafted `-wal` file) stays open for arti's
+directory cache until an arti release takes the fix; the attack needs a
+crafted file placed in the plugin's Tor directory on the device. The lock also
+moves `rustix` to 1.1.6 for RUSTSEC-2026-0486; the plugin reaches rustix only
+through `tempfile` and nothing in its graph calls the extended-attribute
+functions. A few build-time and Windows-only edges move among versions already
+in the lock. `deny.toml` also ignores RUSTSEC-2026-0542: `humantime`, which
+arti uses for durations and timestamps, is unmaintained, not vulnerable. The
+plugin's API and behaviour do not change. `flutter pub upgrade zec_wallet_tor` takes
+it, since `^0.0.5` also accepts 0.0.6. The README's install snippet now names
+`zec_wallet` 0.0.7.
+
 ## 0.0.5
 
 **Android builds work with Gradle 9.** Apps created with current Flutter could

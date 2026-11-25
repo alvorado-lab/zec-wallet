@@ -2053,10 +2053,17 @@ pub(crate) enum Prepared {
     /// (`RW-BCAST-001`). Left `Queued`, never silently dropped — funds may still arrive, and a
     /// future per-intent FFI status read surfaces the typed [`WalletError::QueuedSendStale`].
     Stale,
-    /// A transient condition (not-synced-far-enough `ProposalStale`, a `mark_submitting` race, a
-    /// create fault that left no spent note, OR a swap deposit on an UNSYNCED clock —
+    /// A transient condition (not-synced-far-enough `ProposalStale`, a `mark_submitting` miss
+    /// (defensive since WL-4: the aux lock is held from `still_queued` through the claim, so a
+    /// racing drain reads as `RowGone`), a create fault that left no spent note, OR a swap
+    /// deposit on an UNSYNCED clock —
     /// `DepositGate::Wait`, inc-2d-swap-a) ⇒ left `Queued` to retry on the next pass.
     Retry,
+    /// WL-4: the row is no longer the one the caller read (cancelled, expired, already claimed,
+    /// or its id now holds another send), so nothing was signed and nothing was touched. The
+    /// drain counts it with `Retry` (the next pass lists whatever holds the id as itself); a
+    /// sign door answers `NotFound`.
+    RowGone,
     /// A queued TEX two-step that reached the ZIP-320 ephemeral-address gap-limit ceiling at create
     /// time (round-2 #7 — `create` returned [`WalletError::TexSendLimitReached`]). OTHER outstanding
     /// reservations fill the engine's window, so THIS send cannot mint a fresh ephemeral address
@@ -2118,6 +2125,7 @@ impl std::fmt::Debug for Prepared {
             Self::Broadcast(group) => write!(f, "Broadcast({} txs)", group.len()),
             Self::Stale => f.write_str("Stale"),
             Self::Retry => f.write_str("Retry"),
+            Self::RowGone => f.write_str("RowGone"),
             Self::Ceiling => f.write_str("Ceiling"),
             Self::CappedParked => f.write_str("CappedParked"),
             Self::Unsupported => f.write_str("Unsupported"),
@@ -2510,6 +2518,14 @@ where
     DbT: WalletRead<Error: ClassifyStoreFault> + InputSource<Error: ClassifyStoreFault>,
     P: Parameters,
 {
+    // WL-4: every arm below deletes, requeues or re-broadcasts by `intent.id`, and `intent` was
+    // read under an aux lock released since. Defence in depth: the SDK's own paths await a bounded
+    // pass to its return (`SyncController::once_within`), but an embedder that drops the `sync_for`
+    // future mid-pass frees the pass guard while this blocking closure runs on, and a second pass
+    // can finish the row first. "Do nothing this pass" is the answer; the next pass re-reads it.
+    if !crate::intent_store::still_in_flight(aux, intent)? {
+        return Ok(Reconciled::Awaiting);
+    }
     let mut all_spendable = true;
     for claim in &intent.claims {
         if !note_spendable(wdb, claim)? {
@@ -2660,9 +2676,7 @@ pub(crate) fn prepare_queued<DbT, P, SP, OP>(
     usk: UnifiedSpendingKey,
     spend_prover: &SP,
     output_prover: &OP,
-    intent_id: QueuedSendId,
-    deposit_deadline: Option<i64>,
-    repropose_attempts: i64,
+    row: &crate::intent_store::QueuedIntent,
     now_unix: u64,
     // §3.2: the drain is a SIGNING path. It is the one the offline-first flow
     // uses, so the verdict must be re-checked HERE, at drain time — a send
@@ -2682,13 +2696,21 @@ where
     SP: SpendProver,
     OP: OutputProver,
 {
+    // WL-4, FIRST: the id may name another send by now. The caller read `row` under an aux lock
+    // it has released since, and a cancelled row's id is reused. Before the deposit gate, whose
+    // Expired arm deletes by id. The caller holds the aux lock from here through
+    // `drain_multi`'s sent mark (`aux` is one exclusive borrow of it), so this is atomic with
+    // the claim.
+    if !crate::intent_store::still_queued(aux, row)? {
+        return Ok(Prepared::RowGone);
+    }
     // §4.4 deposit deadline (inc-2d-swap-a), BEFORE any propose / note selection / signing. An
     // ordinary send (`None`) proceeds. A lapsed deposit is DELETED (terminal — never feed a dead
     // quote; the user re-quotes). A deposit on an untrustworthy (unsynced) clock is left Queued to
     // retry once the clock syncs — never fed by a deadline we can't time-check, never dropped.
-    match deposit_gate(deposit_deadline, now_unix) {
+    match deposit_gate(row.deposit_deadline, now_unix) {
         DepositGate::Expired => {
-            crate::intent_store::delete(aux, intent_id)?;
+            crate::intent_store::delete(aux, row.id)?;
             return Ok(Prepared::DepositExpired);
         }
         DepositGate::Wait => return Ok(Prepared::Retry),
@@ -2702,7 +2724,7 @@ where
     // TEX` and no shape re-check is needed here. At the cap the intent PARKS honestly
     // (`CappedParked`): still `Queued`, surfaced `paused`, cancellable, resumable via the retry
     // affordance — the drain just stops burning one engine gap slot per pass on it.
-    if repropose_attempts >= crate::constants::MAX_TEX_REPROPOSE_ATTEMPTS {
+    if row.repropose_attempts >= crate::constants::MAX_TEX_REPROPOSE_ATTEMPTS {
         return Ok(Prepared::CappedParked);
     }
     // Re-propose FRESH against the current tip (§6.2 — never the queue-time anchor). An
@@ -2743,7 +2765,7 @@ where
     // the load-bearing money order (`mark_submitting` BEFORE create, `mark_sent_multi` BEFORE
     // broadcast). `drain_multi` handles ANY group size: a one-tx single-step send or the `[tx0, tx1]`
     // chain of a TEX two-step (`create_signed_core` signs both, behind its own defensive shape guard).
-    drain_multi(wdb, aux, &proposal, intent_id, |db| {
+    drain_multi(wdb, aux, &proposal, row.id, |db| {
         create_signed_core(
             db,
             params,
@@ -9862,8 +9884,59 @@ pub(crate) mod tests {
         );
     }
 
+    /// The production door for a row this module names by id, tag and attempt count: the row as
+    /// the store holds it, so the pin always passes here (the rows that miss it are in
+    /// `queued_identity.rs`). It hides `super::prepare_queued`, so every row here still runs it.
+    #[allow(clippy::too_many_arguments)]
+    fn prepare_queued<DbT, P, SP, OP>(
+        wdb: &mut DbT,
+        params: &P,
+        aux: &mut Connection,
+        account_id: <DbT as InputSource>::AccountId,
+        request: zip321::TransactionRequest,
+        usk: UnifiedSpendingKey,
+        spend_prover: &SP,
+        output_prover: &OP,
+        id: QueuedSendId,
+        deposit_deadline: Option<i64>,
+        repropose_attempts: i64,
+        now_unix: u64,
+        permit: crate::consensus::SigningPermit,
+    ) -> Result<Prepared, WalletError>
+    where
+        DbT: WalletRead
+            + InputSource<Error = <DbT as WalletRead>::Error>
+            + WalletWrite
+            + WalletCommitmentTrees,
+        <DbT as InputSource>::NoteRef: Copy + Eq + Ord,
+        <DbT as WalletRead>::Error: GapLimitProbe + ClassifyStoreFault,
+        P: Parameters + Clone,
+        SP: SpendProver,
+        OP: OutputProver,
+    {
+        let mut row = crate::intent_store::load(aux, id)?.expect("the row this test queued");
+        assert_eq!(row.deposit_deadline, deposit_deadline, "the row's own tag");
+        row.repropose_attempts = repropose_attempts;
+        super::prepare_queued(
+            wdb,
+            params,
+            aux,
+            account_id,
+            request,
+            usk,
+            spend_prover,
+            output_prover,
+            &row,
+            now_unix,
+            permit,
+        )
+    }
+
     // The NU7 wave's step 4, the activation check: the test author's send-side rows
     // (a partly mined two-step and a swap deposit the upgrade killed) on a chain that
     // straddles the activation, over this module's fixtures.
     mod nu7_activation;
+
+    // WL-4: a queued send is signed only as the row that was read, over the funded harness.
+    mod queued_identity;
 }

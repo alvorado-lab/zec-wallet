@@ -429,9 +429,11 @@ that a prompt-per-spend host MAY set it true once it serves
 `authorizeParkedSend`.
 
 **Money-safety envelope (unchanged guarantees, new call site).**
-- The durable claim still precedes signing — `mark_submitting` is the atomic
-  conditional claim, so a racing background drain and a user-paced
-  authorization can never both sign one intent (the loser reads `Retry`).
+- The durable claim still precedes signing, and the row is re-read under the
+  claim's lock first (`still_queued`, the WL-4 rule below), so a racing
+  background drain and a user-paced authorization can never both sign one
+  intent (the loser's row is no longer `Queued`: `Prepared::RowGone`, which the
+  verb answers as `notFound`).
 - The seed still resolves at the ONE chokepoint (`Inner::acquire_seed`), still
   presenting THAT row's binding, still B1-verified against the stored account
   (`ensure_seed_controls_account`) before a tx exists.
@@ -553,18 +555,23 @@ lies about what happened: `signed` (signed + kick dispatched), `stillQueued`
 (nothing signed — a momentary insufficiency, a cap-parked TEX row, or the
 crash-recovery read saying wait; funds untouched, the row stays), `expired` (a
 deadline-tagged row whose quote lapsed — deleted, terminal), `notFound`
-(already gone / sent / rowid reused, **or a racing background drain that won the
-claim** — re-read the list).
+(already gone / sent / cancelled / replaced by another send under a reused rowid,
+**or a racing background drain that won the claim** — re-read the list).
 
 A RACING DRAIN YIELDS `notFound` HERE, not `stillQueued`, and this section said
-otherwise until #401 R7a. The two origins differ because their loads do:
+otherwise until #401 R7a. The two origins miss at different reads:
 `intent_store::load_parked` (FR-23-b) filters `state = Queued`, so once the drain
 has claimed the row the guarded read misses and the verb answers `notFound` before
-`mark_submitting` is ever reached; `intent_store::load` (the FR-23-a deposit
-origin) has no state guard, so there the loser really does fall through to
-`Prepared::Retry` ⇒ `stillQueued`. Host copy for `notFound` must therefore not
-say the payment is gone — the commonest cause leaves it visible as PREPARING on
-the very same surface. `stillQueued` is
+the seed pull; `intent_store::load` (the FR-23-a deposit origin) has no state
+guard, so there the loser passes the first read and misses at the second,
+`still_queued` under the claim's lock (WL-4, below): `Prepared::RowGone` ⇒
+`notFound` too. (The deposit origin's caller, `send_deposit_now`, returns the
+deposit's id on every outcome, so the swap sees no difference.) `notFound`
+therefore covers two different stories: the payment was sent or is in progress
+elsewhere (the commonest cause, which leaves it visible as PREPARING on the very
+same surface), or it was cancelled or replaced by another send. Host copy for
+`notFound` must be neutral and say only that the payment is no longer waiting:
+never that it is gone, and never that it is already sending. `stillQueued` is
 deliberately NOT an error: nothing failed, the send simply did not become
 sendable yet.
 
@@ -577,18 +584,36 @@ inconsistency, not a feature. The FR-23-a sign-failure zombie (a deposit durably
 until its quote deadline) therefore keeps its availability wait; its user-paced
 exit is a SWAP-SURFACE affordance over the swap↔deposit id linkage, still open.
 
-**The guard is the QUERY, and it is re-run under the claim's lock.** All four
+**The guard is the QUERY, and its row is re-read under the claim's lock.** All four
 conditions — `id`, `created_at`, `state = Queued`, `deposit_deadline IS NULL` —
 live in `intent_store::load_parked`'s WHERE clause, so the read cannot return a
-row the verb would then reject. It runs twice: once before the seed pull (fast
-fail, no credential burned) and once while holding the `aux_db` lock
-`prepare_queued` keeps held across its `mark_submitting` claim. The second run
-is load-bearing: `mark_submitting` pins only `id + state`, and the window
-between the first read and the claim spans a HUMAN-latency credential prompt —
-long enough for a delete plus a rowid-reusing re-enqueue, which would otherwise
-sign the first read's request under a different row's id. A miss at either point
+row the verb would then reject. It runs before the seed pull (fast fail, no
+credential burned), and the row it returned is checked again while holding the
+`aux_db` lock `prepare_queued` keeps held across its `mark_submitting` claim:
+that second check is `still_queued` (the WL-4 rule below), which pins the whole
+row, not only `id + state` as `mark_submitting` does. It is load-bearing: the
+window between the first read and the claim spans a HUMAN-latency credential
+prompt — long enough for a delete plus a rowid-reusing re-enqueue, which would
+otherwise sign the first read's request under a different row's id. A miss at either point
 is `notFound`, never `stillQueued` (the row is gone; "saved and unchanged" would
 be a false money statement).
+
+**The rule (WL-4): a queued send is signed only as the row that was read.** The
+second run is `intent_store::still_queued`, the first statement of
+`prepare_queued`, and it holds for EVERY caller: the resubmission pass, the
+deposit sign at execute and the parked sign. It requires the read row's `id`,
+`created_at`, `uri`, `deposit_deadline`, stored `binding` blob and
+`state = Queued`, before the deadline gate (whose lapsed arm deletes by id). A
+miss signs nothing and deletes nothing: the pass counts a retry and the next
+pass lists whatever holds the id as itself; a sign door answers `notFound`. A
+miss may still have used the host's credential (a staged seed or a biometric
+prompt): the pin runs under the claim's lock, after the seed pull. Its
+in-flight twin, `still_in_flight`, is the first statement of `reconcile_inflight`.
+`created_at` has one-second granularity, so two residuals remain (owed as WL-4b,
+a monotonic `created_at` at enqueue): a cancel of a row replaced within its own
+second deletes the replacement and answers `true`, and a stale parked sign in
+that second signs the replacement as itself, under its own binding.
+Plan: `docs/plan/wl4-queued-identity.md`.
 
 ---
 
@@ -1400,8 +1425,9 @@ impl Wallet {
     /// `GetTransaction` RPC, RE-PARSE it and verify `Transaction::txid()` matches the request
     /// (a lying endpoint that returns the wrong/garbled tx is REJECTED, never stored — §4.6),
     /// then `decrypt_and_store_transaction` (audited WHOLE — recovers the memo with the
-    /// wallet's own keys, Rust-side, and updates the tx's mined status). An empty reply ⇒
-    /// `set_transaction_status(TxidNotRecognized)`. Hexagonal like Recv-2b: an own
+    /// wallet's own keys, Rust-side, and updates the tx's mined status). An ABSENT answer writes
+    /// nothing and leaves the request pending (ADR-0584, "AN ABSENT ANSWER IS NOT EVIDENCE"
+    /// below). Hexagonal like Recv-2b: an own
     /// `TransactionFetcher` port (ISP — fake-testable, no gRPC) + the `LightwalletdClient`
     /// adapter + a `Wallet::enhance_transactions` engine method hooked into `run_pass` on the
     /// SAME sync circuit, inside the cancel race, **BOUNDED** at `MAX_ENHANCEMENTS_PER_PASS`
@@ -1424,15 +1450,18 @@ impl Wallet {
     /// receive-set to the server when Tor is off.
     /// (a restored wallet has thousands of historic txs — converge over passes, never one
     /// giant burst), per-tx fault ISOLATION (a poison txid can't head-of-line-block the
-    /// queue), best-effort/SWALLOWED (never fails sync; the chain is the source of truth),
+    /// batch) and ROTATION across passes (a request nobody serves can't hold back the
+    /// queue: ADR-0584, below), best-effort/SWALLOWED (never fails sync; the chain is the source of truth),
     /// §5.4 counts-only (never a txid/memo/address). The transparent
     /// `TransactionsInvolvingAddress` variant is DEFERRED (receive is covered by Recv-2b
     /// `refresh_transparent_utxos`; calling `notify_address_checked` without truly checking
     /// would falsely hide txs — money-visibility). Memo CONTENT then surfaces via `history`
     /// (memo_count → has_memo flips true) and the `incoming` stream's `memos`; a per-txid
-    /// memo-bytes accessor is the next slice. End-to-end "a real memo populates" is
-    /// device-gated (the funded harness can't synthesize a full memo'd tx — `TestState::
-    /// get_transaction` is None, compact blocks omit memo bytes). What IS unit-tested: the §4.6
+    /// memo-bytes accessor is the next slice. End-to-end "a real memo populates" is tested
+    /// over the engine: `a_memo_survives_an_outage_and_lands_when_it_ends` has one seed's first
+    /// wallet pay its own address with a memo and a second mine and scan it (its compact block
+    /// carries no memo), then serves the full transaction's bytes, and the memo reads back.
+    /// Also unit-tested: the §4.6
     /// boundary against a REAL (minimal v5) tx + the filter/bound/sentinel/no-op-wiring + the
     /// money-safety of the not-found path. Named tests (`enhance` + `history::real_view`):
     /// `parse_and_validate_accepts_a_matching_tx`,
@@ -1441,12 +1470,13 @@ impl Wallet {
     /// `parse_and_validate_never_panics_on_arbitrary_bytes` (proptest) + the `fuzz_enhance_parse`
     /// cargo-fuzz target (the deepest hostile-input decoder in the SDK; `catch_unwind`-backstopped),
     /// `select_enhancement_targets_filters_orders_bounds_and_defers_transparent` (the per-pass
-    /// bound + the transparent deferral + **the request KIND preserved**, and upstream's
-    /// "Enhancement subsumes GetStatus" in either listing order),
+    /// bound + the order by txid + the transparent deferral + **the request KIND preserved**, and
+    /// upstream's "Enhancement subsumes GetStatus" in either listing order),
     /// `map_wire_height_maps_sentinels_and_real_heights`,
     /// `enhance_transactions_is_a_silent_no_op_on_an_empty_backlog` (real-method wiring + no
     /// network hit on an idle/transparent-only backlog), `a_not_found_reply_never_unscans_a_received_note`
-    /// (a lying not-found cannot hide a scanned receive). **The drain LOOP runtime is now unit-tested
+    /// (an ENGINE pin: a `TxidNotRecognized` write, which nothing in this crate makes any more,
+    /// could not hide a scanned receive). **The drain LOOP runtime is now unit-tested
     /// (GAP-3, S109):** the loop body was lifted out of `enhance_transactions` into
     /// `enhance::run_enhancement_pass` over an `EnhancementStore` PORT (the engine method is a thin
     /// adapter, `WalletDbEnhancementStore`), so the policy is driven in tests by a recording store +
@@ -1516,7 +1546,7 @@ impl Wallet {
     /// `None`-tip case exists because upstream reads `chain_tip_height(…).ok_or(…)?` BEFORE
     /// matching, so writing with no tip aborts the whole pass rather than skipping one txid),
     /// and `a_mempool_reply_to_a_status_request_is_answered_not_in_main_chain`
-    /// (both wire sentinels are an ANSWER, not silence). **WATCHDOG
+    /// (up to the transaction's expiry both wire sentinels are an ANSWER, not silence). **WATCHDOG
     /// LIVENESS (S109, Fix A):** the enhancement drain runs AFTER the scan's last progress report,
     /// so a slow backlog (≤ `MAX_ENHANCEMENTS_PER_PASS` unary `GetTransaction`s, each bounded by
     /// `GRPC_UNARY_TIMEOUT_SECS`) would otherwise go silent for the whole phase and trip a FALSE
@@ -1531,6 +1561,54 @@ impl Wallet {
     /// now ONLY the memo actually populating end-to-end + the live `wallet.enhance` §5.4 span
     /// (counts-only by construction) — the per-tx fault isolation AND the `mined_height = None`
     /// decision are no longer device-gated.
+    ///
+    /// **AN ABSENT ANSWER IS NOT EVIDENCE, AND NO ANSWER ENDS A MONEY QUESTION (ADR-0584).**
+    /// 1. *Absence writes nothing.* For a request of either kind, an empty body, a gRPC status
+    ///    (NotFound included: no code keys on the number), a transport failure, a timeout and a
+    ///    reply refused at the §4.6 boundary write nothing, and the request stays pending. The pass
+    ///    writes in two places only, both after `parse_and_validate`: `store_decrypted(tx, None)`
+    ///    and `set_status` of a `chain_status` answer. `CheckedStatus` has no other constructor, so
+    ///    no code can write `TxidNotRecognized`. Why: no reply proves absence. Every server
+    ///    measured answers an unknown txid with NotFound, and by lightwalletd's source a backend
+    ///    outage can read the same; an empty body, which no server measured sends, was written as
+    ///    `TxidNotRecognized` until this rule, and on that write the engine deletes the
+    ///    `Enhancement` row, so one such reply lost the memo until the block was scanned again.
+    ///    The limit: a request nobody ever serves is asked for the wallet's life. The common
+    ///    case is a `Status` row: an expired send that never mined, a dropped transparent
+    ///    receipt, a TEX leg never relayed. With rule 2 a served unmined answer past the expiry
+    ///    writes nothing either, so such a row is asked on every pass (in its turn above 50) for
+    ///    the wallet's life: one `get_transaction` RPC per row per pass, and each ask names that
+    ///    txid to the server again, a repeated lookup it can link across passes. Before these
+    ///    rules an empty body, or an unmined answer at or past the expiry, ended the row (the
+    ///    defect); a NotFound, which every measured server sends for an unknown txid, already
+    ///    kept it. A per-txid ask cadence for such rows is owed to a later change.
+    /// 2. *An unmined answer past the expiry writes nothing.* `chain_status`'s unmined arm answers
+    ///    `NotInMainChain` up to the transaction's effective expiry and refuses once the known tip
+    ///    is past it (`EffectiveExpiry::is_past`): at a tip at or past the stored expiry the engine
+    ///    deletes the `Status` row for good on that write, and that row is the only question that
+    ///    can teach the wallet a two-step (TEX) payment's second leg was mined. The refusal counts
+    ///    in `rejected` and logs nothing; the warning for a refused HEIGHT stands. This holds for a
+    ///    row with a stored expiry, which every TEX leg has (the wallet builds it). A stated limit:
+    ///    a NULL-expiry row is judged by `min_observed_height` instead, so its `Status` can still
+    ///    be deleted by one unmined write. The tip judged is read once per batch and the engine
+    ///    reads its own at the write; only the same pass's scan phase records a tip
+    ///    (`sync::record_chain_tip`) and the sync controller serializes passes, so nothing moves
+    ///    it in between. A stated limit: a dropped pass's detached write can land after the next
+    ///    pass records a tip.
+    /// 3. *The batch rotates.* The eligible requests are ordered by txid and the batch starts
+    ///    strictly after the last txid ASKED (`EnhancementCursor`), wrapping, before the cap. The
+    ///    cursor moves before each fetch is awaited, so a dropped pass and a pass a store fault
+    ///    ends do not ask the same txid first again. Of the passes that run to their end, every
+    ///    `ceil(n / MAX_ENHANCEMENTS_PER_PASS)` ask every one of `n` requests. The cursor is born
+    ///    at a random txid with each `Inner` (open, a server switch, a rescan), in memory only, and
+    ///    never carried. Status requests get no place ahead of enhancements.
+    /// 4. *The unparseable set is for enhancements only* (`ironwood-nu63-support.md` §9.1 step 7):
+    ///    a txid joins it on an `Enhancement` reply alone and the skip applies to `Enhancement`
+    ///    requests alone, so a forged header can hide a memo until the next launch and never a
+    ///    status. A `GetStatus` reply naming an unknown branch is a refused reply like any other.
+    ///
+    /// The `wallet.enhance` event keeps its fields: `not_found` counts empty bodies, and NotFound
+    /// counts in `rejected`. Named rows: §8, "ADR-0584 pointer row".
     ///
     /// **MEMO-CONTENT READ (shipped, the crate accessor):** once enhancement populates the memos,
     /// `Wallet::transaction_memos(txid) -> Vec<Memo>` reads them (FR-6 — the crate API IS the Relim
@@ -7301,7 +7379,10 @@ owed in the e2e checklist.
 > `mark_submitting` (`Queued`→`Submitting`, the FIRST money-touching step), which is ALSO a `BEGIN IMMEDIATE`
 > on the SAME aux connection (serialized by both SQLite's `RESERVED` lock AND the `Inner.aux_db` Mutex). So
 > for any one intent EXACTLY ONE of {cancel-delete, mark_submitting} wins: if cancel commits first, the drain's
-> `mark_submitting` finds no `Queued` row → `false` → aborts (no tx created); if the drain commits first,
+> `mark_submitting` finds no `Queued` row → `false` → aborts (no tx created), UNLESS another send was queued
+> since and took the freed id, when the state guard matches THAT row; the drain's re-read of the row it listed
+> (`still_queued`, WL-4: `docs/plan/wl4-queued-identity.md`) refuses it, and before WL-4 it signed the cancelled
+> payment under it; if the drain commits first,
 > cancel's `WHERE state = Queued` matches nothing → no-op `false`. cancel can NEVER race a send whose tx might
 > exist — it loses that race SAFELY (the v-4-before-v-5 escape-hatch guarantee). **The `created_at` pin** (the
 > immutable enqueue timestamp, already carried on `ParkedSend`, passed back by the host) closes the rowid-reuse
@@ -7318,7 +7399,8 @@ owed in the e2e checklist.
 > `list_parked_sends` now surfaces EVERY non-deposit `Queued` row (see the v-3 S153 AMENDMENT above), so the
 > host holds a cancellable `(id, created_at)` for BOTH kinds — the guard set and the surface set now MATCH,
 > and the same `Queued`-fundless proof covers every reachable row (the one residual is a
-> freed-then-same-second-reused rowid — still `Queued`-safe).] §5.4: no amount/address/URI crosses or logs — the FFI
+> freed-then-same-second-reused rowid: no money moves, but a cancel of a row replaced within its own
+> second deletes the replacement and answers `true`, WL-4).] §5.4: no amount/address/URI crosses or logs — the FFI
 > is `(i64, i64) -> bool`, all chain-free metadata. **FFI:** `WalletHandle::cancel_parked_send(id, createdAt)
 > -> bool` (api/wallet.rs; `invalidState` on a closed handle) — NO new DTO (a primitive bool); the host passes
 > back the `(id, createdAt)` it read from `ParkedSend`. + FRB regen (FR-20: `just wallet-bridge-gen` +
@@ -7347,7 +7429,8 @@ owed in the e2e checklist.
 > structurally incapable of stranding funds; (2) the `state = Queued` IMMEDIATE delete is mutually exclusive
 > with the post-v-5 drain (the drain holds the SAME `Inner.aux_db` lock across its WHOLE
 > claim→`mark_submitting`→create→`mark_sent` section, broadcasting only after — so cancel is excluded from the
-> entire drain, exactly one wins, and cancel never deletes a send whose tx might exist). The `created_at` pin
+> entire drain, exactly one wins, and cancel never deletes a send whose tx might exist; the drain's own side,
+> that it never signs a cancelled row under a send that took its id, is WL-4's `still_queued`). The `created_at` pin
 > closes the non-AUTOINCREMENT rowid-reuse hole; `deposit_deadline IS NULL` mirrors the surface's swap-deposit
 > exclusion. 803 lib (skip-`send::`) + clippy `-D` green both crates; drift gate green.
 > **FULL crypto-change REVIEW (S140, `229f85b`, NO BLOCKER):** crypto audit money-SOUND+crypto-INERT ∥
@@ -13163,6 +13246,27 @@ never shortens an expiry.
 > seven rows re-watched on the wrapper. `no_finality_consumer_reads_reorg_max_blocks` no
 > longer excuses the reclaim margin. Each has a watched row in `evals/mutants.tsv`
 > (`docs/adjudication/nu7-5r7m/`).
+>
+> **ADR-0584 pointer row, absent answers** (`docs/plan/wl1-absent-answers.md` (d); §3.3
+> "AN ABSENT ANSWER IS NOT EVIDENCE"). Absence writes nothing:
+> `an_absent_answer_writes_nothing_for_either_request_kind` ·
+> `an_empty_reply_keeps_a_real_enhancement_request` (the engine's own queue) ·
+> `a_memo_survives_an_outage_and_lands_when_it_ends` (two wallets over one seed). The unmined
+> arm past the expiry: `an_unmined_answer_past_the_expiry_keeps_the_question` ·
+> `a_leg_mined_after_a_forged_unmined_answer_still_confirms`. The rotation:
+> `a_request_that_nobody_serves_never_starves_another` (the incident's guard) ·
+> `the_cursor_starts_after_the_last_asked_txid_and_wraps` ·
+> `a_server_switch_restarts_the_cursor` ·
+> `a_dropped_pass_resumes_after_the_txid_it_was_asking` ·
+> `the_wallet_handle_keeps_the_cursor_across_passes_and_drops_it_on_close`. The unparseable set:
+> `a_status_request_is_never_hidden_by_a_forged_branch` ·
+> `an_enhancement_skip_does_not_hide_a_status_row_for_the_same_txid`. Refixtured:
+> `run_enhancement_pass_isolates_faults_and_tallies_every_branch` (no status write, the order by
+> txid), `a_mempool_reply_to_a_status_request_is_answered_not_in_main_chain` (below the expiry)
+> and `select_enhancement_targets_filters_orders_bounds_and_defers_transparent` (the order by
+> txid); `a_not_found_reply_never_unscans_a_received_note` stays as an engine pin. Not covered,
+> stated: the engine rows of the first group drive the engine through a test store, not through
+> the wallet's own adapter. Each has a watched row in `evals/mutants.tsv`.
 >
 > **S264 pointer row — GRACE-1** (`production-readiness-phase-1.md` §4p; the
 > per-test register is `ironwood-nu63-support.md` §8 Gate 6): the unknown-branch

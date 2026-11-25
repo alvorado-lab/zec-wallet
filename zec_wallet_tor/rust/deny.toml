@@ -59,11 +59,21 @@ ignore = [
   # and stays the tripwire for the day it becomes reachable. The reasoning and the
   # 12-target measurement sit in sdk/dialer-tor/deny.toml (this lock resolves arti
   # identically); cargo-audit, which reads the raw lock, gets the `--ignore`.
-  # Two UNMAINTAINED transitive helpers arti's graph carries. cargo-audit
+  # Three UNMAINTAINED transitive helpers arti's graph carries. cargo-audit
   # reports them as allowed warnings; cargo-deny's v2 default (`unmaintained =
   # "all"`) reports them as errors. Named by id rather than widening the
-  # policy to `unmaintained = "workspace"`, so a THIRD one is still a red here
-  # and each of these two carries its path and its re-check condition.
+  # policy to `unmaintained = "workspace"`, so a FOURTH one is still a red here
+  # and each of these three carries its path and its re-check condition.
+  # `humantime 2.4.0` (RUSTSEC-2026-0542, 2026-11-18: unmaintained because it
+  # follows chrono's status; no fixed version): arti-client and the tor-*
+  # crates (directly and through humantime-serde) use it to format and parse
+  # durations and RFC 3339 timestamps in their configuration and status
+  # text. It IS compiled and ships. dialer-tor builds its Tor configuration in
+  # code (`TorClientConfigBuilder::from_directories`), never from a config
+  # file, so this plugin feeds its parsers no configuration text; arti's own
+  # parsing of status text with it was not traced. Unmaintained, not
+  # vulnerable. Re-check on each arti bump.
+  { id = "RUSTSEC-2026-0542", reason = "humantime 2.4.0 is unmaintained (no fixed version); arti-client and tor-* use it for durations and RFC 3339 timestamps in their own configuration and status text; it ships, but dialer-tor builds its Tor configuration in code, never from a config file; re-check on each arti bump" },
   # `paste 1.0.15` (a proc-macro; archived upstream, `pastey` is the fork):
   # arti-client -> fs-mistrust -> pwd-grp -> paste. Compile-time only;
   # nothing of it ships in the binary. Re-check on each arti bump.
@@ -77,6 +87,18 @@ ignore = [
   # id); cargo-audit scans the raw lock and still needs the ignore. Nothing of
   # it is compiled or shipped. Re-check on each arti bump.
   { id = "RUSTSEC-2025-0141", reason = "bincode 2.0.1 is unmaintained and appears in the lock only: it sits behind typed-index-collections's own optional bincode feature, which no dependent in this graph requests (cargo tree -i bincode --target all resolves nothing); nothing of it is compiled; re-check on each arti bump" },
+  # RUSTSEC-2026-0459 (SQLite before 3.54.0, a crafted `-wal`): the same
+  # `libsqlite3-sys 0.37.0` through arti's directory cache, the same argument
+  # and expiry as the dialer-tor crate's deny.toml, including the owed
+  # hardening, which will land in this plugin's `prepare_tor_dir` (not built
+  # yet). This plugin is the host there: it
+  # vendors the crate's SQLite 3.51.3 on Android (`static-sqlite`) and links the
+  # platform's SQLite elsewhere (in a static Apple build, the wallet's SQLCipher
+  # answers those calls; the zec_wallet crate's deny.toml covers it), creates
+  # its directories 0700,
+  # and leaves arti's directory-permission check on. On Android 12 and later,
+  # `allowBackup="false"` does not stop a device-to-device transfer.
+  { id = "RUSTSEC-2026-0459", reason = "SQLite before 3.54.0 returns uninitialized page-cache memory for a crafted -wal with a mismatched page size; libsqlite3-sys 0.37.0 comes with arti's directory cache and its fix (0.39) needs rusqlite 0.41, which no arti release takes yet. Local attack only: a -wal planted beside arti's dir.sqlite3 in the plugin's 0700 Tor cache directory (whose permissions arti checks), for example carried in by a restore or device transfer of the app's data. EXPIRES when this lock's arti resolves libsqlite3-sys >= 0.39" },
 ]
 
 [licenses]

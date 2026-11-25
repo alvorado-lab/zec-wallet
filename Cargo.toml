@@ -23,7 +23,7 @@ exclude = ["dialer-tor", "zec_wallet_tor/rust"]
 [workspace.package]
 # The published version: `sdkVersion()` reports it, so it equals the
 # `zec_wallet` pubspec's (`api::meta` tests hold the two together).
-version = "0.0.6"
+version = "0.0.7"
 edition = "2024"
 rust-version = "1.96"
 # MIT only: the packages ship one LICENSE (MIT), and the crates travel inside
@@ -142,11 +142,11 @@ orchard        = { version = "=0.16.0", default-features = false }
 # (2026-09-30, re-read 2026-10-21; there is no 0.8.1+).
 shardtree      = { version = "=0.8.0", default-features = false }
 # Our OWN draws that never reach upstream: the isolation-key tokens, jitter, the
-# diversified-index band, the seed-pull and swap nonces (`rand_core::OsRng`, the OS
-# CSPRNG). Since the NU7 wave (ADR-0579 Decision 3) the upstream API no longer takes
-# it: `WalletDb` and `create_proposed_transactions` bind `rand_core 0.10`, which has
-# no `OsRng`, and get the `getrandom` generator below. Pinned to the 0.6.4 the lock
-# already carries, so this dep adds no rand_core minor.
+# diversified-index band, the enhancement cursor's birth, the seed-pull and swap nonces
+# (`rand_core::OsRng`, the OS CSPRNG). Since the NU7 wave (ADR-0579 Decision 3) the
+# upstream API no longer takes it: `WalletDb` and `create_proposed_transactions` bind
+# `rand_core 0.10`, which has no `OsRng`, and get the `getrandom` generator below.
+# Pinned to the 0.6.4 the lock already carries, so this dep adds no rand_core minor.
 rand_core      = { version = "=0.6.4", default-features = false, features = ["getrandom"] }
 # The generator upstream proves and signs with (ADR-0579 Decision 3): `SysRng`, the
 # OS CSPRNG, made infallible by `UnwrapErr` from the `rand_core` 0.10 that `getrandom`
@@ -190,7 +190,7 @@ prost    = { version = "=0.14.4", default-features = false, features = ["std"] }
 # Unix incl. Android/iOS. ALREADY in the lock (transitive) — exact-pinned + promoted
 # to direct (no new transitive crates). `fs` gates `flock`; SAFE public API
 # (zec-wallet-core stays `#![forbid(unsafe_code)]`).
-rustix   = { version = "=1.1.4", default-features = false, features = ["std", "fs"] }
+rustix   = { version = "=1.1.6", default-features = false, features = ["std", "fs"] }
 secrecy  = { version = "=0.8.0", default-features = false, features = ["alloc"] }
 serde    = { version = "1", default-features = false, features = ["std", "derive"] }
 serde_json     = { version = "1", default-features = false, features = ["std"] }

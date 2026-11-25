@@ -291,6 +291,16 @@ fn table_columns(conn: &Connection) -> Result<std::collections::HashSet<String>,
         .map_err(map_db_err)
 }
 
+/// A row's `binding` column as stored. `Debug` is redacted like [`SpendBinding`]'s (§5.4).
+#[derive(Clone, PartialEq, Eq, Default)]
+pub(crate) struct BindingBlob(Option<Vec<u8>>);
+
+impl std::fmt::Debug for BindingBlob {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("BindingBlob(..)")
+    }
+}
+
 /// One persisted queued-send intent (what [`list_queued`]/[`load`] return). Carries
 /// the opaque id, the ZIP-321 URI to re-propose from, and the queue timestamp — NOT
 /// a decoded recipient/amount (decoding is the resubmission path's job, through the
@@ -315,6 +325,9 @@ pub(crate) struct QueuedIntent {
     /// intent. `None` for a legacy pre-FR-17 row (or a wrong-length blob —
     /// validate-never-truncate ⇒ treated as absent, the fail-closed direction).
     pub(crate) binding: Option<SpendBinding>,
+    /// The `binding` column as stored, for [`still_queued`] only: [`Self::binding`] reads a
+    /// NULL and a wrong-length blob alike, so it cannot tell those two rows apart.
+    pub(crate) binding_blob: BindingBlob,
 }
 
 /// One selected input note of a proposal, as the CHAIN-STABLE triple — the §6.3
@@ -565,16 +578,7 @@ pub(crate) fn list_queued(conn: &Connection) -> Result<Vec<QueuedIntent>, Wallet
         )
         .map_err(map_db_err)?;
     let rows = stmt
-        .query_map([STATE_QUEUED], |r| {
-            Ok(QueuedIntent {
-                id: QueuedSendId::new(r.get::<_, i64>(0)?),
-                uri: r.get::<_, String>(1)?,
-                created_at: r.get::<_, i64>(2)?,
-                deposit_deadline: r.get::<_, Option<i64>>(3)?,
-                repropose_attempts: r.get::<_, i64>(4)?,
-                binding: decode_binding(r.get::<_, Option<Vec<u8>>>(5)?),
-            })
-        })
+        .query_map([STATE_QUEUED], queued_row)
         .map_err(map_db_err)?;
     // Surface a row error (rust-patterns: never `filter_map(Result::ok)` on a query).
     rows.collect::<Result<Vec<_>, _>>().map_err(map_db_err)
@@ -613,17 +617,7 @@ pub(crate) fn list_parkable(conn: &Connection) -> Result<Vec<(QueuedIntent, bool
         .map_err(map_db_err)?;
     let rows = stmt
         .query_map([STATE_QUEUED, STATE_SUBMITTING], |r| {
-            Ok((
-                QueuedIntent {
-                    id: QueuedSendId::new(r.get::<_, i64>(0)?),
-                    uri: r.get::<_, String>(1)?,
-                    created_at: r.get::<_, i64>(2)?,
-                    deposit_deadline: r.get::<_, Option<i64>>(3)?,
-                    repropose_attempts: r.get::<_, i64>(4)?,
-                    binding: decode_binding(r.get::<_, Option<Vec<u8>>>(5)?),
-                },
-                r.get::<_, i64>(6)? == STATE_SUBMITTING,
-            ))
+            Ok((queued_row(r)?, r.get::<_, i64>(6)? == STATE_SUBMITTING))
         })
         .map_err(map_db_err)?;
     // Surface a row error (rust-patterns: never `filter_map(Result::ok)` on a query).
@@ -643,16 +637,7 @@ pub(crate) fn load(
         "SELECT id, uri, created_at, deposit_deadline, repropose_attempts, binding \
          FROM queued_send_intent WHERE id = ?1",
         [id.value()],
-        |r| {
-            Ok(QueuedIntent {
-                id: QueuedSendId::new(r.get::<_, i64>(0)?),
-                uri: r.get::<_, String>(1)?,
-                created_at: r.get::<_, i64>(2)?,
-                deposit_deadline: r.get::<_, Option<i64>>(3)?,
-                repropose_attempts: r.get::<_, i64>(4)?,
-                binding: decode_binding(r.get::<_, Option<Vec<u8>>>(5)?),
-            })
-        },
+        queued_row,
     )
     .optional()
     .map_err(map_db_err)
@@ -663,11 +648,9 @@ pub(crate) fn load(
 /// exists RIGHT NOW.
 ///
 /// All four FR-23-b guards live in the WHERE clause, so the read cannot return a row the verb
-/// would then have to reject — and, critically, the SAME query can be re-run under the aux lock
-/// the claim is about to take, making the guard atomic with `mark_submitting` (crypto audit
-/// H1: a guard evaluated on a released-lock snapshot is defeated by a delete + rowid-reusing
-/// re-enqueue inside the window, which for this verb spans a HUMAN-latency host credential
-/// prompt):
+/// would then have to reject. It runs on a lock that is then RELEASED (the window to the claim
+/// spans a HUMAN-latency credential prompt, crypto audit H1), so what it returned is re-read
+/// under the claim's own lock by [`still_queued`] (WL-4):
 /// 1. `id` — the row the host named.
 /// 2. `created_at` — the identity pin against SQLite rowid REUSE (`id INTEGER PRIMARY KEY` has no
 ///    `AUTOINCREMENT`), the same pin [`cancel_queued`] and [`reset_repropose_attempts`] carry.
@@ -686,26 +669,63 @@ pub(crate) fn load_parked(
          FROM queued_send_intent \
          WHERE id = ?1 AND created_at = ?2 AND state = ?3 AND deposit_deadline IS NULL",
         rusqlite::params![id.value(), created_at, STATE_QUEUED],
-        |r| {
-            Ok(QueuedIntent {
-                id: QueuedSendId::new(r.get::<_, i64>(0)?),
-                uri: r.get::<_, String>(1)?,
-                created_at: r.get::<_, i64>(2)?,
-                deposit_deadline: r.get::<_, Option<i64>>(3)?,
-                repropose_attempts: r.get::<_, i64>(4)?,
-                binding: decode_binding(r.get::<_, Option<Vec<u8>>>(5)?),
-            })
-        },
+        queued_row,
     )
     .optional()
     .map_err(map_db_err)
 }
 
+/// WL-4: does the table still hold, `Queued`, the row `read` was read as? The pin a caller
+/// must hold before it acts on a row it read under an aux lock it has since released: `id`
+/// is reused (`INTEGER PRIMARY KEY`, no `AUTOINCREMENT`), so by the claim it may name
+/// another send. `created_at` has one-second granularity, so `uri`, the deadline tag and
+/// the stored binding blob (minted at random for every row) are compared too.
+pub(crate) fn still_queued(conn: &Connection, read: &QueuedIntent) -> Result<bool, WalletError> {
+    conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM queued_send_intent \
+         WHERE id = ?1 AND created_at = ?2 AND uri = ?3 \
+           AND deposit_deadline IS ?4 AND binding IS ?5 AND state = ?6)",
+        rusqlite::params![
+            read.id.value(),
+            read.created_at,
+            read.uri,
+            read.deposit_deadline,
+            read.binding_blob.0,
+            STATE_QUEUED
+        ],
+        |r| r.get(0),
+    )
+    .map_err(map_db_err)
+}
+
+/// WL-4: [`still_queued`] for an in-flight row: the same state, claims and recorded group,
+/// so a reconcile never acts on a row another pass has finished since it was listed.
+pub(crate) fn still_in_flight(
+    conn: &Connection,
+    read: &InFlightIntent,
+) -> Result<bool, WalletError> {
+    Ok(list_in_flight(conn)?.contains(read))
+}
+
+/// The six columns every reader of a [`QueuedIntent`] selects first, in this order.
+fn queued_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<QueuedIntent> {
+    let binding_blob: Option<Vec<u8>> = r.get(5)?;
+    Ok(QueuedIntent {
+        id: QueuedSendId::new(r.get::<_, i64>(0)?),
+        uri: r.get::<_, String>(1)?,
+        created_at: r.get::<_, i64>(2)?,
+        deposit_deadline: r.get::<_, Option<i64>>(3)?,
+        repropose_attempts: r.get::<_, i64>(4)?,
+        binding: decode_binding(binding_blob.as_deref()),
+        binding_blob: BindingBlob(binding_blob),
+    })
+}
+
 /// FR-17 blob → [`SpendBinding`]: `None` on NULL AND on any wrong-length blob
 /// (validate-never-truncate — a corrupt binding presents as an unbound pull, which
 /// a bound host fail-closes; it can never silently pad into a "valid" token).
-fn decode_binding(blob: Option<Vec<u8>>) -> Option<SpendBinding> {
-    blob.as_deref().and_then(SpendBinding::from_slice)
+fn decode_binding(blob: Option<&[u8]>) -> Option<SpendBinding> {
+    blob.and_then(SpendBinding::from_slice)
 }
 
 /// Remove an intent by id; returns whether a row was deleted (`false` ⇒ already
@@ -775,7 +795,9 @@ pub(crate) fn delete_stranded(
 ///    first money-touching step) is ALSO `BEGIN IMMEDIATE` on this SAME aux connection, so for any one
 ///    intent EXACTLY ONE of {this delete, mark_submitting} wins — cancel can never delete a send whose tx
 ///    might exist (it loses that race to a `false` no-op). This is why the guard is on `Queued`, never an
-///    unguarded [`delete`].
+///    unguarded [`delete`]. That is the cancel's half only: a cancel that WINS frees the id, and the state
+///    guard alone does not stop a drain holding the cancelled row from claiming the send that takes it.
+///    [`still_queued`] does (WL-4).
 /// 2. `created_at = ?2` (the identity pin): `id INTEGER PRIMARY KEY` has NO `AUTOINCREMENT`, so SQLite may
 ///    REUSE a freed rowid (the exact hazard [`delete_stranded`]'s doc named). A reused rowid is a fresh
 ///    `enqueue` with a fresh `created_at`, so pinning the immutable enqueue timestamp the host read from
@@ -798,8 +820,8 @@ pub(crate) fn delete_stranded(
 /// parked send (classify's own torn-URI arm errors LOUD instead). `state = Queued` (never the recipient
 /// kind) is the money-safety.
 /// EVERY row this can match is `Queued` ⇒ structurally fundless (no claim / no txid / no tx0). The
-/// identity pin is second-granularity, so a freed-then-same-second-reused rowid is the one residual
-/// collision — still money-safe (the reused row is `Queued`).
+/// identity pin is second-granularity, so one collision remains: a cancel of a row replaced within its
+/// own second deletes the replacement and answers true. No money moves (it is `Queued`); the send is lost.
 /// Sibling of [`delete_stranded`]: the same state-guarded IMMEDIATE delete, plus the identity pin.
 pub(crate) fn cancel_queued(
     conn: &mut Connection,
@@ -827,6 +849,8 @@ pub(crate) fn cancel_queued(
 /// rust-patterns: a transition method guards its current state): returns `false` if the
 /// intent is no longer `Queued` (already in flight, or gone) — a no-op the caller reads as
 /// "another pass owns it", never a corruption. Wired by the resubmission hook at 3-b-ii-B.
+/// It does not check WHICH send holds `id`: the caller ran [`still_queued`] under this same
+/// aux lock, and holds it through the sent mark (WL-4).
 ///
 /// For a SINGLE-STEP proposal only (reserves no ephemeral). An ephemeral-reserving (ZIP-320
 /// two-step) create goes through [`mark_submitting_counting`], which additionally increments the

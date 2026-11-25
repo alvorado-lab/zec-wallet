@@ -1,16 +1,17 @@
 # zec_wallet
 
-**Upgrade to 0.0.5 or later before the NU7 network upgrade** activates on
-mainnet, at block 3,543,405 (about 2026-11-06 02:00 UTC): 0.0.4 and earlier
-cannot send after it. 0.0.6 also builds for Android on Gradle 9. The working
-set, for the packages you use:
+**Update to 0.0.7.** In 0.0.6 and earlier, cancelling the newest queued send
+and queueing another while the wallet was sending its queue could pay the
+cancelled send instead of the new one. Since the NU7 network upgrade activated
+on mainnet at block 3,543,405, 0.0.4 and earlier cannot send at all. The
+working set, for the packages you use:
 
 ```yaml
 dependencies:
-  zec_wallet: ^0.0.6
+  zec_wallet: ^0.0.7
   zec_wallet_ui: ^0.0.4
   zec_wallet_ui_platform: ^0.0.3
-  zec_wallet_tor: ^0.0.5
+  zec_wallet_tor: ^0.0.6
 ```
 
 `zec_wallet_ui` and `zec_wallet_ui_platform` did not change in this release,
